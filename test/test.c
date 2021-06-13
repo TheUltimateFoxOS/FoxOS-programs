@@ -1,6 +1,21 @@
-#include <sys/write.h>
+#include <stdio.h>
+#include <assert.h>
+
+#include <setjmp.h>
+
+jmp_buf buf;
 
 void main() {
-	char str[] = "Hello c world!";
-	write(STDOUT, str, sizeof(str));
+	printf("Hello world %d\n", 100);
+
+	int x = 5;
+
+	setjmp(buf);
+
+	printf("Loop %d!\n", x);
+	x--;
+
+	assert(x != 0);
+
+	longjmp(buf, 1);
 }
