@@ -1,4 +1,6 @@
-void _start() {
+#include <sys/write.h>
+
+void main() {
 	char str[] = "Hello c world!";
-	__asm__ __volatile__ ("int $0x30" : : "a" (2), "b" (1), "c" (str), "d" (sizeof(str)));
+	write(STDOUT, str, sizeof(str));
 }

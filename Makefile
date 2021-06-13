@@ -2,6 +2,9 @@ OBJDIR = lib
 BUILDDIR = bin
 
 build:
+	@echo "Building libc"
+	@make -C libc
+
 	@echo "Building test"
 	@make -C test
 
