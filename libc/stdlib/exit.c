@@ -3,7 +3,8 @@
 #include <stdio.h>
 
 void __libc_exit(int code) {
-	#warning "Deallocate allocated memory and stuff here!";
+	//#warning "Deallocate allocated memory and stuff here!";
+	__libc_uninit_alloc();
 
 	void* exit_func = resolve_symbol("task_entry.exit");
 
