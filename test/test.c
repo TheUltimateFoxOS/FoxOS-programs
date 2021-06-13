@@ -33,10 +33,10 @@ void main() {
 
 	struct list_node_t* head = NULL;
 
-	head = __libc_list_create(0, NULL);
-	__libc_list_append(1, head);
-	__libc_list_append(2, head);
-	__libc_list_append(3, head);
+	head = __libc_list_create(0, 0, NULL);
+	__libc_list_append(1, 0, head);
+	__libc_list_append(2, 0, head);
+	__libc_list_append(3, 0, head);
 
 	__libc_list_traverse(head, enumerate);
 	printf("\n\n");

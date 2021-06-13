@@ -2,12 +2,13 @@
 #include <stdlib.h>
 #include <assert.h>
 
-struct list_node_t* __libc_list_create(uint64_t data, struct list_node_t* next) {
+struct list_node_t* __libc_list_create(uint64_t data, uint64_t data2, struct list_node_t* next) {
 	struct list_node_t* new_node = __libc_malloc(sizeof(struct list_node_t));
 
 	assert(new_node != NULL);
 
 	new_node->data = data;
+	new_node->data2 = data2;
 	new_node->next = next;
 
 	return new_node;
@@ -22,7 +23,7 @@ void __libc_list_traverse(struct list_node_t* head, __libc_list_callback f) {
 	}
 }
 
-struct list_node_t* __libc_list_append(uint64_t data, struct list_node_t* head) {
+struct list_node_t* __libc_list_append(uint64_t data, uint64_t data2, struct list_node_t* head) {
 	struct list_node_t* cursor = head;
 	struct list_node_t* tmp = NULL;
 
@@ -31,7 +32,7 @@ struct list_node_t* __libc_list_append(uint64_t data, struct list_node_t* head) 
 		cursor = cursor->next;
 	}
 
-	struct list_node_t* new_node = __libc_list_create(data, NULL);
+	struct list_node_t* new_node = __libc_list_create(data, data2, NULL);
 	tmp->next = new_node;
 
 	return head;

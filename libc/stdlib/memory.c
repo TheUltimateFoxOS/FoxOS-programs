@@ -6,11 +6,11 @@
 struct list_node_t* alloc_list_head = NULL;
 
 void __libc_init_alloc() {
-	alloc_list_head = __libc_list_create(START_MARKER, NULL);
+	alloc_list_head = __libc_list_create(START_MARKER, START_MARKER, NULL);
 }
 
 void __libc_dealloc_enumerator(struct list_node_t* node) {
-	printf("Dealloc: 0x%x\n", node->data);
+	printf("Dealloc: 0x%x, size: %d\n", node->data, node->data2);
 
 	if(node->data != START_MARKER) {
 		__libc_free((void*) node->data);
@@ -32,7 +32,7 @@ void __libc_free(void* address) {
 
 void* malloc(size_t size) {
 	void* ptr = __libc_malloc(size);
-	__libc_list_append((uint64_t) ptr, alloc_list_head);
+	__libc_list_append((uint64_t) ptr, size, alloc_list_head);
 
 	return ptr;
 }
