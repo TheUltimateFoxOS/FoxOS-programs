@@ -27,6 +27,11 @@ void main() {
 	void* m6 = malloc(100);
 	printf("Malloc test: 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x\n", m1, m2, m3, m4, m5, m6);
 
+	void* old_m5 = m5;
+	m5 = realloc(m5, 200);
+
+	printf("Realloc test: old: 0x%xm, new: 0x%x\n", old_m5, m5);
+
 	free(m1);
 	free(m6);
 	free(m4);
