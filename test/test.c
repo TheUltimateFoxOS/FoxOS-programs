@@ -15,8 +15,13 @@ void enumerate(struct list_node_t* node) {
 	printf("Node: 0x%x, %d\n", node, node->data);
 }
 
-void main() {
+void main(int argc, char* argv[], char* envp[]) {
 	printf("Hello world %d\n", 100);
+
+	for (int i = 0; i < argc; i++) {
+		printf("%s\n", argv[i]);
+	}
+	
 
 	printf("task_entry.exit: 0x%x\n", resolve_symbol("task_entry.exit"));
 	void* m1 = malloc(100);

@@ -6,6 +6,7 @@
 #define FAST_MEM
 
 EXPOSEC char* strcpy(char* dest, const char* src);
+EXPOSEC int strlen(char* src);
 EXPOSEC size_t strnlen(const char *s, size_t maxlen);
 EXPOSEC char* strcat(char* dest, const char* src);
 EXPOSEC int strcmp(char* str1, char* str2);
