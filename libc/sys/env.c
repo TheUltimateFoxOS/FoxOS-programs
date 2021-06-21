@@ -7,3 +7,7 @@ char** env(int mode) {
 
 	return env_ptr;
 }
+
+void env_set(int mode, void* data) {
+	__asm__ __volatile__ ("int $0x30" : : "a" (SYS_ENV), "b" (mode), "c" (data));
+}

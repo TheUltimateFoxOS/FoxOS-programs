@@ -1,11 +1,14 @@
 #include <stdlib.h>
 #include <sys/env.h>
 #include <stdio.h>
+#include <errno.h>
 
 extern int main(int argc, char* argv[], char* envp[]);
 
 void _start() {
 	__libc_init_alloc();
+
+	env_set(ENV_ERRNO, &__errno);
 
 	char** argv = env(ENV_ARGV);
 	char** envp = env(ENV_ENVP);
