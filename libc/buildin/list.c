@@ -70,34 +70,19 @@ struct list_node_t* __libc_list_remove_front(struct list_node_t* head) {
 }
 
 struct list_node_t* __libc_list_remove_back(struct list_node_t* head) {
-	if(head == NULL) {
+	if(head->next == NULL || head == NULL) {
 		return NULL;
 	}
 
-	struct list_node_t* cursor = head;
-	struct list_node_t* tmp = NULL;
-	struct list_node_t* back = head;
+	struct list_node_t* current = head;
 
-	while(cursor != NULL) {
-		tmp = cursor;
-		cursor = cursor->next;
-		if(cursor->next == NULL) {
-			goto skip;
-		}
-		back = back->next;
-	skip:
-		continue;
+	while (current->next->next != NULL) {
+		current = current->next;
 	}
+	
+	__libc_free(current->next);
 
-	if(back != NULL) {
-		back->next = NULL;
-	}
-
-	if(tmp == head) {
-		head = NULL;
-	}
-
-	__libc_free(tmp);
+	current->next = NULL;
 
 	return head;
 }
