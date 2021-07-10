@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include <sys/resolve_symbol.h>
+#include <sys/read.h>
 
 #include <buildin/list.h>
 
@@ -24,6 +25,14 @@ void main(int argc, char* argv[], char* envp[]) {
 	
 
 	printf("task_entry.exit: 0x%x\n", resolve_symbol("task_entry.exit"));
+	char buffer[16];
+
+	read(STDIN, buffer, 16);
+
+	buffer[16] = 0;
+
+	printf(buffer);
+
 	void* m1 = malloc(100);
 	void* m2 = malloc(100);
 	void* m3 = malloc(100);
