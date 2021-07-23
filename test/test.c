@@ -7,8 +7,10 @@
 
 #include <sys/resolve_symbol.h>
 #include <sys/read.h>
+#include <sys/env.h>
 
 #include <buildin/list.h>
+#include <buildin/sighandler.h>
 
 jmp_buf buf;
 
@@ -16,72 +18,30 @@ void enumerate(struct list_node_t* node) {
 	printf("Node: 0x%x, %d\n", node, node->data);
 }
 
-void main(int argc, char* argv[], char* envp[]) {
-	printf("Hello world %d\n", 100);
+void handle_debug_intr(int signum) {
+	printf("Got interrupt %d aka %s!\n", signum, __libc_get_exception_name(signum));
+}
 
-	for (int i = 0; i < argc; i++) {
-		printf("%s\n", argv[i]);
-	}
+int main(int argc, char* argv[], char* envp[]) {
+	printf("Hello world!\n");
+
+	//for (int i = 0; i < argc; i++) {
+	//	printf("%s\n", argv[i]);
+	//}
+
+	env_set2(ENV_SIGHANDLER, 1, handle_debug_intr);
+	__asm__ __volatile__("int $1");
+
+	//printf("task_entry.exit: 0x%x\n", resolve_symbol("task_entry.exit"));
 	
-
-	printf("task_entry.exit: 0x%x\n", resolve_symbol("task_entry.exit"));
 	char buffer[16];
 
-	read(STDIN, buffer, 16);
+	printf("Type something: ");
 
+	read(STDIN, buffer, 16);
 	buffer[16] = 0;
 
-	printf(buffer);
+	printf("\nYou just typed: %s!\n", buffer);
 
-	void* m1 = malloc(100);
-	void* m2 = malloc(100);
-	void* m3 = malloc(100);
-	void* m4 = malloc(100);
-	void* m5 = malloc(100);
-	void* m6 = malloc(100);
-	printf("Malloc test: 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x\n", m1, m2, m3, m4, m5, m6);
-
-	void* old_m5 = m5;
-	m5 = realloc(m5, 200);
-
-	printf("Realloc test: old: 0x%xm, new: 0x%x\n", old_m5, m5);
-
-	free(m1);
-	free(m6);
-	free(m4);
-
-	struct list_node_t* head = NULL;
-
-	head = __libc_list_create(0, 0, NULL);
-	__libc_list_append(1, 0, head);
-	__libc_list_append(2, 0, head);
-	__libc_list_append(3, 0, head);
-
-	__libc_list_traverse(head, enumerate);
-	printf("\n\n");
-
-	head = __libc_list_remove(head, __libc_list_search(head, 2));
-	__libc_list_traverse(head, enumerate);
-	printf("\n\n");
-
-	head = __libc_list_remove(head, __libc_list_search(head, 0));
-	__libc_list_traverse(head, enumerate);
-	printf("\n\n");
-
-	head = __libc_list_remove(head, __libc_list_search(head, 3));
-	__libc_list_traverse(head, enumerate);
-	printf("\n\n");
-
-	__libc_list_dispose(head);
-
-	int x = 5;
-
-	setjmp(buf);
-
-	printf("Loop %d!\n", x);
-	x--;
-
-	assert(x != 0);
-
-	longjmp(buf, 1);
+	return 0;
 }
