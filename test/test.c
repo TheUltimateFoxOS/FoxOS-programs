@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <stddef.h>
+#include <errno.h>
 
 #include <setjmp.h>
 #include <stdlib.h>
@@ -8,6 +9,7 @@
 #include <sys/resolve_symbol.h>
 #include <sys/read.h>
 #include <sys/env.h>
+#include <sys/sched.h>
 
 #include <buildin/list.h>
 #include <buildin/sighandler.h>
@@ -31,8 +33,11 @@ int main(int argc, char* argv[], char* envp[]) {
 
 	env_set2(ENV_SIGHANDLER, 1, handle_debug_intr);
 	__asm__ __volatile__("int $1");
+	sched();
 
-	//printf("task_entry.exit: 0x%x\n", resolve_symbol("task_entry.exit"));
+
+	printf("task_entry.exit: 0x%x\n", resolve_symbol("task_entry.exit"));
+	sched();
 	
 	char buffer[16];
 
@@ -40,6 +45,12 @@ int main(int argc, char* argv[], char* envp[]) {
 
 	read(STDIN, buffer, 16);
 	buffer[16] = 0;
+	sched();
+
+	if (errno == 0xded) {
+		printf("Could not read from stdin (already reading from other procces)!\n");
+		return -1;
+	}
 
 	printf("\nYou just typed: %s!\n", buffer);
 
