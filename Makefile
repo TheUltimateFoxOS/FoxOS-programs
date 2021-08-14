@@ -5,7 +5,7 @@ build:
 	@echo "Building libc"
 	@make -C libc
 
-	@echo "Building test"
+	@echo "Building programs"
 	@make -C test
 
 setup:
