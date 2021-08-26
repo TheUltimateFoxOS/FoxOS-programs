@@ -10,6 +10,7 @@
 #include <sys/read.h>
 #include <sys/env.h>
 #include <sys/sched.h>
+#include <sys/spawn.h>
 
 #include <buildin/list.h>
 #include <buildin/sighandler.h>
@@ -51,8 +52,5 @@ int main(int argc, char* argv[], char* envp[]) {
 		printf("Could not read from stdin (already reading from other procces)!\n");
 		return -1;
 	}
-
-	printf("\nYou just typed: %s!\n", buffer);
-
 	return 0;
 }

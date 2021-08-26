@@ -4,6 +4,8 @@
 #include <string.h>
 
 #include <sys/read.h>
+#include <sys/spawn.h>
+#include <errno.h>
 
 char** terminal_envp;
 
@@ -38,11 +40,24 @@ void command_received(char* command) {
 	if (strcmp(command, (char*)"test") == 0) {
 		printf("Yay this terminal works!");
 	} else {
+		const char** argv = (const char**) argv_split(command);
+		const char** envp = (const char**) terminal_envp; //Maybe use actual enviromental vars?
+
+		errno = 0;
+		task* t = spawn(argv[0], argv, envp);
+
+		if (errno != 0) {
+			goto error;
+		}
+
+		while (true) {
+			__asm__ __volatile__("pause" :: : "memory");
+		}
+
+	error:
+		free(argv);
 		printf("Error: command not found: %s", command);
 	}
-
-	char** argv = argv_split(command);
-	char** envp = terminal_envp; //Maybe use actual enviromental vars?
 }
 
 int main(int argc, char* argv[], char* envp[]) {
@@ -52,12 +67,18 @@ int main(int argc, char* argv[], char* envp[]) {
 
 	printf("FoxOS > ");
 
-	char* buffer = (char*) malloc(sizeof(char) * 2048);
+	char* buffer = (char*) calloc(2048, sizeof(char));
 	int buffer_len = 0;
 
 	while (true) {
 		char input[1];
+		errno = 0;
 		read(STDIN, input, 1);
+
+		if (errno == 0xded) {
+			printf("Other procces is already reading from stdin!");
+			abort();
+		}
 
 		if (input[0] == '\n') {
 			command_received(buffer); //This should block while command is running.
