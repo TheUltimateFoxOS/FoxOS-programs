@@ -28,9 +28,10 @@ void handle_debug_intr(int signum) {
 int main(int argc, char* argv[], char* envp[]) {
 	printf("Hello world!\n");
 
-	//for (int i = 0; i < argc; i++) {
-	//	printf("%s\n", argv[i]);
-	//}
+	printf("I have %d args.\n", argc);
+	/*for (int i = 0; i < argc; i++) {
+		printf("%s\n", argv[i]);
+	}*/
 
 	env_set2(ENV_SIGHANDLER, 1, handle_debug_intr);
 	__asm__ __volatile__("int $1");

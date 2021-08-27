@@ -13,10 +13,29 @@ char** argv_split(char* str) {
 	int len = strlen(str);
 
 	int argc = 1;
+	bool quote_open = false;
+	bool double_quote_open = false;
+	bool special_char_next = false;
 
 	for (int i = 0; i < len; i++) {
 		if(str[i] == ' ') {
-			argc++;
+			if (!quote_open && !double_quote_open) {
+				argc++;
+			}
+		} else if (str[i] == '\\') {
+			special_char_next = true;
+		} else if (str[i] == '\"') {
+			if (special_char_next || double_quote_open) {
+				special_char_next = false;
+			} else {
+				quote_open = !quote_open;
+			}
+		} else if (str[i] == '\'') {
+			if (special_char_next || quote_open) {
+				special_char_next = false;
+			} else {
+				double_quote_open = !double_quote_open;
+			}
 		}
 	}
 
@@ -25,11 +44,31 @@ char** argv_split(char* str) {
 	argc = 1;
 	argv[0] = &str[0];
 
+	quote_open = false;
+	double_quote_open = false;
+	special_char_next = false;
+
 	for (int i = 0; i < len; i++) {
 		if(str[i] == ' ') {
-			argv[argc] = &str[i + 1];
-			str[i] = 0;
-			argc++;
+			if (!quote_open && !double_quote_open) {
+				argv[argc] = &str[i + 1];
+				str[i] = 0;
+				argc++;
+			}
+		} else if (str[i] == '\\') {
+			special_char_next = true;
+		} else if (str[i] == '\"') {
+			if (special_char_next || double_quote_open) {
+				special_char_next = false;
+			} else {
+				quote_open = !quote_open;
+			}
+		} else if (str[i] == '\'') {
+			if (special_char_next || quote_open) {
+				special_char_next = false;
+			} else {
+				double_quote_open = !double_quote_open;
+			}
 		}
 	}
 
@@ -60,6 +99,34 @@ void command_received(char* command) {
 	}
 }
 
+bool is_quote_open(char* command) {
+	bool quote_open = false;
+	bool double_quote_open = false;
+	bool special_char_next = false;
+
+	int len = strlen(command);
+
+	for (int i = 0; i < len; i++) {
+		if (command[i] == '\\') {
+			special_char_next = true;
+		} else if (command[i] == '\"') {
+			if (special_char_next || double_quote_open) {
+				special_char_next = false;
+			} else {
+				quote_open = !quote_open;
+			}
+		} else if (command[i] == '\'') {
+			if (special_char_next || quote_open) {
+				special_char_next = false;
+			} else {
+				double_quote_open = !double_quote_open;
+			}
+		}
+	}
+
+	return double_quote_open || quote_open;
+}
+
 int main(int argc, char* argv[], char* envp[]) {
 	printf("\nTerminal initialising...\n");
 
@@ -81,11 +148,17 @@ int main(int argc, char* argv[], char* envp[]) {
 		}
 
 		if (input[0] == '\n') {
-			command_received(buffer); //This should block while command is running.
+			if (buffer_len == 0) {
+				printf("FoxOS > ");
+			} else if (is_quote_open(buffer)) {
+				printf(" quote> ");
+			} else {
+				command_received(buffer); //This should block while command is running.
 
-			memset(buffer, 0, sizeof(char) * 2048);
-			buffer_len = 0;
-			printf("\nFoxOS > ");
+				memset(buffer, 0, sizeof(char) * 2048);
+				buffer_len = 0;
+				printf("\nFoxOS > ");
+			}
 		} else if (input[0] == '\b') {
 			buffer[buffer_len] = 0;
 			buffer_len--;
