@@ -3,10 +3,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <sys/read.h>
 #include <sys/spawn.h>
 #include <sys/env.h>
 #include <errno.h>
+
+#define max_buffer_size 2048
 
 char** terminal_envp;
 
@@ -154,20 +155,20 @@ int main(int argc, char* argv[], char* envp[]) {
 
 	printf("FoxOS > ");
 
-	char* buffer = (char*) calloc(2048, sizeof(char));
+	char* buffer = (char*) calloc(max_buffer_size, sizeof(char));
 	int buffer_len = 0;
 
 	while (true) {
-		char input[1];
-		errno = 0;
-		read(STDIN, input, 1);
+		char input = getchar();
 
-		if (errno == 0xded) {
-			printf("Other procces is already reading from stdin!");
-			abort();
-		}
-
-		if (input[0] == '\n') {
+		if (input == '\b') {
+			buffer[buffer_len] = 0;
+			buffer_len--;
+			if (buffer_len == -1) {
+				printf(" ");
+				buffer_len = 0;
+			}
+		} else if (input == '\n') {
 			if (buffer_len == 0) {
 				printf("FoxOS > ");
 			} else if (is_quote_open(buffer)) {
@@ -175,19 +176,14 @@ int main(int argc, char* argv[], char* envp[]) {
 			} else {
 				command_received(buffer); //This should block while command is running.
 
-				memset(buffer, 0, sizeof(char) * 2048);
+				memset(buffer, 0, sizeof(char) * max_buffer_size);
 				buffer_len = 0;
 				printf("\nFoxOS > ");
 			}
-		} else if (input[0] == '\b') {
-			buffer[buffer_len] = 0;
-			buffer_len--;
-			if (buffer_len == -1) {
-				printf(" ");
-				buffer_len = 0;
-			}
+		} else if (buffer_len == max_buffer_size) {
+			printf("\b");
 		} else {
-			buffer[buffer_len] = input[0];
+			buffer[buffer_len] = input;
 			buffer_len++;
 		}
 	}
