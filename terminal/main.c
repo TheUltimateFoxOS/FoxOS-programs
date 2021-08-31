@@ -5,6 +5,7 @@
 
 #include <sys/read.h>
 #include <sys/spawn.h>
+#include <sys/env.h>
 #include <errno.h>
 
 char** terminal_envp;
@@ -78,6 +79,25 @@ char** argv_split(char* str) {
 void command_received(char* command) {
 	if (strcmp(command, (char*)"test") == 0) {
 		printf("Yay this terminal works!");
+	} else if (strncmp(command, (char*)"loadkeymap", 10) == 0) {
+		if (command[11] == 0) {
+			printf("No keymap specified!");
+			return;
+		} else {
+			char* keymap_name = &command[11];
+			printf("Loading keymap %s!\n", keymap_name);
+
+			if (strcmp(keymap_name, (char*)"us") == 0) {
+				env_set3(ENV_KEYMAP, keymap_us_e);
+			} else if (strcmp(keymap_name, (char*)"de") == 0) {
+				env_set3(ENV_KEYMAP, keymap_de_e);
+			} else if (strcmp(keymap_name, (char*)"fr") == 0) {
+				env_set3(ENV_KEYMAP, keymap_fr_e);
+			} else {
+				printf("Keymap %s not found!\n", keymap_name);
+			}
+
+		}
 	} else {
 		const char** argv = (const char**) argv_split(command);
 		const char** envp = (const char**) terminal_envp; //Maybe use actual enviromental vars?
