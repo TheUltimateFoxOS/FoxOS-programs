@@ -73,6 +73,8 @@ char** argv_split(char* str) {
 		}
 	}
 
+	argv[argc] = NULL;
+
 	return argv;
 }
 
@@ -98,6 +100,9 @@ void command_received(char* command) {
 			}
 
 		}
+	} else if (strcmp(command, (char*)"keydbg") == 0) {
+		env_set3(ENV_KEYBOARD_DEBUG, 1);
+		printf("Keyboard debugging enabled!");
 	} else {
 		const char** argv = (const char**) argv_split(command);
 		const char** envp = (const char**) terminal_envp; //Maybe use actual enviromental vars?
@@ -149,6 +154,9 @@ bool is_quote_open(char* command) {
 
 int main(int argc, char* argv[], char* envp[]) {
 	printf("\nTerminal initialising...\n");
+
+	//env_set3(ENV_KEYBOARD_DEBUG, 1);
+	//env_set3(ENV_KEYMAP, keymap_de_e);
 
 	terminal_envp = envp;
 
