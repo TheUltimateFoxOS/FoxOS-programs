@@ -104,6 +104,8 @@ void command_received(char* command) {
 	} else if (strcmp(command, (char*)"keydbg") == 0) {
 		env_set3(ENV_KEYBOARD_DEBUG, 1);
 		printf("Keyboard debugging enabled!");
+	} else if (strcmp(command, (char*) "reboot") == 0) {
+		env2(ENV_REBOOT);
 	} else {
 		const char** argv = (const char**) argv_split(command);
 		const char** envp = (const char**) terminal_envp; //Maybe use actual enviromental vars?
