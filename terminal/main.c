@@ -7,6 +7,8 @@
 #include <sys/env.h>
 #include <errno.h>
 
+#include <keymap_helper.h>
+
 #define max_buffer_size 2048
 
 char** terminal_envp;
@@ -90,12 +92,12 @@ void command_received(char* command) {
 			char* keymap_name = &command[11];
 			printf("Loading keymap %s!\n", keymap_name);
 
-			if (strcmp(keymap_name, (char*)"us") == 0) {
-				env_set3(ENV_KEYMAP, keymap_us_e);
-			} else if (strcmp(keymap_name, (char*)"de") == 0) {
-				env_set3(ENV_KEYMAP, keymap_de_e);
+			if (strcmp(keymap_name, (char*)"de") == 0) {
+				set_keymap(0);
+			} else if (strcmp(keymap_name, (char*)"us") == 0) {
+				set_keymap(1);
 			} else if (strcmp(keymap_name, (char*)"fr") == 0) {
-				env_set3(ENV_KEYMAP, keymap_fr_e);
+				set_keymap(2);
 			} else {
 				printf("Keymap %s not found!\n", keymap_name);
 			}
