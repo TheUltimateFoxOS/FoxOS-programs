@@ -18,7 +18,7 @@ char** terminal_envp;
 
 char* search_executable(char* command) {
 	char* path = getenv("PATH");
-	
+
 	if (path == NULL) {
 		abort();
 	}
@@ -98,9 +98,8 @@ void command_received(char* command) {
 		set_keyboard_debug(false);
 		printf("Keyboard debugging disabled!");
 	} else {
-		char* executable = search_executable(command);
-
 		const char** argv = (const char**) argv_split(command);
+		char* executable = search_executable((char*) argv[0]);
 		const char** envp = (const char**) terminal_envp; //Maybe use actual enviromental vars?
 
 		errno = 0;
