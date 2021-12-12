@@ -8,6 +8,7 @@ build:
 	@echo "Building programs"
 	@make -C test
 	@make -C terminal
+	@make -C init
 
 setup:
 	@mkdir $(BUILDDIR)
