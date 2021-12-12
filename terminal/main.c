@@ -7,7 +7,7 @@
 #include <sys/env.h>
 #include <errno.h>
 
-#include <keymap_helper.h>
+#include <keyboard_helper.h>
 
 #define max_buffer_size 2048
 
@@ -103,11 +103,12 @@ void command_received(char* command) {
 			}
 
 		}
-	} else if (strcmp(command, (char*)"keydbg") == 0) {
-		env_set3(ENV_KEYBOARD_DEBUG, 1);
+	} else if (strcmp(command, (char*)"keydbg on") == 0) {
+		set_keyboard_debug(true);
 		printf("Keyboard debugging enabled!");
-	} else if (strcmp(command, (char*) "reboot") == 0) {
-		env2(ENV_REBOOT);
+	} else if (strcmp(command, (char*)"keydbg off") == 0) {
+		set_keyboard_debug(false);
+		printf("Keyboard debugging disabled!");
 	} else {
 		const char** argv = (const char**) argv_split(command);
 		const char** envp = (const char**) terminal_envp; //Maybe use actual enviromental vars?
@@ -115,17 +116,25 @@ void command_received(char* command) {
 		errno = 0;
 		task* t = spawn(argv[0], argv, envp);
 
-		if (errno != 0) {
+		if (t == NULL) {
 			goto error;
 		}
 
-		while (true) {
+		bool task_exit = false;
+		t->on_exit = &task_exit;
+
+		while (!task_exit) {
 			__asm__ __volatile__("pause" :: : "memory");
 		}
+
+		goto _exit;
 
 	error:
 		free(argv);
 		printf("Error: command not found: %s", command);
+
+	_exit:
+		return;
 	}
 }
 
