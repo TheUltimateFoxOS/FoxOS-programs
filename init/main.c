@@ -41,12 +41,12 @@ int main(int argc, char* argv[], char* envp[]) {
 	strcpy(path_for_envp, "PATH=");
 	strcat(path_for_envp, path_buf);
 
-	char* argv_for_terminal[] = {
+	const char* argv_for_terminal[] = {
 		"terminal.elf",
 		NULL
 	};
 
-	char* envp_for_terminal[] = {
+	const char* envp_for_terminal[] = {
 		path_for_envp,
 		NULL
 	};

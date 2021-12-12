@@ -9,6 +9,8 @@ build:
 	@make -C test
 	@make -C terminal
 	@make -C init
+	@make -C cat
+	@make -C echo
 
 setup:
 	@mkdir $(BUILDDIR)
