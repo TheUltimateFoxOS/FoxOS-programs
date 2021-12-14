@@ -12,6 +12,9 @@ build:
 	@make -C cat
 	@make -C echo
 	@make -C env
+	@make -C ls
+	@make -C rm
+	@make -C mkdir
 
 setup:
 	@mkdir $(BUILDDIR)
