@@ -46,16 +46,28 @@ int main(int argc, char* argv[], char* envp[]) {
 		NULL
 	};
 
-	const char* envp_for_terminal[] = {
-		path_for_envp,
-		NULL
-	};
-
 	char terminal_path[256];
 	memset(terminal_path, 0, 256);
 
 	strcpy(terminal_path, path_buf);
 	strcat(terminal_path, "/terminal.elf");
+
+	char root_fs[256];
+	memset(root_fs, 0, 256);
+
+	strcpy(argv_0, argv[0]);
+
+	char* root_fs_path = strtok(argv_0, ":");
+
+	strcpy(root_fs, "ROOT_FS=");
+	strcat(root_fs, root_fs_path);
+	strcat(root_fs, ":");
+
+	const char* envp_for_terminal[] = {
+		path_for_envp,
+		root_fs,
+		NULL
+	};
 
 	task* terminal_task = spawn(terminal_path, argv_for_terminal, envp_for_terminal);
 
