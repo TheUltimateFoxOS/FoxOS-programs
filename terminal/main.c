@@ -97,13 +97,66 @@ void command_received(char* command) {
 	} else if (strcmp(command, (char*)"keydbg off") == 0) {
 		set_keyboard_debug(false);
 		printf("Keyboard debugging disabled!");
+	} else if (strncmp(command, (char*)"cd", 2) == 0) {
+		char* path = &command[2];
+		if (path[0] == 0) {
+			printf("No path specified!");
+			return;
+		}
+
+		path++;
+		printf("Changing directory to %s!\n", path);
+
+		char path_buf[256];
+		memset(path_buf, 0, 256);
+
+		strcpy(path_buf, (char*) env(ENV_GET_CWD));
+
+		if (strcmp(path, (char*)"..") == 0) {
+			char* last_slash = strrchr(path_buf, '/');
+			if (last_slash == NULL) {
+				printf("Can't go up from root!");
+				return;
+			}
+
+			*last_slash = 0;
+		} else {
+			char tmp[256];
+			memset(tmp, 0, sizeof(tmp));
+
+			strcpy(tmp, path);
+
+			char* colon = strchr(tmp, ':');
+			if (colon == NULL) {
+				if (path_buf[strlen(path_buf) - 1] == '/') {
+					path_buf[strlen(path_buf) - 1] = '\0';
+				}
+
+				if (tmp[0] == '/') {
+					printf("Unsupported path: '%s'\n", tmp);
+					return;
+				}
+
+				if (tmp[strlen(tmp) - 1] == '/') {
+					tmp[strlen(tmp) - 1] = '\0';
+				}
+
+				strcat(path_buf, "/");
+				strcat(path_buf, tmp);
+			} else {
+				memset(path_buf, 0, sizeof(path_buf));
+				strcpy(path_buf, tmp);
+			}
+		}
+
+		env_set(ENV_SET_CWD, path_buf);
 	} else {
 		const char** argv = (const char**) argv_split(command);
 		char* executable = search_executable((char*) argv[0]);
 		const char** envp = (const char**) terminal_envp; //Maybe use actual enviromental vars?
 
 		errno = 0;
-		task* t = spawn(executable, argv, envp);
+		task* t = spawn(executable, argv, envp, true);
 
 		if (t == NULL) {
 			goto error;
@@ -164,7 +217,8 @@ int main(int argc, char* argv[], char* envp[]) {
 
 	terminal_envp = envp;
 
-	printf("FoxOS > ");
+	printf("\nFoxOS %s > ", env(ENV_GET_CWD));
+
 
 	char* buffer = (char*) calloc(max_buffer_size, sizeof(char));
 	int buffer_len = 0;
@@ -181,7 +235,7 @@ int main(int argc, char* argv[], char* envp[]) {
 			}
 		} else if (input == '\n') {
 			if (buffer_len == 0) {
-				printf("FoxOS > ");
+				printf("\nFoxOS %s > ", env(ENV_GET_CWD));
 			} else if (is_quote_open(buffer)) {
 				printf(" quote> ");
 			} else {
@@ -189,7 +243,7 @@ int main(int argc, char* argv[], char* envp[]) {
 
 				memset(buffer, 0, sizeof(char) * max_buffer_size);
 				buffer_len = 0;
-				printf("\nFoxOS > ");
+				printf("\nFoxOS %s > ", env(ENV_GET_CWD));
 			}
 		} else if (buffer_len == max_buffer_size) {
 			printf("\b");

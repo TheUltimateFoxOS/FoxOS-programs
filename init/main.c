@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <sys/spawn.h>
+#include <sys/env.h>
 
 int main(int argc, char* argv[], char* envp[]) {
 	char argv_0[256];
@@ -33,7 +34,7 @@ int main(int argc, char* argv[], char* envp[]) {
 	// remove last slash
 	path_buf[strlen(path_buf) - 1] = '\0';
 
-	printf("Got path: '%s'\n", path_buf);
+	//printf("Got path: '%s'\n", path_buf);
 
 	char path_for_envp[256];
 	memset(path_for_envp, 0, 256);
@@ -63,13 +64,22 @@ int main(int argc, char* argv[], char* envp[]) {
 	strcat(root_fs, root_fs_path);
 	strcat(root_fs, ":");
 
+	char new_cwd[256];
+	memset(new_cwd, 0, 256);
+
+	strcpy(new_cwd, root_fs_path);
+	strcat(new_cwd, ":/");
+	env_set(ENV_SET_CWD, new_cwd);
+
 	const char* envp_for_terminal[] = {
 		path_for_envp,
 		root_fs,
 		NULL
 	};
 
-	task* terminal_task = spawn(terminal_path, argv_for_terminal, envp_for_terminal);
+	//printf("CWD: %s\n", env(ENV_GET_CWD));
+
+	task* terminal_task = spawn(terminal_path, argv_for_terminal, envp_for_terminal, true);
 
 	if (terminal_task == NULL) {
 		printf("Could not spawn terminal with path: %s\n", terminal_path);
