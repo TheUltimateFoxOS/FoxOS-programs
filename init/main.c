@@ -78,17 +78,25 @@ int main(int argc, char* argv[], char* envp[]) {
 	};
 
 	//printf("CWD: %s\n", env(ENV_GET_CWD));
+	task* terminal_task;
 
-	task* terminal_task = spawn(terminal_path, argv_for_terminal, envp_for_terminal, true);
+respawn:
+	terminal_task = spawn(terminal_path, argv_for_terminal, envp_for_terminal, true);
 
 	if (terminal_task == NULL) {
 		printf("Could not spawn terminal with path: %s\n", terminal_path);
 		return -1;
 	}
 
-	while (true) {
+	bool task_exit = false;
+	terminal_task->on_exit = &task_exit;
+
+	while (!task_exit) {
 		__asm__ __volatile__("hlt");
 	}
+
+	printf("Terminal exited. Respawning...\n");
+	goto respawn;
 
 	return 0;
 }

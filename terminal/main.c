@@ -105,49 +105,11 @@ void command_received(char* command) {
 		}
 
 		path++;
-		printf("Changing directory to %s!\n", path);
+		// printf("Changing directory to %s!\n", path);
 
 		char path_buf[256];
 		memset(path_buf, 0, 256);
-
-		strcpy(path_buf, (char*) env(ENV_GET_CWD));
-
-		if (strcmp(path, (char*)"..") == 0) {
-			char* last_slash = strrchr(path_buf, '/');
-			if (last_slash == NULL) {
-				printf("Can't go up from root!");
-				return;
-			}
-
-			*last_slash = 0;
-		} else {
-			char tmp[256];
-			memset(tmp, 0, sizeof(tmp));
-
-			strcpy(tmp, path);
-
-			char* colon = strchr(tmp, ':');
-			if (colon == NULL) {
-				if (path_buf[strlen(path_buf) - 1] == '/') {
-					path_buf[strlen(path_buf) - 1] = '\0';
-				}
-
-				if (tmp[0] == '/') {
-					printf("Unsupported path: '%s'\n", tmp);
-					return;
-				}
-
-				if (tmp[strlen(tmp) - 1] == '/') {
-					tmp[strlen(tmp) - 1] = '\0';
-				}
-
-				strcat(path_buf, "/");
-				strcat(path_buf, tmp);
-			} else {
-				memset(path_buf, 0, sizeof(path_buf));
-				strcpy(path_buf, tmp);
-			}
-		}
+		resolve(path, path_buf);
 
 		env_set(ENV_SET_CWD, path_buf);
 	} else {

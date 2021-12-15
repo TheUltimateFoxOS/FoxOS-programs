@@ -6,6 +6,7 @@
 #include <sys/env.h>
 
 #include <string.h>
+#include <stdlib.h>
 
 #include <stdio.h>
 
@@ -15,39 +16,14 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	char* cwd = (char*) env(ENV_GET_CWD);
+	char file_to_open[256];
+	memset(file_to_open, 0, 256);
+	resolve(argv[1], file_to_open);
 
-	char tmp[256];
-	memset(tmp, 0, sizeof(tmp));
-
-	strcpy(tmp, argv[1]);
-
-	char* colon = strchr(tmp, ':');
-	if (colon == NULL) {
-		if (cwd[strlen(cwd) - 1] == '/') {
-			cwd[strlen(cwd) - 1] = '\0';
-		}
-
-		if (tmp[0] == '/') {
-			printf("Unsupported path: '%s'\n", tmp);
-			return 1;
-		}
-
-		if (tmp[strlen(tmp) - 1] == '/') {
-			tmp[strlen(tmp) - 1] = '\0';
-		}
-
-		strcat(cwd, "/");
-		strcat(cwd, tmp);
-	} else {
-		memset(cwd, 0, sizeof(cwd));
-		strcpy(cwd, tmp);
-	}
-
-	int fd = open(cwd);
+	int fd = open(file_to_open);
 
 	if (fd == -1) {
-		printf("Error: Could not open file %s\n", cwd);
+		printf("Error: Could not open file %s\n", file_to_open);
 		return 1;
 	}
 
