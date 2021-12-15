@@ -15,6 +15,7 @@ build:
 	@make -C ls
 	@make -C rm
 	@make -C mkdir
+	@make -C date
 
 setup:
 	@mkdir $(BUILDDIR)
