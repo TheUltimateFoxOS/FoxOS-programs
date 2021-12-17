@@ -18,7 +18,7 @@ int main() {
 		"December"
 	};
 
-	long long int unix_time = time();
+	long long int unix_time = _time();
 	
 	int year, month, day, hour, minute, second;
 	from_unix_time(unix_time, &year, &month, &day, &hour, &minute, &second);
