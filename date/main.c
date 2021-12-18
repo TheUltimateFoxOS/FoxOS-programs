@@ -5,7 +5,7 @@
 int main() {
 	long long int unix_time = _time();
 
-	char date[25];
+	char date[27];
 	unix_time_to_string(unix_time, date);
 
 	printf("%s\n", date);
