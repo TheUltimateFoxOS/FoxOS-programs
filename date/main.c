@@ -3,27 +3,12 @@
 #include <stdio.h>
 
 int main() {
-	char* month_names[] = {
-		"January",
-		"February",
-		"March",
-		"April",
-		"May",
-		"June",
-		"July",
-		"August",
-		"September",
-		"October",
-		"November",
-		"December"
-	};
-
 	long long int unix_time = _time();
-	
-	int year, month, day, hour, minute, second;
-	from_unix_time(unix_time, &year, &month, &day, &hour, &minute, &second);
 
-	printf("%d %s %d %d:%d:%d\n", day, month_names[month - 1], year, hour, minute, second);
+	char date[25];
+	unix_time_to_string(unix_time, date);
+
+	printf("%s\n", date);
 
 	return 0;
 }
