@@ -33,7 +33,6 @@ char* search_executable(char* command) {
 		strcat(executable, "/");
 		strcat(executable, command);
 
-
 		int fd;
 		if ((fd = open(executable)) != -1) {
 			close(fd);
@@ -110,10 +109,20 @@ void cd(char* command) {
 
 	char path_buf[256];
 	memset(path_buf, 0, 256);
-	resolve(path, path_buf);
+	bool cancd = resolve(path, path_buf);
 
-	env_set(ENV_SET_CWD, path_buf);
+	if (cancd) {
+		env_set(ENV_SET_CWD, path_buf);
+	} else {
+		printf("No such file or directory: %s", path_buf);
+	}
 }
+
+void pwd() {
+	char* cwd = (char*) env(ENV_GET_CWD);
+	printf("%s", cwd);
+}
+
 
 void spawn_process(char* command, char** terminal_envp) {
 	const char** argv = (const char**) argv_split(command);

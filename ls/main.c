@@ -16,31 +16,10 @@ int main(int argc, char *argv[]) {
 #endif
 
 	if (argc == 2) {
-		char tmp[256];
-		memset(tmp, 0, sizeof(tmp));
-
-		strcpy(tmp, argv[1]);
-
-		char* colon = strchr(tmp, ':');
-		if (colon == NULL) {
-			if (ls_path[strlen(ls_path) - 1] == '/') {
-				ls_path[strlen(ls_path) - 1] = '\0';
-			}
-
-			if (tmp[0] == '/') {
-				printf("Unsupported path: '%s'\n", tmp);
-				return 1;
-			}
-
-			if (tmp[strlen(tmp) - 1] == '/') {
-				tmp[strlen(tmp) - 1] = '\0';
-			}
-
-			strcat(ls_path, "/");
-			strcat(ls_path, tmp);
-		} else {
-			memset(ls_path, 0, sizeof(ls_path));
-			strcpy(ls_path, tmp);
+		bool canresolve = resolve(argv[1], ls_path);
+		if (!canresolve) {
+			printf("No such file or directory: %s\n", argv[1]);
+			return 1;
 		}
 	}
 

@@ -13,7 +13,10 @@ int main(int argc, char *argv[]) {
 
 	char dir_to_create[256];
 	memset(dir_to_create, 0, 256);
-	resolve(argv[1], dir_to_create);
+	bool canresolve = resolve_check(argv[1], dir_to_create, false);
+	if (!canresolve) {
+		printf("No such file or directory to create folder in: %s\n", argv[1]);
+	}
 
 	mkdir(dir_to_create);
 

@@ -17,7 +17,7 @@
 
 char** terminal_envp;
 
-void command_received(char* command) {
+bool command_received(char* command) {
 	if (strncmp(command, (char*)"loadkeymap", 10) == 0) {
 		load_keymap(command);
 	} else if (strcmp(command, (char*)"keydbg on") == 0) {
@@ -26,9 +26,14 @@ void command_received(char* command) {
 		keydbg(false);
 	} else if (strncmp(command, (char*)"cd", 2) == 0) {
 		cd(command);
+	} else if (strncmp(command, (char*)"pwd", 3) == 0) {
+		pwd();
+	} else if (strncmp(command, (char*)"exit", 4) == 0) {
+		return true;
 	} else {
 		spawn_process(command, terminal_envp);
 	}
+	return false;
 }
 
 bool is_quote_open(char* command) {
@@ -89,7 +94,10 @@ int main(int argc, char* argv[], char* envp[]) {
 			} else if (is_quote_open(buffer)) {
 				printf(" quote> ");
 			} else {
-				command_received(buffer); //This should block while command is running.
+				bool should_break = command_received(buffer); //This should block while command is running.
+				if (should_break) {
+					break;
+				}
 
 				memset(buffer, 0, sizeof(char) * max_buffer_size);
 				buffer_len = 0;
