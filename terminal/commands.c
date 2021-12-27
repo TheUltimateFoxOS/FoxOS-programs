@@ -98,24 +98,31 @@ void keydbg(bool onoff) {
 }
 
 void cd(char* command) {
-	char* path = &command[2];
-	if (path[0] == 0) {
-		printf("No path specified!");
-		return;
+	char** argv = argv_split(command);
+	int argc = 0;
+	while (argv[argc] != NULL) {
+		argc++;
 	}
 
-	path++;
-	// printf("Changing directory to %s!\n", path);
-
-	char path_buf[256];
-	memset(path_buf, 0, 256);
-	bool cancd = resolve(path, path_buf);
-
-	if (cancd) {
-		env_set(ENV_SET_CWD, path_buf);
+	if (argc == 1) {
+		if (getenv("ROOT_FS") != NULL) {
+			env_set(ENV_SET_CWD, getenv("ROOT_FS"));
+		} else {
+			printf("No root filesystem specified!");
+		}
 	} else {
-		printf("No such file or directory: %s", path_buf);
+		char path_buf[256];
+		memset(path_buf, 0, 256);
+		bool cancd = resolve(argv[1], path_buf);
+
+		if (cancd) {
+			env_set(ENV_SET_CWD, path_buf);
+		} else {
+			printf("No such file or directory: %s", path_buf);
+		}
 	}
+
+	free(argv);
 }
 
 void pwd() {
