@@ -18,6 +18,22 @@ int main() {
 	printf("how do you want to name the partition? > ");
 	len = gets(partition_name);
 
+	char keyboard_layout[256] = { 0 };
+	printf("which keyboard layout do you want to use? > ");
+	len = gets(keyboard_layout);
+
+	int keyboard_layout_id = 0;
+	if (strcmp(keyboard_layout, (char*)"de") == 0) {
+		keyboard_layout_id = 0;
+	} else if (strcmp(keyboard_layout, (char*)"us") == 0) {
+		keyboard_layout_id = 1;
+	} else if (strcmp(keyboard_layout, (char*)"fr") == 0) {
+		keyboard_layout_id = 2;
+	} else {
+		printf("Keymap %s not found!\n", keyboard_layout);
+		abort();
+	}
+
 	create_directory(partition_path, "/bin");
 	create_directory(partition_path, "/efi");
 	create_directory(partition_path, "/efi/foxos");
@@ -75,6 +91,15 @@ int main() {
 	write_text_file(partition_path, "limine.cfg", limine_config);
 
 	free(limine_config);
+
+	char* foxos_config = (char*) malloc(8192);
+	memset(foxos_config, 0, 8192);
+
+	sprintf(foxos_config, "{\n    \"keyboard_layout\": %d\n}\n", keyboard_layout_id);
+
+	write_text_file(partition_path, "cfg.fox", foxos_config);
+
+	free(foxos_config);
 
 	printf("\n\n");
 	printf("FoxOS has been installed on the partition %s (%s).\n", partition_name, partition_path);
