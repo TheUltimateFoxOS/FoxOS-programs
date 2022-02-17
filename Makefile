@@ -18,6 +18,7 @@ build:
 	@make -C date
 	@make -C mujs
 	@make -C install
+	@make -C calc
 
 setup:
 	@mkdir $(BUILDDIR)
