@@ -19,6 +19,7 @@ build:
 	@make -C mujs
 	@make -C install
 	@make -C calc
+	@make -C ping
 
 setup:
 	@mkdir $(BUILDDIR)

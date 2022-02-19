@@ -1,22 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <sys/spawn.h>
+#include <sys/net.h>
 
-char* global = "global";
 
 int main(int argc, char* argv[], char* envp[]) {
-	printf("Hello world!\n");
-	printf("global: %s\n", global);
 
-	printf("argc: %d\n", argc);
-	for (int i = 0; i < argc; i++) {
-		printf("argv[%d]: %s\n", i, argv[i]);
-	}
+	union ip_u ip = dns_resolve("discord.com", 0);
 
-	// spawn("fat32_0:/bin/terminal.elf", argv, envp);
-
-	// while(1) {}
-
+	printf("ip: %d.%d.%d.%d\n", ip.ip_p[0], ip.ip_p[1], ip.ip_p[2], ip.ip_p[3]);
+	printf("%s\n", icmp_echo_request(ip.ip, 0) ? "got response" : "no response");
     return 0;
 }
