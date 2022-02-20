@@ -9,6 +9,7 @@
 #include <stdlib.h>
 
 #include <stdio.h>
+#include <stdbool.h>
 
 int main(int argc, char *argv[]) {
 	if (argc == 1) {
@@ -18,7 +19,12 @@ int main(int argc, char *argv[]) {
 
 	char file_to_open[256];
 	memset(file_to_open, 0, 256);
-	resolve(argv[1], file_to_open);
+	bool canresolve = resolve(argv[1], file_to_open);
+
+	if (!canresolve) {
+		printf("No such file or directory: %s", argv[1]);
+		return 1;
+	}
 
 	int fd = open(file_to_open);
 

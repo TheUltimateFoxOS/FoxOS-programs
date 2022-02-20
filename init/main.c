@@ -83,43 +83,47 @@ int main(int argc, char* argv[], char* envp[]) {
 	env_set(ENV_SET_CWD, new_cwd);
 
 	char config_file_path[256] = {0};
-	resolve("cfg.fox", config_file_path);
-	FILE* config_file = fopen(config_file_path, "r");
-	if (config_file != NULL) {
-		printf("Loading config file...\n");
-		char* config_data = malloc(config_file->size + 1);
-		memset(config_data, 0, config_file->size + 1);
-		fread(config_data, config_file->size, 1, config_file);
+	bool canresolve = resolve("cfg.fox", config_file_path);
+	if (canresolve) {
+		FILE* config_file = fopen(config_file_path, "r");
+		if (config_file != NULL) {
+			printf("Loading config file...\n");
+			char* config_data = malloc(config_file->size + 1);
+			memset(config_data, 0, config_file->size + 1);
+			fread(config_data, config_file->size, 1, config_file);
 
-		jsmn_parser p;
-		jsmntok_t t[128]; // We expect no more than 128 JSON tokens
+			jsmn_parser p;
+			jsmntok_t t[128]; // We expect no more than 128 JSON tokens
 
-		jsmn_init(&p);
-		int r = jsmn_parse(&p, config_data, strlen(config_data), t, sizeof(t) / sizeof(t[0]));
-		if (r < 0) {
-			printf("Failed to parse JSON: %d\n", r);
-			return 1;
-		}
-
-		for (int i = 0; i < r; i++) {
-			if (jsoneq(config_data, &t[i], "keyboard_layout") == 0) {
-				int keyboard_layout = atoi(config_data + t[i + 1].start);
-				printf("Got keyboard_layout: %d\n", keyboard_layout);
-				set_keymap(keyboard_layout);
-			} else if (jsoneq(config_data, &t[i], "keyboard_debug") == 0) {
-				bool keyboard_debug;
-				if (strncmp(config_data + t[i + 1].start, "true", 4) == 0) {
-					keyboard_debug = true;
-				} else {
-					keyboard_debug = false;
-				}
-				printf("Got keyboard_debug: %s\n", keyboard_debug ? "true" : "false");
-				set_keyboard_debug(keyboard_debug);
+			jsmn_init(&p);
+			int r = jsmn_parse(&p, config_data, strlen(config_data), t, sizeof(t) / sizeof(t[0]));
+			if (r < 0) {
+				printf("Failed to parse JSON: %d\n", r);
+				return 1;
 			}
-		}
 
+			for (int i = 0; i < r; i++) {
+				if (jsoneq(config_data, &t[i], "keyboard_layout") == 0) {
+					int keyboard_layout = atoi(config_data + t[i + 1].start);
+					printf("Got keyboard_layout: %d\n", keyboard_layout);
+					set_keymap(keyboard_layout);
+				} else if (jsoneq(config_data, &t[i], "keyboard_debug") == 0) {
+					bool keyboard_debug;
+					if (strncmp(config_data + t[i + 1].start, "true", 4) == 0) {
+						keyboard_debug = true;
+					} else {
+						keyboard_debug = false;
+					}
+					printf("Got keyboard_debug: %s\n", keyboard_debug ? "true" : "false");
+					set_keyboard_debug(keyboard_debug);
+				}
+			}
+
+		} else {
+			printf("WARNING: Could not open config (cfg.fox) file.\n");
+		}
 	} else {
-		printf("WARNING: Could not open config (cfg.fox) file.\n");
+		printf("WARNING: Could not resolve config (cfg.fox) file.\n");
 	}
 
 	const char* envp_for_terminal[] = {

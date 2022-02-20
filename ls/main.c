@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
 
 	dir_t dir = dir_at(0, ls_path);
 	do {
-		printf("%s\n", dir.name);
+		printf("%s (%s)\n", dir.name, dir.type == ENTRY_FILE ? "file" : "dir");
 		dir = dir_at(dir.idx + 1, ls_path);
 	} while (!dir.is_none);
 
