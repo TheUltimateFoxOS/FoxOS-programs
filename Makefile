@@ -20,6 +20,7 @@ build:
 	@make -C install
 	@make -C calc
 	@make -C ping
+	@make -C shutdown
 
 setup:
 	@mkdir $(BUILDDIR)
