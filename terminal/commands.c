@@ -130,6 +130,23 @@ void cd(char* command) {
 	free(argv);
 }
 
+extern char** terminal_envp;
+
+
+void export(char* command) {
+	char* env_var = command + 7;
+
+	int next_empty_env_var = 0;
+	while (terminal_envp[next_empty_env_var] != NULL) {
+		next_empty_env_var++;
+	}
+
+	terminal_envp[next_empty_env_var] = malloc(strlen(env_var) + 1);
+	memset(terminal_envp[next_empty_env_var], 0, strlen(env_var) + 1);
+	strcpy(terminal_envp[next_empty_env_var], env_var);
+	terminal_envp[next_empty_env_var + 1] = NULL;
+}
+
 void pwd() {
 	char* cwd = (char*) env(ENV_GET_CWD);
 	printf("%s", cwd);

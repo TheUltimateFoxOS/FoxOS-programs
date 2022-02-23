@@ -30,6 +30,8 @@ bool command_received(char* command) {
 		pwd();
 	} else if (strncmp(command, (char*)"exit", 4) == 0) {
 		return true;
+	} else if (strncmp(command, (char*)"export", 6) == 0) {
+		export(command);
 	} else {
 		spawn_process(command, terminal_envp);
 	}
@@ -64,13 +66,30 @@ bool is_quote_open(char* command) {
 	return double_quote_open || quote_open;
 }
 
+void on_shutdown() {
+	for (int i = 0; terminal_envp[i] != NULL; i++) {
+		free(terminal_envp[i]);
+	}
+
+	free(terminal_envp);
+}
+
 int main(int argc, char* argv[], char* envp[]) {
 	printf("\nTerminal initialising...\n");
 
 	//env_set3(ENV_KEYBOARD_DEBUG, 1);
 	//env_set3(ENV_KEYMAP, keymap_de_e);
 
-	terminal_envp = envp;
+	terminal_envp = (char**) malloc(sizeof(char*) * 0xff);
+	for (int i = 0; envp[i] != NULL; i++) {
+		terminal_envp[i] = malloc(strlen(envp[i]) + 1);
+		memset(terminal_envp[i], 0, strlen(envp[i]) + 1);
+		memcpy(terminal_envp[i], envp[i], strlen(envp[i]));
+		terminal_envp[i + 1] = NULL;
+	}
+	env_set(ENV_ENVP_SET, terminal_envp);
+
+	__libc_set_shutdown_hook(on_shutdown);
 
 	printf("\nFoxOS %s > ", env(ENV_GET_CWD));
 
