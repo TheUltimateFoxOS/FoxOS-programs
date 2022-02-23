@@ -87,7 +87,7 @@ int main(int argc, char* argv[], char* envp[]) {
 	if (canresolve) {
 		FILE* config_file = fopen(config_file_path, "r");
 		if (config_file != NULL) {
-			printf("Loading config file...\n");
+			// printf("Loading config file...\n");
 			char* config_data = malloc(config_file->size + 1);
 			memset(config_data, 0, config_file->size + 1);
 			fread(config_data, config_file->size, 1, config_file);
@@ -105,7 +105,7 @@ int main(int argc, char* argv[], char* envp[]) {
 			for (int i = 0; i < r; i++) {
 				if (jsoneq(config_data, &t[i], "keyboard_layout") == 0) {
 					int keyboard_layout = atoi(config_data + t[i + 1].start);
-					printf("Got keyboard_layout: %d\n", keyboard_layout);
+					// printf("Got keyboard_layout: %d\n", keyboard_layout);
 					set_keymap(keyboard_layout);
 				} else if (jsoneq(config_data, &t[i], "keyboard_debug") == 0) {
 					bool keyboard_debug;
@@ -114,7 +114,7 @@ int main(int argc, char* argv[], char* envp[]) {
 					} else {
 						keyboard_debug = false;
 					}
-					printf("Got keyboard_debug: %s\n", keyboard_debug ? "true" : "false");
+					// printf("Got keyboard_debug: %s\n", keyboard_debug ? "true" : "false");
 					set_keyboard_debug(keyboard_debug);
 				}
 			}
@@ -131,6 +131,31 @@ int main(int argc, char* argv[], char* envp[]) {
 		root_fs,
 		NULL
 	};
+
+	char auto_exec_path[256];
+	canresolve = resolve("start.fox", auto_exec_path);
+	if (canresolve) {
+		// printf("Executing auto-exec file...\n");
+		char* argv_for_auto_exec[] = {
+			"terminal.elf",
+			auto_exec_path,
+			NULL
+		};
+
+		task* autoexec_task = spawn(terminal_path, argv_for_auto_exec, envp_for_terminal, true);
+
+		bool autoexec_task_exit = false;
+		autoexec_task->on_exit = &autoexec_task_exit;
+
+		while (!autoexec_task_exit) {
+			__asm__ __volatile__("pause");
+		}
+
+		// printf("Auto-exec task exited.\n");
+
+	} else {
+		printf("WARNING: Could not resolve auto-exec (start.fox) file.\n");
+	}
 
 	//printf("CWD: %s\n", env(ENV_GET_CWD));
 	task* terminal_task;

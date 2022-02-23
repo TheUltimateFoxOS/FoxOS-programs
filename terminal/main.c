@@ -13,6 +13,8 @@
 #include <argv_tools.h>
 #include <commands.h>
 
+#include <script.h>
+
 #define max_buffer_size 2048
 
 char** terminal_envp;
@@ -88,7 +90,7 @@ void on_shutdown() {
 }
 
 int main(int argc, char* argv[], char* envp[]) {
-	printf("\nTerminal initialising...\n");
+	// printf("\nTerminal initialising...\n");
 
 	//env_set3(ENV_KEYBOARD_DEBUG, 1);
 	//env_set3(ENV_KEYMAP, keymap_de_e);
@@ -104,8 +106,15 @@ int main(int argc, char* argv[], char* envp[]) {
 
 	__libc_set_shutdown_hook(on_shutdown);
 
-	printf("\nFoxOS %s > ", env(ENV_GET_CWD));
+	if (argc == 2) {
+		run_script(argv[1]);
+		return 0;
+	} else if (argc != 1) {
+		printf("Usage: terminal [script?]\n");
+		return 1;
+	}
 
+	printf("\nFoxOS %s > ", env(ENV_GET_CWD));
 
 	char* buffer = (char*) calloc(max_buffer_size, sizeof(char));
 	int buffer_len = 0;
