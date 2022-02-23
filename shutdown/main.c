@@ -2,7 +2,7 @@
 #include <sys/env.h>
 
 int main() {
-	printf("Shuttin down...\n");
+	printf("Shutting down...\n");
 	env2(ENV_ACPI_SHUTDOWN);
 
 	return 0;

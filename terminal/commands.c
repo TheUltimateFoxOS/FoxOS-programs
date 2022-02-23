@@ -99,6 +99,7 @@ void keydbg(bool onoff) {
 
 void cd(char* command) {
 	char** argv = argv_split(command);
+	argv = argv_env_process(argv);
 	int argc = 0;
 	while (argv[argc] != NULL) {
 		argc++;
@@ -122,6 +123,10 @@ void cd(char* command) {
 		}
 	}
 
+	for (int i = 0; argv[i] != NULL; i++) {
+		free(argv[i]);
+	}
+
 	free(argv);
 }
 
@@ -132,7 +137,8 @@ void pwd() {
 
 
 void spawn_process(char* command, char** terminal_envp) {
-	const char** argv = (const char**) argv_split(command);
+	char** argv = (const char**) argv_split(command);
+	argv = argv_env_process(argv);
 	char* executable = search_executable((char*) argv[0]);
 	const char** envp = (const char**) terminal_envp; //Maybe use actual enviromental vars?
 
@@ -157,6 +163,10 @@ error:
 
 _exit:
 	free(executable);
+	
+	for (int i = 0; argv[i] != NULL; i++) {
+		free(argv[i]);
+	}
 	free(argv);
 	return;
 }
