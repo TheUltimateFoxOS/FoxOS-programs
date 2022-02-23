@@ -4,47 +4,49 @@
 #include <string.h>
 #include <stdlib.h>
 
+char* read_env(char* in) {
+	char tmp[512] = { 0 };
+	int tmp_idx = 0;
+
+	for (int i = 0; i < strlen(in); i++) {
+		if (in[i] == '$') {
+			char env_var[256] = { 0 };
+			int env_var_idx = 0;
+
+			i++;
+
+			while ((in[i] >= 'a' && in[i] <= 'z' || in[i] >= 'A' && in[i] <= 'Z' || in[i] >= '0' && in[i] <= '9' || in[i] == '_') && in[i] != 0) {
+				env_var[env_var_idx] = in[i];
+				env_var_idx++;
+				i++;
+			}
+
+			// printf("env_var: %s\n", env_var);
+			char* env_var_value = getenv(env_var);
+			// printf("env_var_value: %s\n", env_var_value);
+
+			if (env_var_value != NULL) {
+				strcat(tmp, env_var_value);
+				tmp_idx += strlen(env_var_value);
+			}
+
+			i--;
+		} else {
+			tmp[tmp_idx] = in[i];
+			tmp_idx++;
+		}
+	}
+
+	char* out = malloc(strlen(tmp) + 1);
+	memset(out, 0, strlen(tmp) + 1);
+	memcpy(out, tmp, strlen(tmp) + 1);
+	return out;
+}
+
 char** argv_env_process(char** in) {
 	int curr_arg = 0;
 	while (in[curr_arg] != NULL) {
-		char* curr_arg_str = in[curr_arg];
-
-		char tmp[512] = { 0 };
-		int tmp_idx = 0;
-
-		for (int i = 0; i < strlen(curr_arg_str); i++) {
-			if (curr_arg_str[i] == '$') {
-				char env_var[256] = { 0 };
-				int env_var_idx = 0;
-
-				i++;
-
-				while ((curr_arg_str[i] >= 'a' && curr_arg_str[i] <= 'z' || curr_arg_str[i] >= 'A' && curr_arg_str[i] <= 'Z' || curr_arg_str[i] >= '0' && curr_arg_str[i] <= '9' || curr_arg_str[i] == '_') && curr_arg_str[i] != 0) {
-					env_var[env_var_idx] = curr_arg_str[i];
-					env_var_idx++;
-					i++;
-				}
-
-				// printf("env_var: %s\n", env_var);
-				char* env_var_value = getenv(env_var);
-				// printf("env_var_value: %s\n", env_var_value);
-
-				if (env_var_value != NULL) {
-					strcat(tmp, env_var_value);
-					tmp_idx += strlen(env_var_value);
-				}
-
-				i--;
-			} else {
-				tmp[tmp_idx] = curr_arg_str[i];
-				tmp_idx++;
-			}
-		}
-
-		in[curr_arg] = malloc(strlen(tmp) + 1);
-		memset(in[curr_arg], 0, strlen(tmp) + 1);
-		memcpy(in[curr_arg], tmp, strlen(tmp) + 1);
-
+		in[curr_arg] = read_env(in[curr_arg]);
 		curr_arg++;
 	}
 
@@ -117,4 +119,11 @@ char** argv_split(char* str) {
 	argv[argc] = NULL;
 
 	return argv;
+}
+
+void free_argv(char** argv) {
+	for (int i = 0; argv[i] != NULL; i++) {
+		free(argv[i]);
+	}
+	free(argv);
 }

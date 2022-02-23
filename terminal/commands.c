@@ -13,7 +13,6 @@
 #include <keyboard_helper.h>
 #include <argv_tools.h>
 
-
 char* search_executable(char* command) {
 	char* path = getenv("PATH");
 
@@ -97,9 +96,7 @@ void keydbg(bool onoff) {
 	}
 }
 
-void cd(char* command) {
-	char** argv = argv_split(command);
-	argv = argv_env_process(argv);
+void cd(char** argv) {
 	int argc = 0;
 	while (argv[argc] != NULL) {
 		argc++;
@@ -120,7 +117,7 @@ void cd(char* command) {
 		} else {
 			printf("No root filesystem specified!\n");
 		}
-	} else {
+	} else if (argc == 2) {
 		char path_buf[256];
 		memset(path_buf, 0, 256);
 		bool cancd = resolve(argv[1], path_buf);
@@ -130,6 +127,8 @@ void cd(char* command) {
 		} else {
 			printf("No such file or directory: %s\n", path_buf);
 		}
+	} else {
+		printf("Too many arguments.");
 	}
 
 	for (int i = 0; argv[i] != NULL; i++) {
@@ -140,9 +139,13 @@ void cd(char* command) {
 
 extern char** terminal_envp;
 
-
 void export(char* command) {
 	char* env_var = command + 7;
+
+	if (strlen(command) <= 7) {
+		printf("No environment variable specified! Try like this: export MYVAR=value\n");
+		return;
+	}
 
 	int next_empty_env_var = 0;
 	while (terminal_envp[next_empty_env_var] != NULL) {
@@ -161,9 +164,7 @@ void pwd() {
 }
 
 
-void spawn_process(char* command, char** terminal_envp) {
-	char** argv = (const char**) argv_split(command);
-	argv = argv_env_process(argv);
+void spawn_process(char** argv, char** terminal_envp) {
 	char* executable = search_executable((char*) argv[0]);
 	const char** envp = (const char**) terminal_envp; //Maybe use actual enviromental vars?
 
@@ -184,14 +185,9 @@ void spawn_process(char* command, char** terminal_envp) {
 	goto _exit;
 
 error:
-	printf("Error: command not found: %s\n", command);
+	printf("Error: command not found: %s\n", argv[0]);
 
 _exit:
 	free(executable);
-	
-	for (int i = 0; argv[i] != NULL; i++) {
-		free(argv[i]);
-	}
-	free(argv);
 	return;
 }

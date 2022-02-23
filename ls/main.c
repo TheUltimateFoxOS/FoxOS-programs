@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
 #endif
 
 	if (argc == 2) {
-		bool canresolve = resolve(argv[1], ls_path);
+		bool canresolve = resolve_check(argv[1], ls_path, true);
 		if (!canresolve) {
 			printf("No such file or directory: %s\n", argv[1]);
 			return 1;

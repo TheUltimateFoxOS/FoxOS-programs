@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
 	char file_to_delete[256];
 	memset(file_to_delete, 0, 256);
 
-	bool canresolve = resolve(argv[1], file_to_delete);
+	bool canresolve = resolve_check(argv[1], file_to_delete, true);
 	if (!canresolve) {
 		printf("Error: No such file or directory: %s", argv[1]);
 	}
