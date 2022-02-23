@@ -6,20 +6,20 @@
 int main() {
 	printf("Welcome to the FoxOS installer!\n");
 	char partition_path[256] = { 0 };
-	printf("on witch partition do you want to install FoxOS? > ");
+	printf("On witch partition do you want to install FoxOS? > ");
 	int len = gets(partition_path);
 
 	if (partition_path[len - 1] != ':') {
-		printf("Only mountpoints are supported.\n");
+		printf("Error: Only mountpoints are supported.\n");
 		abort();
 	}
 
 	char partition_name[256] = { 0 };
-	printf("how do you want to name the partition? > ");
+	printf("How do you want to name the partition? > ");
 	len = gets(partition_name);
 
 	char keyboard_layout[256] = { 0 };
-	printf("which keyboard layout do you want to use? > ");
+	printf("Which keyboard layout do you want to use? > ");
 	len = gets(keyboard_layout);
 
 	int keyboard_layout_id = 0;
@@ -30,7 +30,7 @@ int main() {
 	} else if (strcmp(keyboard_layout, (char*)"fr") == 0) {
 		keyboard_layout_id = 2;
 	} else {
-		printf("Keymap %s not found!\n", keyboard_layout);
+		printf("Error: Keymap %s not found!\n", keyboard_layout);
 		abort();
 	}
 

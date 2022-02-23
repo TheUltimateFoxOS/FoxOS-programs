@@ -4,7 +4,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-
 char** argv_env_process(char** in) {
 	int curr_arg = 0;
 	while (in[curr_arg] != NULL) {

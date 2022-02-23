@@ -17,7 +17,7 @@ int main(int argc, char* argv[], char* envp[]) {
 				num_ping = atoi(argv[idx + 1]);
 				idx++;
 			} else {
-				printf("-n requires an argument\n");
+				printf("Error: -n requires an argument\n");
 				abort();
 			}
 		} else if (strcmp(argv[idx], "-i") == 0) {
@@ -25,7 +25,7 @@ int main(int argc, char* argv[], char* envp[]) {
 				nic_id = atoi(argv[idx + 1]);
 				idx++;
 			} else {
-				printf("-i requires an argument\n");
+				printf("Error: -i requires an argument\n");
 				abort();
 			}
 		} else if (strcmp(argv[idx], "-h") == 0) {
@@ -41,7 +41,7 @@ int main(int argc, char* argv[], char* envp[]) {
 	}
 
 	if (domain == NULL) {
-		printf("no domain specified\n");
+		printf("Error: No domain specified. See %s -h\n", argv[0]);
 		abort();
 	}
 

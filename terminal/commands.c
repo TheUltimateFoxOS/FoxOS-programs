@@ -69,7 +69,7 @@ char* search_executable(char* command) {
 
 void load_keymap(char* command) {
 	if (command[11] == 0) {
-		printf("No keymap specified!");
+		printf("No keymap specified!\n");
 		return;
 	} else {
 		char* keymap_name = &command[11];
@@ -90,10 +90,10 @@ void load_keymap(char* command) {
 void keydbg(bool onoff) {
 	if (onoff) {
 		set_keyboard_debug(true);
-		printf("Keyboard debugging enabled!");
+		printf("Keyboard debugging enabled!\n");
 	} else {
 		set_keyboard_debug(false);
-		printf("Keyboard debugging disabled!");
+		printf("Keyboard debugging disabled!\n");
 	}
 }
 
@@ -106,10 +106,19 @@ void cd(char* command) {
 	}
 
 	if (argc == 1) {
-		if (getenv("ROOT_FS") != NULL) {
-			env_set(ENV_SET_CWD, getenv("ROOT_FS"));
+		char* env = getenv("ROOT_FS");
+		if (env != NULL) {
+			char path_buf[256];
+			memset(path_buf, 0, 256);
+			bool cancd = resolve(env, path_buf);
+
+			if (cancd) {
+				env_set(ENV_SET_CWD, path_buf);
+			} else {
+				printf("The specified root filesystem doesn't exist!\n");
+			}
 		} else {
-			printf("No root filesystem specified!");
+			printf("No root filesystem specified!\n");
 		}
 	} else {
 		char path_buf[256];
@@ -119,20 +128,19 @@ void cd(char* command) {
 		if (cancd) {
 			env_set(ENV_SET_CWD, path_buf);
 		} else {
-			printf("No such file or directory: %s", path_buf);
+			printf("No such file or directory: %s\n", path_buf);
 		}
 	}
 
 	for (int i = 0; argv[i] != NULL; i++) {
 		free(argv[i]);
 	}
-
 	free(argv);
 }
 
 void pwd() {
 	char* cwd = (char*) env(ENV_GET_CWD);
-	printf("%s", cwd);
+	printf("%s\n", cwd);
 }
 
 
@@ -159,7 +167,7 @@ void spawn_process(char* command, char** terminal_envp) {
 	goto _exit;
 
 error:
-	printf("Error: command not found: %s", command);
+	printf("Error: command not found: %s\n", command);
 
 _exit:
 	free(executable);

@@ -1,4 +1,3 @@
-#include <sys/write.h>
 #include <sys/read.h>
 #include <sys/open.h>
 #include <sys/close.h>
@@ -22,12 +21,11 @@ int main(int argc, char *argv[]) {
 	bool canresolve = resolve(argv[1], file_to_open);
 
 	if (!canresolve) {
-		printf("No such file or directory: %s", argv[1]);
+		printf("Error: No such file or directory: %s\n", argv[1]);
 		return 1;
 	}
 
 	int fd = open(file_to_open);
-
 	if (fd == -1) {
 		printf("Error: Could not open file %s\n", file_to_open);
 		return 1;
@@ -39,11 +37,9 @@ int main(int argc, char *argv[]) {
 	memset(buffer, 0, size);
 
 	read(fd, buffer, size, 0);
-	write(STDOUT, buffer, size, 0);
+	printf("%s\n", buffer);
 
 	close(fd);
-
-	write(STDOUT, "\n", 1, 0);
 
 	return 0;
 }

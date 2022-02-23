@@ -90,7 +90,7 @@ int main(int argc, char* argv[], char* envp[]) {
 			}
 		} else if (input == '\n') {
 			if (buffer_len == 0) {
-				printf("\nFoxOS %s > ", env(ENV_GET_CWD));
+				printf("FoxOS %s > ", env(ENV_GET_CWD));
 			} else if (is_quote_open(buffer)) {
 				printf(" quote> ");
 			} else {
