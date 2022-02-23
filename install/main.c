@@ -50,6 +50,7 @@ int main() {
 	copy_file_across_fs(getenv("ROOT_FS"), partition_path, "", "LICENSE");
 
 	copy_file_across_fs(getenv("ROOT_FS"), partition_path, "/efi/foxos", "foxkrnl.elf");
+	copy_file_across_fs(getenv("ROOT_FS"), partition_path, "", "start.fox");
 
 	write_text_file(partition_path, "dn.fox", partition_name);
 
