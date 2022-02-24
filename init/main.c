@@ -83,7 +83,7 @@ int main(int argc, char* argv[], char* envp[]) {
 	env_set(ENV_SET_CWD, new_cwd);
 
 	char config_file_path[256] = {0};
-	bool canresolve = resolve("cfg.fox", config_file_path);
+	bool canresolve = resolve("FOXCFG/cfg.fox", config_file_path);
 	if (canresolve) {
 		FILE* config_file = fopen(config_file_path, "r");
 		if (config_file != NULL) {
@@ -133,7 +133,7 @@ int main(int argc, char* argv[], char* envp[]) {
 	};
 
 	char auto_exec_path[256];
-	canresolve = resolve("start.fox", auto_exec_path);
+	canresolve = resolve("FOXCFG/start.fox", auto_exec_path);
 	if (canresolve) {
 		// printf("Executing auto-exec file...\n");
 		char* argv_for_auto_exec[] = {
