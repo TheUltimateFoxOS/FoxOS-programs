@@ -21,6 +21,7 @@ build:
 	@make -C calc
 	@make -C ping
 	@make -C shutdown
+	@make -C du
 
 setup:
 	@mkdir $(BUILDDIR)

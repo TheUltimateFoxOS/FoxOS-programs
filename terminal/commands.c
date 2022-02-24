@@ -130,11 +130,6 @@ void cd(char** argv) {
 	} else {
 		printf("Too many arguments.");
 	}
-
-	for (int i = 0; argv[i] != NULL; i++) {
-		free(argv[i]);
-	}
-	free(argv);
 }
 
 extern char** terminal_envp;
