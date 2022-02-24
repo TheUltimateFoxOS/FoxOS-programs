@@ -140,22 +140,50 @@ void cd(char** argv) {
 extern char** terminal_envp;
 
 void export(char* command) {
-	char* env_var = command + 7;
-
 	if (strlen(command) <= 7) {
 		printf("No environment variable specified! Try like this: export MYVAR=value\n");
 		return;
 	}
 
+	char* env_var = command + 7;
+
+	char* env_name_tmp = malloc(strlen(env_var) + 1); //Make a copy of the string to operate on it
+	memset(env_name_tmp, 0, strlen(env_var) + 1);
+	strcpy(env_name_tmp, env_var);
+	
+	char* env_name = strtok(env_name_tmp, "=");
+	if (strcmp(env_var, env_name) == 0) {
+		printf("No environment variable value specified! Try like this: export MYVAR=value\n");
+		free(env_name_tmp); //Make sure to free the memory allocated for strtok
+		return;
+	}
+	size_t env_name_len = strlen(env_name);
+
+	bool found = false;
 	int next_empty_env_var = 0;
-	while (terminal_envp[next_empty_env_var] != NULL) {
-		next_empty_env_var++;
+	for (int i = 0; terminal_envp[i] != NULL; i++) {
+		if (strncmp(env_name, terminal_envp[i], env_name_len) == 0) {
+			found = true;
+
+			free(terminal_envp[i]); //Delete the old environment variable
+
+			terminal_envp[i] = malloc(strlen(env_var) + 1); //Replace it with the new one
+			memset(terminal_envp[i], 0, strlen(env_var) + 1);
+			strcpy(terminal_envp[i], env_var);
+
+			break;
+		}
+		next_empty_env_var = i + 1;
 	}
 
-	terminal_envp[next_empty_env_var] = malloc(strlen(env_var) + 1);
-	memset(terminal_envp[next_empty_env_var], 0, strlen(env_var) + 1);
-	strcpy(terminal_envp[next_empty_env_var], env_var);
-	terminal_envp[next_empty_env_var + 1] = NULL;
+	if (!found) { //We haven't found the environment variable, so we need to add it
+		terminal_envp[next_empty_env_var] = malloc(strlen(env_var) + 1);
+		memset(terminal_envp[next_empty_env_var], 0, strlen(env_var) + 1);
+		strcpy(terminal_envp[next_empty_env_var], env_var);
+		terminal_envp[next_empty_env_var + 1] = NULL;
+	}
+
+	free(env_name_tmp);
 }
 
 void pwd() {
