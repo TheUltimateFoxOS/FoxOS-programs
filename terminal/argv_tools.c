@@ -15,7 +15,7 @@ char* read_env(char* in) {
 
 			i++;
 
-			while ((in[i] >= 'a' && in[i] <= 'z' || in[i] >= 'A' && in[i] <= 'Z' || in[i] >= '0' && in[i] <= '9' || in[i] == '_') && in[i] != 0) {
+			while ((in[i] >= 'a' && in[i] <= 'z' || in[i] >= 'A' && in[i] <= 'Z' || in[i] >= '0' && in[i] <= '9' || in[i] == '_' || in[i] == '?') && in[i] != 0) {
 				env_var[env_var_idx] = in[i];
 				env_var_idx++;
 				i++;

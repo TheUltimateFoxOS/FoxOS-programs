@@ -169,13 +169,15 @@ respawn:
 	}
 
 	bool task_exit = false;
+	int exit_code = 0;
 	terminal_task->on_exit = &task_exit;
+	terminal_task->exit_code = &exit_code;
 
 	while (!task_exit) {
 		__asm__ __volatile__("hlt");
 	}
 
-	printf("Terminal exited. Respawning...\n");
+	printf("Terminal exited (code %d). Respawning...\n", exit_code);
 	goto respawn;
 
 	return 0;

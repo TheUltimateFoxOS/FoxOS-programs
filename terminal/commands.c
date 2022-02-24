@@ -204,11 +204,17 @@ void spawn_process(char** argv, char** terminal_envp) {
 	}
 
 	bool task_exit = false;
+	int task_exit_code = 0;
 	t->on_exit = &task_exit;
+	t->exit_code = &task_exit_code;
 
 	while (!task_exit) {
 		__asm__ __volatile__("pause" :: : "memory");
 	}
+
+	char export_cmd[64];
+	sprintf(export_cmd, "export ?=%d", task_exit_code);
+	export(export_cmd);
 
 	goto _exit;
 
