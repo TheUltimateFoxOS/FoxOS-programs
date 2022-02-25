@@ -19,7 +19,9 @@
 
 char** terminal_envp;
 
-bool command_received(char* command) {
+bool command_received(char* command, bool* should_break) {
+	bool did_find_command = true;
+
 	if (strncmp(command, (char*)"loadkeymap", 10) == 0) {
 		load_keymap(command);
 	} else if (strcmp(command, (char*)"keydbg on") == 0) {
@@ -40,17 +42,17 @@ bool command_received(char* command) {
 		export(argv_str);
 		free(argv_str);
 	} else if (strncmp(command, (char*)"exit", 4) == 0) {
-		return true;
+		*should_break = true;
 	} else {
 		char** argv = argv_split(command);
 		argv = argv_env_process(argv);
 
-		spawn_process(argv, terminal_envp);
+		did_find_command = spawn_process(argv, terminal_envp);
 
 		free_argv(argv);
 	}
 
-	return false;
+	return did_find_command;
 }
 
 bool is_quote_open(char* command) {
@@ -107,7 +109,7 @@ int main(int argc, char* argv[], char* envp[]) {
 	__libc_set_shutdown_hook(on_shutdown);
 
 	if (argc == 2) {
-		run_script(argv[1]);
+		run_script(argv[1], max_buffer_size);
 		return 0;
 	} else if (argc != 1) {
 		printf("Usage: terminal [script?]\n");
@@ -135,7 +137,11 @@ int main(int argc, char* argv[], char* envp[]) {
 			} else if (is_quote_open(buffer)) {
 				printf(" quote> ");
 			} else {
-				bool should_break = command_received(buffer); //This should block while command is running.
+				bool should_break;
+				bool command_found = command_received(buffer, &should_break); //This should block while command is running.
+				if (!command_found) {
+					printf("Error: command not found: %s\n", buffer);
+				}
 				if (should_break) {
 					break;
 				}

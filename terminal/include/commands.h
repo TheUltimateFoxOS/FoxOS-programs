@@ -10,4 +10,4 @@ void cd(char** argv);
 void pwd();
 void export(char* command);
 
-void spawn_process(char** argv, char** terminal_envp);
+bool spawn_process(char** argv, char** terminal_envp);

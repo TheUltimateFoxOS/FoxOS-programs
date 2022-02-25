@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include <sys/spawn.h>
 #include <sys/env.h>
@@ -74,15 +75,21 @@ void load_keymap(char* command) {
 		char* keymap_name = &command[11];
 		printf("Loading keymap %s!\n", keymap_name);
 
+		int keymap_id;
+
 		if (strcmp(keymap_name, (char*)"de") == 0) {
-			set_keymap(0);
+			keymap_id = 0;
 		} else if (strcmp(keymap_name, (char*)"us") == 0) {
-			set_keymap(1);
+			keymap_id = 1;
 		} else if (strcmp(keymap_name, (char*)"fr") == 0) {
-			set_keymap(2);
+			keymap_id = 2;
 		} else {
 			printf("Keymap %s not found!\n", keymap_name);
+			return;
 		}
+
+		//Implement saving to the config file
+		set_keymap(keymap_id);
 	}
 }
 
@@ -187,7 +194,7 @@ void pwd() {
 }
 
 
-void spawn_process(char** argv, char** terminal_envp) {
+bool spawn_process(char** argv, char** terminal_envp) {
 	char* executable = search_executable((char*) argv[0]);
 	const char** envp = (const char**) terminal_envp; //Maybe use actual enviromental vars?
 
@@ -195,7 +202,7 @@ void spawn_process(char** argv, char** terminal_envp) {
 	task* t = spawn(executable, argv, envp, true);
 
 	if (t == NULL) {
-		goto error;
+		return false;
 	}
 
 	bool task_exit = false;
@@ -211,12 +218,6 @@ void spawn_process(char** argv, char** terminal_envp) {
 	sprintf(export_cmd, "export ?=%d", task_exit_code);
 	export(export_cmd);
 
-	goto _exit;
-
-error:
-	printf("Error: command not found: %s\n", argv[0]);
-
-_exit:
 	free(executable);
-	return;
+	return true;
 }
