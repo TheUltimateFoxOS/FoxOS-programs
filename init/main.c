@@ -104,8 +104,9 @@ int main(int argc, char* argv[], char* envp[]) {
 
 			for (int i = 0; i < r; i++) {
 				if (jsoneq(config_data, &t[i], "keyboard_layout") == 0) {
-					int keyboard_layout = atoi(config_data + t[i + 1].start);
-					// printf("Got keyboard_layout: %d\n", keyboard_layout);
+					char keyboard_layout[8] = { 0 };
+					strncpy(keyboard_layout, config_data + t[i + 1].start, t[i + 1].end - t[i + 1].start);
+
 					set_keymap(keyboard_layout);
 				} else if (jsoneq(config_data, &t[i], "keyboard_debug") == 0) {
 					bool keyboard_debug;
@@ -142,7 +143,7 @@ int main(int argc, char* argv[], char* envp[]) {
 			NULL
 		};
 
-		task* autoexec_task = spawn(terminal_path, argv_for_auto_exec, envp_for_terminal, true);
+		task* autoexec_task = spawn(terminal_path, (char**) argv_for_auto_exec, envp_for_terminal, true);
 
 		bool autoexec_task_exit = false;
 		autoexec_task->on_exit = &autoexec_task_exit;
@@ -161,7 +162,7 @@ int main(int argc, char* argv[], char* envp[]) {
 	task* terminal_task;
 
 respawn:
-	terminal_task = spawn(terminal_path, argv_for_terminal, envp_for_terminal, true);
+	terminal_task = spawn(terminal_path, (char**) argv_for_terminal, envp_for_terminal, true);
 
 	if (terminal_task == NULL) {
 		printf("Could not spawn terminal with path: %s\n", terminal_path);

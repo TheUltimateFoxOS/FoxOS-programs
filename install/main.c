@@ -22,49 +22,38 @@ int main() {
 	printf("Which keyboard layout do you want to use? > ");
 	len = gets(keyboard_layout);
 
-	int keyboard_layout_id = 0;
-	if (strcmp(keyboard_layout, (char*)"de") == 0) {
-		keyboard_layout_id = 0;
-	} else if (strcmp(keyboard_layout, (char*)"us") == 0) {
-		keyboard_layout_id = 1;
-	} else if (strcmp(keyboard_layout, (char*)"fr") == 0) {
-		keyboard_layout_id = 2;
-	} else {
-		printf("Error: Keymap %s not found!\n", keyboard_layout);
-		abort();
-	}
-
 	create_directory(partition_path, "/bin");
 	create_directory(partition_path, "/efi");
-	create_directory(partition_path, "/efi/foxos");
-	create_directory(partition_path, "/efi/foxos/res");
-	create_directory(partition_path, "/efi/foxos/modules");
 	create_directory(partition_path, "/efi/boot");
+	create_directory(partition_path, "/boot");
+	create_directory(partition_path, "/boot/modules");
+	create_directory(partition_path, "/foxcfg");
+	create_directory(partition_path, "/res");
 
 	copy_dir_across_fs(getenv("ROOT_FS"), partition_path, "/bin");
-	copy_dir_across_fs(getenv("ROOT_FS"), partition_path, "/efi/foxos/res");
-	copy_dir_across_fs(getenv("ROOT_FS"), partition_path, "/efi/foxos/modules");
+	copy_dir_across_fs(getenv("ROOT_FS"), partition_path, "/res");
+	copy_dir_across_fs(getenv("ROOT_FS"), partition_path, "/boot/modules");
 	copy_dir_across_fs(getenv("ROOT_FS"), partition_path, "/efi/boot");
 
 	copy_file_across_fs(getenv("ROOT_FS"), partition_path, "", "startup.nsh");
 	copy_file_across_fs(getenv("ROOT_FS"), partition_path, "", "LICENSE");
 
-	copy_file_across_fs(getenv("ROOT_FS"), partition_path, "/efi/foxos", "foxkrnl.elf");
-	copy_file_across_fs(getenv("ROOT_FS"), partition_path, "", "start.fox");
+	copy_file_across_fs(getenv("ROOT_FS"), partition_path, "/boot", "foxkrnl.elf");
+	copy_file_across_fs(getenv("ROOT_FS"), partition_path, "/foxcfg", "start.fox");
 
-	write_text_file(partition_path, "dn.fox", partition_name);
+	write_text_file(partition_path, "foxcfg/dn.fox", partition_name);
 
 	char** modules = malloc(sizeof(char*) * 50);
 	char** original_modules = modules;
-	list_files(getenv("ROOT_FS"), "/efi/foxos/modules", modules);
+	list_files(getenv("ROOT_FS"), "/boot/modules", modules);
 
 	char* limine_config = (char*) malloc(8192);
 	memset(limine_config, 0, 8192);
 
-	strcpy(limine_config, "TIMEOUT 3\n:FoxOS\nKASLR=no\nPROTOCOL=stivale2\nKERNEL_PATH=boot:///EFI/FOXOS/foxkrnl.elf\n");
+	strcpy(limine_config, "TIMEOUT 3\n:FoxOS\nKASLR=no\nPROTOCOL=stivale2\nKERNEL_PATH=boot:///BOOT/foxkrnl.elf\n");
 
 	while (*modules != NULL) {
-		strcat(limine_config, "MODULE_PATH=boot:///EFI/FOXOS/MODULES/");
+		strcat(limine_config, "MODULE_PATH=boot:///BOOT/MODULES/");
 		strcat(limine_config, *modules);
 		strcat(limine_config, "\n");
 		strcat(limine_config, "MODULE_STRING=");
@@ -87,7 +76,11 @@ int main() {
 
 	strcat(limine_config, "--autoexec=");
 	strcat(limine_config, partition_name);
-	strcat(limine_config, ":/bin/init.elf\n");
+	strcat(limine_config, ":/bin/init.elf ");
+
+	strcat(limine_config, "--keymap_load_path=");
+	strcat(limine_config, partition_name);
+	strcat(limine_config, ":/res/\n");
 
 	write_text_file(partition_path, "limine.cfg", limine_config);
 
@@ -96,9 +89,9 @@ int main() {
 	char* foxos_config = (char*) malloc(8192);
 	memset(foxos_config, 0, 8192);
 
-	sprintf(foxos_config, "{\n    \"keyboard_layout\": %d\n}\n", keyboard_layout_id);
+	sprintf(foxos_config, "{\n    \"keyboard_layout\": \"%s\"\n}\n", keyboard_layout);
 
-	write_text_file(partition_path, "cfg.fox", foxos_config);
+	write_text_file(partition_path, "foxcfg/cfg.fox", foxos_config);
 
 	free(foxos_config);
 

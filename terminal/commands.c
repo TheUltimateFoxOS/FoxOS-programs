@@ -74,15 +74,7 @@ void load_keymap(char* command) {
 		char* keymap_name = &command[11];
 		printf("Loading keymap %s!\n", keymap_name);
 
-		if (strcmp(keymap_name, (char*)"de") == 0) {
-			set_keymap(0);
-		} else if (strcmp(keymap_name, (char*)"us") == 0) {
-			set_keymap(1);
-		} else if (strcmp(keymap_name, (char*)"fr") == 0) {
-			set_keymap(2);
-		} else {
-			printf("Keymap %s not found!\n", keymap_name);
-		}
+		set_keymap(keymap_name);
 	}
 }
 
@@ -192,7 +184,7 @@ void spawn_process(char** argv, char** terminal_envp) {
 	const char** envp = (const char**) terminal_envp; //Maybe use actual enviromental vars?
 
 	errno = 0;
-	task* t = spawn(executable, argv, envp, true);
+	task* t = spawn(executable, (char**) argv, envp, true);
 
 	if (t == NULL) {
 		goto error;
