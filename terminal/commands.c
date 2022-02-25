@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include <sys/spawn.h>
 #include <sys/env.h>
@@ -179,7 +180,7 @@ void pwd() {
 }
 
 
-void spawn_process(char** argv, char** terminal_envp) {
+bool spawn_process(char** argv, char** terminal_envp) {
 	char* executable = search_executable((char*) argv[0]);
 	const char** envp = (const char**) terminal_envp; //Maybe use actual enviromental vars?
 
@@ -187,7 +188,7 @@ void spawn_process(char** argv, char** terminal_envp) {
 	task* t = spawn(executable, (char**) argv, envp, true);
 
 	if (t == NULL) {
-		goto error;
+		return false;
 	}
 
 	bool task_exit = false;
@@ -203,12 +204,6 @@ void spawn_process(char** argv, char** terminal_envp) {
 	sprintf(export_cmd, "export ?=%d", task_exit_code);
 	export(export_cmd);
 
-	goto _exit;
-
-error:
-	printf("Error: command not found: %s\n", argv[0]);
-
-_exit:
 	free(executable);
-	return;
+	return true;
 }
