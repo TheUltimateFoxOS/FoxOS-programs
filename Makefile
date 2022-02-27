@@ -22,6 +22,7 @@ build:
 	@make -C ping
 	@make -C shutdown
 	@make -C du
+	@make -C keymap_tool
 
 setup:
 	@mkdir $(BUILDDIR)
