@@ -23,6 +23,7 @@ build:
 	@make -C shutdown
 	@make -C du
 	@make -C keymap_tool
+	@make -C cp
 
 setup:
 	@mkdir $(BUILDDIR)
