@@ -25,6 +25,7 @@ build:
 	@make -C keymap_tool
 	@make -C cp
 	@make -C limine_install
+	@make -C lsfs
 
 setup:
 	@mkdir $(BUILDDIR)
