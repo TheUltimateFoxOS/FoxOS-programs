@@ -24,6 +24,7 @@ build:
 	@make -C du
 	@make -C keymap_tool
 	@make -C cp
+	@make -C limine_install
 
 setup:
 	@mkdir $(BUILDDIR)
