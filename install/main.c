@@ -86,6 +86,8 @@ int main() {
 
 	free(limine_config);
 
+	copy_file_across_fs(getenv("ROOT_FS"), partition_path, "", "limine.sys");
+
 	char* foxos_config = (char*) malloc(8192);
 	memset(foxos_config, 0, 8192);
 
@@ -97,6 +99,7 @@ int main() {
 
 	printf("\n\n");
 	printf("FoxOS has been installed on the partition %s (%s).\n", partition_name, partition_path);
+	printf("If you want to install the bios bootloader you can do that using the following command: \"lminst dev:disk_<raw disk id>\"\nYou can get a list of all available disks by typing \"ls dev:\"\n");
 
 	return 0;
 }
