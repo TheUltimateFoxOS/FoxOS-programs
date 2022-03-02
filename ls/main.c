@@ -5,6 +5,7 @@
 #include <sys/dir_at.h>
 #include <sys/env.h>
 #include <sys/open.h>
+#include <sys/close.h>
 
 int main(int argc, char *argv[]) {
 	char ls_path[256];
@@ -24,10 +25,12 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	if (open(ls_path) != -1) {
+	int fd = open(ls_path);
+	if (fd != -1) {
 		printf("Error: You can't list a file\n", ls_path);
 		return 1;
 	}
+	close(fd);
 
 	dir_t dir = dir_at(0, ls_path);
 	do {
