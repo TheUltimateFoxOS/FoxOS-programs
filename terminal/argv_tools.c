@@ -1,8 +1,50 @@
 #include <argv_tools.h>
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
+
+int get_command_type(char* command, int* token_pos) {
+	int command_length = strlen(command);
+
+	bool quote_open = false;
+	bool double_quote_open = false;
+	bool special_char_next = false;
+
+	for (int i = 0; i < command_length; i++) {
+		if (command[i] == '|' && !(quote_open || double_quote_open || special_char_next)) {
+			*token_pos = i;
+			return PIPE_PROC;
+		} else if (command[i] == '>' && !(quote_open || double_quote_open || special_char_next)) {
+			*token_pos = i;
+			return PIPE_FILE;
+		} else if (command[i] == '&' && !(quote_open || double_quote_open || special_char_next)) {
+			*token_pos = i;
+			return AND_RUN;
+		} else if (command[i] == '\\') {
+			special_char_next = true;
+		} else if (command[i] == '\"') {
+			if (special_char_next || double_quote_open) {
+				special_char_next = false;
+			} else {
+				quote_open = !quote_open;
+			}
+		} else if (command[i] == '\'') {
+			if (special_char_next || quote_open) {
+				special_char_next = false;
+			} else {
+				double_quote_open = !double_quote_open;
+			}
+		} else {
+			if (special_char_next) {
+				special_char_next = false;
+			}
+		}
+	}
+
+	return NORMAL;
+}
 
 char* read_env(char* in) {
 	char tmp[512] = { 0 };
@@ -126,4 +168,70 @@ void free_argv(char** argv) {
 		free(argv[i]);
 	}
 	free(argv);
+}
+
+bool is_quote_open(char* command) {
+	bool quote_open = false;
+	bool double_quote_open = false;
+	bool special_char_next = false;
+
+	int len = strlen(command);
+
+	for (int i = 0; i < len; i++) {
+		if (command[i] == '\\') {
+			special_char_next = true;
+		} else if (command[i] == '\"') {
+			if (special_char_next || double_quote_open) {
+				special_char_next = false;
+			} else {
+				quote_open = !quote_open;
+			}
+		} else if (command[i] == '\'') {
+			if (special_char_next || quote_open) {
+				special_char_next = false;
+			} else {
+				double_quote_open = !double_quote_open;
+			}
+		}
+	}
+
+	return double_quote_open || quote_open;
+}
+
+char* process_line(char* command, bool check_hashtag) {
+	int i, j;
+	int command_length = strlen(command);
+
+	char* output_1 = command;
+	bool text_found = false;
+
+	for (i = 0, j = 0; i < command_length; i++, j++) {
+		if (command[i] == ' ' && !text_found) {
+			j--;
+		} else if (command[i] == '#' && check_hashtag) {
+			output_1[j] = 0;
+			break;
+		} else {
+			output_1[j] = command[i];
+			text_found = true;
+		}
+	}
+	output_1[j] = 0;
+
+	command_length = strlen(output_1);
+	if (command_length == 0) {
+		return output_1;
+	}
+
+	char* output_2 = output_1;
+
+	for (i = command_length - 1; i > 0; i--) {
+		if (output_1[i] == ' ') {
+			output_2[i] = 0;
+		} else {
+			break;
+		}
+	}
+
+	return output_2;
 }

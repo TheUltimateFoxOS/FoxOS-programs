@@ -7,6 +7,7 @@
 #include <sys/env.h>
 #include <sys/open.h>
 #include <sys/close.h>
+#include <sys/touch.h>
 #include <errno.h>
 
 #include <keyboard_helper.h>
@@ -19,68 +20,80 @@
 
 char** terminal_envp;
 
-bool command_received(char* command, bool* should_break) {
-	bool did_find_command = true;
+bool command_received(char* command, bool* should_break, char* stdin) {
+	int token_pos;
+	int cmd_type = get_command_type(command, &token_pos);
 
-	if (strncmp(command, (char*)"loadkeymap", 10) == 0) {
-		load_keymap(command);
-	} else if (strcmp(command, (char*)"keydbg on") == 0) {
-		keydbg(true);
-	} else if (strcmp(command, (char*)"keydbg off") == 0) {
-		keydbg(false);
-	} else if (strncmp(command, (char*)"cd", 2) == 0) {
-		char** argv = argv_split(command);
-		argv = argv_env_process(argv);
-
-		cd(argv);
-
-		free_argv(argv);
-	} else if (strncmp(command, (char*)"pwd", 3) == 0) {
-		pwd();
-	} else if (strncmp(command, (char*)"export", 6) == 0) {
-		char* argv_str = read_env(command);
-		export(argv_str);
-		free(argv_str);
-	} else if (strncmp(command, (char*)"exit", 4) == 0) {
-		*should_break = true;
-	} else {
-		char** argv = argv_split(command);
-		argv = argv_env_process(argv);
-
-		did_find_command = spawn_process(argv, terminal_envp);
-
-		free_argv(argv);
+	char** command_stdin = NULL;
+	if (stdin != NULL) {
+		command_stdin = &stdin;
 	}
 
-	return did_find_command;
-}
-
-bool is_quote_open(char* command) {
-	bool quote_open = false;
-	bool double_quote_open = false;
-	bool special_char_next = false;
-
-	int len = strlen(command);
-
-	for (int i = 0; i < len; i++) {
-		if (command[i] == '\\') {
-			special_char_next = true;
-		} else if (command[i] == '\"') {
-			if (special_char_next || double_quote_open) {
-				special_char_next = false;
-			} else {
-				quote_open = !quote_open;
-			}
-		} else if (command[i] == '\'') {
-			if (special_char_next || quote_open) {
-				special_char_next = false;
-			} else {
-				double_quote_open = !double_quote_open;
-			}
+	if (cmd_type == NORMAL) { //Normal command, just run it and send the stdin
+		int found_command = run_command(command, terminal_envp, should_break, command_stdin, NULL);
+		if (!found_command) {
+			printf("Error: Command not found: '%s'\n", command);
 		}
-	}
+		return found_command;
+	} else if (cmd_type == AND_RUN || cmd_type == PIPE_PROC || cmd_type == PIPE_FILE) {
+		char* current_command = process_line(command, false); //This is the first command that needs to be run
+		current_command[token_pos] = '\0';
+		char* next_command = process_line(&current_command[token_pos + 1], false); //This could be a file name, or another command
 
-	return double_quote_open || quote_open;
+		char* stdout = NULL; //Set to NULL by default, so that stdout isn't send if it isn't needed
+		if (cmd_type == PIPE_PROC || cmd_type == PIPE_FILE) { //If the command is a pipe, we need to set the stdout to a buffer
+			stdout = malloc(1);
+			memset(stdout, 0, 1);
+		}
+
+		bool found_command = run_command(current_command, terminal_envp, should_break, command_stdin, &stdout); //Run the first command with the stdin, and stdout if there is one
+		if (!found_command) {
+			printf("Error: command not found: %s\n", current_command);
+			return false;
+		}
+
+		bool call_next_command = true;
+		if (cmd_type == PIPE_FILE) { //If the command is a pipe to a file, we need to open the file and write the stdout to it
+			current_command = next_command; //There may be another command after this one, so we will need to run it if so
+			cmd_type = get_command_type(current_command, &token_pos);
+			if (cmd_type == NORMAL) {
+				call_next_command = false;
+			} else {
+				current_command[token_pos] = '\0';
+				call_next_command = true;
+				next_command = process_line(&current_command[token_pos + 1], false);
+			}
+
+			char file_to_create[256];
+			memset(file_to_create, 0, 256);
+			bool canresolve = resolve_check(current_command, file_to_create, false);
+			if (!canresolve) {
+				printf("Error: No such file or directory to create output file in: %s\n", current_command);
+				return false;
+			}
+
+			FILE* file = fopen(file_to_create, "w");
+			if (file == NULL) {
+				printf("Error: Failed to open file: %s\n", file_to_create);
+				return false;
+			}
+
+			fwrite(stdout, strlen(stdout), 1, file);
+			fclose(file);
+		}
+
+		if (call_next_command) { //If the command is a pipe to another command (or there is another command after the file), we need to run the next command with the stdout as the stdin
+			found_command = command_received(next_command, should_break, stdout);
+		}
+
+		if (stdout != NULL) { //Make sure to free the stdout if it was allocated
+			free(stdout);
+		}
+
+		return found_command;
+	} else {
+		printf("Error: Got an unknown command type, this shouldn't happen. %s\n", command);
+	}
 }
 
 void on_shutdown() {
@@ -138,10 +151,7 @@ int main(int argc, char* argv[], char* envp[]) {
 				printf(" quote> ");
 			} else {
 				bool should_break;
-				bool command_found = command_received(buffer, &should_break); //This should block while command is running.
-				if (!command_found) {
-					printf("Error: command not found: %s\n", buffer);
-				}
+				command_received(buffer, &should_break, NULL); //This should block while command is running.
 				if (should_break) {
 					break;
 				}

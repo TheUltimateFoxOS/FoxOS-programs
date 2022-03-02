@@ -9,10 +9,139 @@
 #include <sys/env.h>
 #include <sys/open.h>
 #include <sys/close.h>
+#include <sys/write.h>
+#include <sys/read.h>
 #include <errno.h>
 
 #include <keyboard_helper.h>
 #include <argv_tools.h>
+
+char* term_stdout = NULL;
+int term_stdout_size = 1;
+
+char* term_stdin = NULL;
+int term_stdin_size = 1;
+int stdin_pos = 0;
+
+void append_stdout(char* str, uint64_t size) {
+	int old_size = term_stdout_size;
+	term_stdout_size += size;
+
+	term_stdout = realloc(term_stdout, term_stdout_size);
+	memcpy(&term_stdout[old_size - 1], str, size);
+	term_stdout[term_stdout_size - 1] = '\0';
+}
+
+void append_stdin(char* buffer, uint64_t size) {
+	int can_copy = (term_stdin_size - 1) - stdin_pos;
+	if (size > can_copy) {
+		int left_over = size - can_copy;
+		if (can_copy != 0) {
+			memcpy(buffer, &term_stdin[stdin_pos], can_copy);
+			stdin_pos += can_copy;
+		}
+
+		env_set(ENV_PIPE_DISABLE_ENABLE, (void*) 0);
+
+		char input[left_over];
+		read(STDIN, input, left_over, 0);
+		memcpy(buffer + can_copy, input, left_over);
+
+		env_set(ENV_PIPE_DISABLE_ENABLE, (void*) 1);
+	} else {
+		memcpy(buffer, &term_stdin[stdin_pos], size);
+		stdin_pos += size;
+	}
+}
+
+int term_printf(const char *fmt, ...) {
+	char printf_buf[1024 * 4];
+	va_list args;
+	int printed;
+
+	va_start(args, fmt);
+	printed = vsprintf(printf_buf, fmt, args);
+	va_end(args);
+
+	if (term_stdout == NULL) {
+		write(STDOUT, printf_buf, printed, 0);
+	} else {
+		append_stdout(printf_buf, printed);
+	}
+
+	return printed;
+}
+
+bool run_command(char* command, char** terminal_envp, bool* should_break, char** stdin, char** stdout) {
+	if (stdout != NULL) {
+		term_stdout = *stdout;
+		term_stdout_size = strlen(term_stdout) + 1;
+	}
+
+	if (stdin != NULL) {
+		term_stdin = *stdin;
+		term_stdin_size = strlen(term_stdin) + 1;
+		stdin_pos = 0;
+	}
+
+	if (strncmp(command, (char*)"loadkeymap", 10) == 0) {
+		load_keymap(command);
+	} else if (strcmp(command, (char*)"keydbg on") == 0) {
+		keydbg(true);
+	} else if (strcmp(command, (char*)"keydbg off") == 0) {
+		keydbg(false);
+	} else if (strncmp(command, (char*)"cd", 2) == 0) {
+		char** argv = argv_split(command);
+		argv = argv_env_process(argv);
+
+		cd(argv);
+
+		free_argv(argv);
+	} else if (strncmp(command, (char*)"pwd", 3) == 0) {
+		pwd();
+	} else if (strncmp(command, (char*)"export", 6) == 0) {
+		char* argv_str = read_env(command);
+		export(argv_str);
+		free(argv_str);
+	} else if (strncmp(command, (char*)"exit", 4) == 0) {
+		*should_break = true;
+	} else {
+		char** argv = argv_split(command);
+		argv = argv_env_process(argv);
+
+		pipe stdout_pipe = NULL;
+		if (term_stdout != NULL) {
+			stdout_pipe = append_stdout;
+		}
+
+		pipe stdin_pipe = NULL;
+		if (term_stdin != NULL) {
+			stdin_pipe = append_stdin;
+		}
+
+		task_t* task = spawn_process(argv, terminal_envp, stdout_pipe, stdin_pipe);
+		if (task == NULL) {
+			return false;
+		}
+
+		free_argv(argv);
+	}
+
+	if (stdout != NULL) {
+		*stdout = term_stdout;
+	}
+	term_stdout = NULL;
+	term_stdout_size = 1;
+
+	if (stdin != NULL) {
+		*stdin = term_stdin;
+	}
+	term_stdin = NULL;
+	term_stdin_size = 1;
+	stdin_pos = 0;
+
+	return true;
+}
 
 char* search_executable(char* command) {
 	char* path = getenv("PATH");
@@ -69,11 +198,11 @@ char* search_executable(char* command) {
 
 void load_keymap(char* command) {
 	if (command[11] == 0) {
-		printf("No keymap specified!\n");
+		term_printf("No keymap specified!\n");
 		return;
 	} else {
 		char* keymap_name = &command[11];
-		printf("Loading keymap %s!\n", keymap_name);
+		term_printf("Loading keymap %s!\n", keymap_name);
 
 		set_keymap(keymap_name);
 	}
@@ -82,10 +211,10 @@ void load_keymap(char* command) {
 void keydbg(bool onoff) {
 	if (onoff) {
 		set_keyboard_debug(true);
-		printf("Keyboard debugging enabled!\n");
+		term_printf("Keyboard debugging enabled!\n");
 	} else {
 		set_keyboard_debug(false);
-		printf("Keyboard debugging disabled!\n");
+		term_printf("Keyboard debugging disabled!\n");
 	}
 }
 
@@ -105,10 +234,10 @@ void cd(char** argv) {
 			if (cancd) {
 				env_set(ENV_SET_CWD, path_buf);
 			} else {
-				printf("The specified root filesystem doesn't exist!\n");
+				term_printf("The specified root filesystem doesn't exist!\n");
 			}
 		} else {
-			printf("No root filesystem specified!\n");
+			term_printf("No root filesystem specified!\n");
 		}
 	} else if (argc == 2) {
 		char path_buf[256];
@@ -118,10 +247,10 @@ void cd(char** argv) {
 		if (cancd) {
 			env_set(ENV_SET_CWD, path_buf);
 		} else {
-			printf("No such file or directory: %s\n", path_buf);
+			term_printf("No such file or directory: %s\n", path_buf);
 		}
 	} else {
-		printf("Too many arguments.");
+		term_printf("Too many arguments.");
 	}
 }
 
@@ -129,7 +258,7 @@ extern char** terminal_envp;
 
 void export(char* command) {
 	if (strlen(command) <= 7) {
-		printf("No environment variable specified! Try like this: export MYVAR=value\n");
+		term_printf("No environment variable specified! Try like this: export MYVAR=value\n");
 		return;
 	}
 
@@ -141,7 +270,7 @@ void export(char* command) {
 	
 	char* env_name = strtok(env_name_tmp, "=");
 	if (strcmp(env_var, env_name) == 0) {
-		printf("No environment variable value specified! Try like this: export MYVAR=value\n");
+		term_printf("No environment variable value specified! Try like this: export MYVAR=value\n");
 		free(env_name_tmp); //Make sure to free the memory allocated for strtok
 		return;
 	}
@@ -176,25 +305,34 @@ void export(char* command) {
 
 void pwd() {
 	char* cwd = (char*) env(ENV_GET_CWD);
-	printf("%s\n", cwd);
+	term_printf("%s\n", cwd);
 }
 
-
-bool spawn_process(char** argv, char** terminal_envp) {
+task_t* spawn_process(char** argv, char** terminal_envp, pipe stdout, pipe stdin) {
 	char* executable = search_executable((char*) argv[0]);
 	const char** envp = (const char**) terminal_envp; //Maybe use actual enviromental vars?
 
 	errno = 0;
-	task* t = spawn(executable, (char**) argv, envp, true);
+	task_t* task = spawn(executable, (char**) argv, envp, true);
 
-	if (t == NULL) {
-		return false;
+	if (task == NULL) {
+		return NULL;
 	}
 
 	bool task_exit = false;
 	int task_exit_code = 0;
-	t->on_exit = &task_exit;
-	t->exit_code = &task_exit_code;
+	task->on_exit = &task_exit;
+	task->exit_code = &task_exit_code;
+
+	if (stdout != NULL) {
+		task->stdout_pipe = stdout;
+		task->pipe_enabled = true;
+	}
+
+	if (stdin != NULL) {
+		task->stdin_pipe = stdin;
+		task->pipe_enabled = true;
+	}
 
 	while (!task_exit) {
 		__asm__ __volatile__("pause" :: : "memory");
@@ -205,5 +343,5 @@ bool spawn_process(char** argv, char** terminal_envp) {
 	export(export_cmd);
 
 	free(executable);
-	return true;
+	return task;
 }

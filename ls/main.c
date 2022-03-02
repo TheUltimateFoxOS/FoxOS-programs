@@ -4,6 +4,7 @@
 
 #include <sys/dir_at.h>
 #include <sys/env.h>
+#include <sys/open.h>
 
 int main(int argc, char *argv[]) {
 	char ls_path[256];
@@ -18,9 +19,14 @@ int main(int argc, char *argv[]) {
 	if (argc == 2) {
 		bool canresolve = resolve_check(argv[1], ls_path, true);
 		if (!canresolve) {
-			printf("No such file or directory: %s\n", argv[1]);
+			printf("Error: No such file or directory: %s\n", argv[1]);
 			return 1;
 		}
+	}
+
+	if (open(ls_path) != -1) {
+		printf("Error: You can't list a file\n", ls_path);
+		return 1;
 	}
 
 	dir_t dir = dir_at(0, ls_path);

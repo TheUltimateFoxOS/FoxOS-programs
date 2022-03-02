@@ -2,6 +2,10 @@
 
 #include <stdbool.h>
 
+#include <sys/spawn.h>
+
+bool run_command(char* command, char** terminal_envp, bool* should_break, char** stdin, char** stdout);
+
 char* search_executable(char* command);
 
 void load_keymap(char* command);
@@ -10,4 +14,4 @@ void cd(char** argv);
 void pwd();
 void export(char* command);
 
-bool spawn_process(char** argv, char** terminal_envp);
+task_t* spawn_process(char** argv, char** terminal_envp, pipe stdout, pipe stdin);

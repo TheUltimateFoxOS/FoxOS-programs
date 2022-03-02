@@ -18,7 +18,8 @@ int main(int argc, char *argv[]) {
 
 	bool canresolve = resolve_check(argv[1], file_to_delete, true);
 	if (!canresolve) {
-		printf("Error: No such file or directory: %s", argv[1]);
+		printf("Error: No such file or directory: %s\n", argv[1]);
+		return 1;
 	}
 
 	int fd = open(file_to_delete);

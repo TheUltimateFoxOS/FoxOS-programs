@@ -143,7 +143,7 @@ int main(int argc, char* argv[], char* envp[]) {
 			NULL
 		};
 
-		task* autoexec_task = spawn(terminal_path, (char**) argv_for_auto_exec, envp_for_terminal, true);
+		task_t* autoexec_task = spawn(terminal_path, (char**) argv_for_auto_exec, envp_for_terminal, true);
 
 		bool autoexec_task_exit = false;
 		autoexec_task->on_exit = &autoexec_task_exit;
@@ -159,7 +159,7 @@ int main(int argc, char* argv[], char* envp[]) {
 	}
 
 	//printf("CWD: %s\n", env(ENV_GET_CWD));
-	task* terminal_task;
+	task_t* terminal_task;
 
 respawn:
 	terminal_task = spawn(terminal_path, (char**) argv_for_terminal, envp_for_terminal, true);

@@ -46,8 +46,13 @@ int main(int argc, char* argv[], char* envp[]) {
 	}
 
 	union ip_u ip = dns_resolve(domain, nic_id);
+	if (ip.ip == 0) {
+		printf("Error: Could not resolve %s\n", domain);
+		abort();
+	}
 
 	for (int i = 0; i < num_ping; i++) {
+		//Need to sleep for a bit to prevent flooding the network
 		printf("[%d.%d.%d.%d] %d / %d: %s\n", ip.ip_p[0], ip.ip_p[1], ip.ip_p[2], ip.ip_p[3], i + 1, num_ping, icmp_echo_request(ip.ip, nic_id) ? "got response" : "no response");
 	}
 

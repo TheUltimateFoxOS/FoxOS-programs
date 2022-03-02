@@ -17,6 +17,7 @@ int main(int argc, char *argv[]) {
 	bool canresolve = resolve_check(argv[1], dir_to_create, false);
 	if (!canresolve) {
 		printf("Error: No such file or directory to create folder in: %s\n", argv[1]);
+		return 1;
 	}
 
 	mkdir(dir_to_create);
