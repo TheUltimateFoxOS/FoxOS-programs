@@ -28,9 +28,9 @@ int main(int argc, char *argv[]) {
 	int fd = open(ls_path);
 	if (fd != -1) {
 		printf("Error: You can't list a file\n", ls_path);
+		close(fd);
 		return 1;
 	}
-	close(fd);
 
 	dir_t dir = dir_at(0, ls_path);
 	do {
