@@ -5,7 +5,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-int get_command_type(char* command, int* token_pos) {
+int get_command_type(char* command, int* token_pos, bool* double_pipe_symbol) {
+	*double_pipe_symbol = false;
 	int command_length = strlen(command);
 
 	bool quote_open = false;
@@ -18,7 +19,13 @@ int get_command_type(char* command, int* token_pos) {
 			return PIPE_PROC;
 		} else if (command[i] == '>' && !(quote_open || double_quote_open || special_char_next)) {
 			*token_pos = i;
-			return PIPE_FILE;
+			if (i + 1 < command_length && command[i + 1] == '>') {
+				*token_pos = i + 1;
+				*double_pipe_symbol = true;
+				return PIPE_FILE_APPEND;
+			} else {
+				return PIPE_FILE;
+			}
 		} else if (command[i] == '&' && !(quote_open || double_quote_open || special_char_next)) {
 			*token_pos = i;
 			return AND_RUN;

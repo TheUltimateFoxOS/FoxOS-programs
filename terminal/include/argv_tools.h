@@ -6,10 +6,11 @@ enum pipe_type_e {
 	NORMAL,
 	PIPE_PROC,
     PIPE_FILE,
-    AND_RUN
+    AND_RUN,
+	PIPE_FILE_APPEND
 };
 
-int get_command_type(char* command, int* token_pos);
+int get_command_type(char* command, int* token_pos, bool* double_pipe_symbol);
 
 char* read_env(char* in);
 

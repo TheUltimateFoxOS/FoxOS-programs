@@ -22,7 +22,10 @@ char** terminal_envp;
 
 bool command_received(char* command, bool* should_break, char* stdin) {
 	int token_pos;
-	int cmd_type = get_command_type(command, &token_pos);
+	bool double_pipe_symbol;
+	int cmd_type = get_command_type(command, &token_pos, &double_pipe_symbol);
+
+	printf("%d\n", cmd_type);
 
 	char** command_stdin = NULL;
 	if (stdin != NULL) {
@@ -35,13 +38,13 @@ bool command_received(char* command, bool* should_break, char* stdin) {
 			printf("Error: Command not found: '%s'\n", command);
 		}
 		return found_command;
-	} else if (cmd_type == AND_RUN || cmd_type == PIPE_PROC || cmd_type == PIPE_FILE) {
+	} else if (cmd_type == AND_RUN || cmd_type == PIPE_PROC || cmd_type == PIPE_FILE || cmd_type == PIPE_FILE_APPEND) {
 		char* current_command = process_line(command, false); //This is the first command that needs to be run
-		current_command[token_pos] = '\0';
+		current_command[token_pos - (double_pipe_symbol ? 1 : 0)] = '\0';
 		char* next_command = process_line(&current_command[token_pos + 1], false); //This could be a file name, or another command
 
 		char* stdout = NULL; //Set to NULL by default, so that stdout isn't send if it isn't needed
-		if (cmd_type == PIPE_PROC || cmd_type == PIPE_FILE) { //If the command is a pipe, we need to set the stdout to a buffer
+		if (cmd_type == PIPE_PROC || cmd_type == PIPE_FILE || cmd_type == PIPE_FILE_APPEND) { //If the command is a pipe, we need to set the stdout to a buffer
 			stdout = malloc(1);
 			memset(stdout, 0, 1);
 		}
@@ -53,13 +56,14 @@ bool command_received(char* command, bool* should_break, char* stdin) {
 		}
 
 		bool call_next_command = true;
-		if (cmd_type == PIPE_FILE) { //If the command is a pipe to a file, we need to open the file and write the stdout to it
+		if (cmd_type == PIPE_FILE || cmd_type == PIPE_FILE_APPEND) { //If the command is a pipe to a file, we need to open the file and write the stdout to it
+			int old_cmd_type = cmd_type;
 			current_command = next_command; //There may be another command after this one, so we will need to run it if so
-			cmd_type = get_command_type(current_command, &token_pos);
+			cmd_type = get_command_type(current_command, &token_pos, &double_pipe_symbol);
 			if (cmd_type == NORMAL) {
 				call_next_command = false;
 			} else {
-				current_command[token_pos] = '\0';
+				current_command[token_pos - (double_pipe_symbol ? 1 : 0)] = '\0';
 				call_next_command = true;
 				next_command = process_line(&current_command[token_pos + 1], false);
 			}
@@ -76,6 +80,10 @@ bool command_received(char* command, bool* should_break, char* stdin) {
 			if (file == NULL) {
 				printf("Error: Failed to open file: %s\n", file_to_create);
 				return false;
+			}
+
+			if (old_cmd_type == PIPE_FILE_APPEND) {
+				fseek(file, 0, SEEK_END);
 			}
 
 			fwrite(stdout, strlen(stdout), 1, file);
