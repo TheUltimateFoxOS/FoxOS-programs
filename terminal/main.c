@@ -25,7 +25,7 @@ bool command_received(char* command, bool* should_break, char* stdin) {
 	bool double_pipe_symbol;
 	int cmd_type = get_command_type(command, &token_pos, &double_pipe_symbol);
 
-	printf("%d\n", cmd_type);
+	//printf("%d\n", cmd_type);
 
 	char** command_stdin = NULL;
 	if (stdin != NULL) {
