@@ -27,6 +27,7 @@ build:
 	@make -C cp
 	@make -C limine_install
 	@make -C lsfs
+	@make -C clear
 
 setup:
 	@mkdir $(BUILDDIR)
