@@ -41,13 +41,15 @@ void append_stdin(char* buffer, uint64_t size) {
 			stdin_pos += can_copy;
 		}
 
-		env_set(ENV_PIPE_DISABLE_ENABLE, (void*) 0);
+		// env_set(ENV_PIPE_DISABLE_ENABLE, (void*) 0);
 
-		char input[left_over];
-		read(STDIN, input, left_over, 0);
-		memcpy(buffer + can_copy, input, left_over);
+		// char input[left_over];
+		// read(STDIN, input, left_over, 0);
+		// memcpy(buffer + can_copy, input, left_over);
 
-		env_set(ENV_PIPE_DISABLE_ENABLE, (void*) 1);
+		// env_set(ENV_PIPE_DISABLE_ENABLE, (void*) 1);
+
+		memset(buffer + can_copy, 0, left_over);
 	} else {
 		memcpy(buffer, &term_stdin[stdin_pos], size);
 		stdin_pos += size;

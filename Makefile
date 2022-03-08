@@ -28,6 +28,7 @@ build:
 	@make -C limine_install
 	@make -C lsfs
 	@make -C clear
+	@make -C lolcat
 
 setup:
 	@mkdir $(BUILDDIR)
