@@ -18,9 +18,9 @@ int libterm(int argc, char* argv[], char* envp[]) {
 	set_color(old_color);
 
 	struct point_t old_cursor = get_cursor();
-	set_cursor((struct point_t) { 0, 0 });
+	set_cursor((struct point_t) { 100, 100 });
 
-	clear_line();
+	//clear_line();
 	printf("Hello, world (im made using set_cursor :o)!\n");
 
 	set_cursor(old_cursor);

@@ -29,6 +29,7 @@ build:
 	@make -C lsfs
 	@make -C clear
 	@make -C lolcat
+	@make -C matrix
 
 setup:
 	@mkdir $(BUILDDIR)
