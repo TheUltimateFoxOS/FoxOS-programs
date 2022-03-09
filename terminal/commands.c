@@ -74,6 +74,12 @@ int term_printf(const char *fmt, ...) {
 	return printed;
 }
 
+bool command_received(char* command, bool* should_break, char* stdin);
+void system_command_handler(char* in) {
+	bool should_break = false;
+	command_received(in, &should_break, NULL);
+}
+
 bool run_command(char* command, char** terminal_envp, bool* should_break, char** stdin, char** stdout) {
 	if (stdout != NULL) {
 		term_stdout = *stdout;
@@ -335,6 +341,8 @@ task_t* spawn_process(char** argv, char** terminal_envp, pipe stdout, pipe stdin
 		task->stdin_pipe = stdin;
 		task->pipe_enabled = true;
 	}
+
+	task->system_method = system_command_handler;
 
 	while (!task_exit) {
 		__asm__ __volatile__("pause" :: : "memory");

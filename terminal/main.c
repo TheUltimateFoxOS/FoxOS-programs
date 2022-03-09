@@ -172,6 +172,10 @@ int main(int argc, char* argv[], char* envp[]) {
 			printf("\b");
 		} else if (input == 0) {
 			break;
+		} else if (input == 27 /* esc */) {
+			memset(buffer, 0, sizeof(char) * max_buffer_size);
+			buffer_len = 0;
+			printf("\nFoxOS %s > ", env(ENV_GET_CWD));
 		} else {
 			buffer[buffer_len] = input;
 			buffer_len++;

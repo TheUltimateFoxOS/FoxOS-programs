@@ -2,10 +2,12 @@
 #include <test_disk.h>
 #include <test_net.h>
 #include <test_libterm.h>
+#include <test_system.h>
 
 int main(int argc, char* argv[], char* envp[]) {
 	// piping(argc, argv, envp);
 	//disk(argc, argv, envp);
 	//net(argc, argv, envp);
-	libterm(argc, argv, envp);
+	// libterm(argc, argv, envp);
+	system_(argc, argv, envp);
 }
