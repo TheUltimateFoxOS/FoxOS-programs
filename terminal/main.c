@@ -170,6 +170,8 @@ int main(int argc, char* argv[], char* envp[]) {
 			}
 		} else if (buffer_len == max_buffer_size) {
 			printf("\b");
+		} else if (input == 0) {
+			break;
 		} else {
 			buffer[buffer_len] = input;
 			buffer_len++;
