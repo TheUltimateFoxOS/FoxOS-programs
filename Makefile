@@ -30,6 +30,7 @@ build:
 	@make -C clear
 	@make -C lolcat
 	@make -C matrix
+	@make -C foxt
 
 setup:
 	@mkdir $(BUILDDIR)
