@@ -8,6 +8,6 @@ int main(int argc, char* argv[], char* envp[]) {
 	// piping(argc, argv, envp);
 	//disk(argc, argv, envp);
 	//net(argc, argv, envp);
-	// libterm(argc, argv, envp);
-	system_(argc, argv, envp);
+	libterm(argc, argv, envp);
+	// system_(argc, argv, envp);
 }
