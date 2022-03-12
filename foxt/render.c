@@ -1,7 +1,10 @@
 #include <render.h>
 #include <term.h>
 
-#include <stdarg.h>>
+#include <stdarg.h>
+#include <rainbow.h>
+#include <string.h>
+#include <stdio.h>
 
 int cidx = 0;
 
