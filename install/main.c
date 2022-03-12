@@ -99,7 +99,26 @@ int main() {
 
 	printf("\n\n");
 	printf("FoxOS has been installed on the partition %s (%s).\n", partition_name, partition_path);
-	printf("If you want to install the bios bootloader you can do that using the following command: \"lminst dev:disk_<raw disk id>\"\nYou can get a list of all available disks by typing \"ls dev:\"\n");
+	// printf("If you want to install the bios bootloader you can do that using the following command: \"lminst dev:disk_<raw disk id>\"\nYou can get a list of all available disks by typing \"ls dev:\"\n");
+
+ask_again:
+	printf("\nDo you want to run the limine install helper now? (y/n) > ");
+	char answer[128] = { 0 };
+	gets(answer);
+
+	if (strcmp(answer, "y") == 0) {
+		printf("Starting limine install helper...\n");
+		char command[256] = { 0 };
+		sprintf(command, "terminal %s/res/lminst.fsh", getenv("ROOT_FS"));
+		system(command);
+	} else if (strcmp(answer, "n") == 0) {
+	} else {
+		printf("\n\n");
+		printf("Invalid answer.\n");
+		goto ask_again;
+	}
+
+	printf("\n\nSuccessfully installed FoxOS!\n");
 
 	return 0;
 }

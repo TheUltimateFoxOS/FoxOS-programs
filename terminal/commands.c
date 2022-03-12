@@ -111,6 +111,8 @@ bool run_command(char* command, char** terminal_envp, bool* should_break, char**
 		char* argv_str = read_env(command);
 		export(argv_str);
 		free(argv_str);
+	} else if (strncmp(command, (char*)"read", 4) == 0) {
+		read_(command);
 	} else if (strncmp(command, (char*)"exit", 4) == 0) {
 		*should_break = true;
 	} else {
@@ -309,6 +311,21 @@ void export(char* command) {
 	}
 
 	free(env_name_tmp);
+}
+
+void read_(char* command) {
+	if (strlen(command) <= 5) {
+		term_printf("No env var specified! Try like this: read output_var_name\n");
+		return;
+	}
+
+	char* env_var = command + 5;
+	char in[512] = { 0 };
+	gets(in);
+
+	char export_cmd[512] = { 0 };
+	sprintf(export_cmd, "export %s=%s", env_var, in);
+	export(export_cmd);
 }
 
 void pwd() {
