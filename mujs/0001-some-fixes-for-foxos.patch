@@ -4,52 +4,12 @@ Date: Fri, 17 Dec 2021 16:20:28 +0100
 Subject: [PATCH] some fixes for foxos
 
 ---
- jsrun.c   |  1 +
- jsstate.c | 14 ++++++++++----
  one.c     | 26 --------------------------
  pp.c      |  2 +-
  4 files changed, 12 insertions(+), 31 deletions(-)
  delete mode 100644 one.c
 
-diff --git a/jsrun.c b/jsrun.c
-index dd96e7e..5db2725 100644
---- a/jsrun.c
-+++ b/jsrun.c
-@@ -1305,6 +1305,7 @@ void js_throw(js_State *J)
- 	if (J->panic)
- 		J->panic(J);
- 	abort();
-+	while (1);
- }
- 
- /* Main interpreter loop */
-diff --git a/jsstate.c b/jsstate.c
-index 1dfb7fd..f863ad2 100644
---- a/jsstate.c
-+++ b/jsstate.c
-@@ -9,12 +9,18 @@
- #include <errno.h>
- 
- static int js_ptry(js_State *J) {
-+	// if (J->trytop == JS_TRYLIMIT) {
-+	// 	STACK[TOP].type = JS_TLITSTR;
-+	// 	STACK[TOP].u.litstr = "exception stack overflow";
-+	// 	++TOP;
-+	// 	return 1;
-+	// }
-+	// return 0;
- 	if (J->trytop == JS_TRYLIMIT) {
--		STACK[TOP].type = JS_TLITSTR;
--		STACK[TOP].u.litstr = "exception stack overflow";
--		++TOP;
--		return 1;
-+		printf("I have no idea what STACK is so bye!\n");
-+		abort();
- 	}
-+	// abort();
- 	return 0;
- }
- 
+
 diff --git a/one.c b/one.c
 deleted file mode 100644
 index 11ae034..0000000
