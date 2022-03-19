@@ -10,7 +10,6 @@ char* mode;
 bool is_edited = false;
 bool is_in_insert_mode = true;
 uint32_t old_color;
-
 int current_size = 0;
 
 unsigned int ln_cnt = 1;
