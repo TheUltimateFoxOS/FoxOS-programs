@@ -22,65 +22,43 @@ int main() {
 	printf("Which keyboard layout do you want to use? > ");
 	len = gets(keyboard_layout);
 
-	create_directory(partition_path, "/bin");
-	create_directory(partition_path, "/efi");
-	create_directory(partition_path, "/efi/boot");
-	create_directory(partition_path, "/boot");
-	create_directory(partition_path, "/boot/modules");
-	create_directory(partition_path, "/foxcfg");
-	create_directory(partition_path, "/res");
+	create_directory(partition_path, "/BIN");
+	create_directory(partition_path, "/EFI");
+	create_directory(partition_path, "/EFI/BOOT");
+	create_directory(partition_path, "/BOOT");
+	create_directory(partition_path, "/BOOT/MODULES");
+	create_directory(partition_path, "/FOXCFG");
+	create_directory(partition_path, "/RES");
 
-	copy_dir_across_fs(getenv("ROOT_FS"), partition_path, "/bin");
-	copy_dir_across_fs(getenv("ROOT_FS"), partition_path, "/res");
-	copy_dir_across_fs(getenv("ROOT_FS"), partition_path, "/boot/modules");
-	copy_dir_across_fs(getenv("ROOT_FS"), partition_path, "/efi/boot");
+	copy_dir_across_fs(getenv("ROOT_FS"), partition_path, "/BIN");
+	copy_dir_across_fs(getenv("ROOT_FS"), partition_path, "/RES");
+	copy_dir_across_fs(getenv("ROOT_FS"), partition_path, "/BOOT/MODULES");
+	copy_dir_across_fs(getenv("ROOT_FS"), partition_path, "/EFI/BOOT");
 
 	copy_file_across_fs(getenv("ROOT_FS"), partition_path, "", "startup.nsh");
 	copy_file_across_fs(getenv("ROOT_FS"), partition_path, "", "LICENSE");
 
-	copy_file_across_fs(getenv("ROOT_FS"), partition_path, "/boot", "foxkrnl.elf");
-	copy_file_across_fs(getenv("ROOT_FS"), partition_path, "/foxcfg", "start.fox");
+	copy_file_across_fs(getenv("ROOT_FS"), partition_path, "/BOOT", "foxkrnl.elf");
+	copy_file_across_fs(getenv("ROOT_FS"), partition_path, "/BOOT", "initrd.saf");
+	copy_file_across_fs(getenv("ROOT_FS"), partition_path, "/FOXCFG", "start.fox");
 
-	write_text_file(partition_path, "foxcfg/dn.fox", partition_name);
-
-	char** modules = malloc(sizeof(char*) * 50);
-	char** original_modules = modules;
-	list_files(getenv("ROOT_FS"), "/boot/modules", modules);
+	write_text_file(partition_path, "FOXCFG/dn.fox", partition_name);
 
 	char* limine_config = (char*) malloc(8192);
 	memset(limine_config, 0, 8192);
 
 	strcpy(limine_config, "TIMEOUT 3\n:FoxOS\nKASLR=no\nPROTOCOL=stivale2\nKERNEL_PATH=boot:///BOOT/foxkrnl.elf\n");
 
-	while (*modules != NULL) {
-		strcat(limine_config, "MODULE_PATH=boot:///BOOT/MODULES/");
-		strcat(limine_config, *modules);
-		strcat(limine_config, "\n");
-		strcat(limine_config, "MODULE_STRING=");
-		strcat(limine_config, *modules);
-		strcat(limine_config, "\n");
-		modules++;
-	}
+	strcat(limine_config, "MODULE_PATH=boot:///BOOT/initrd.saf\nMODULE_STRING=initrd.saf\n");
 
-	strcat(limine_config, "KERNEL_CMDLINE=");
-	modules = original_modules;
-	while (*modules != NULL) {
-		strcat(limine_config, "--load_module=stivale:");
-		strcat(limine_config, *modules);
-		strcat(limine_config, " ");
-		free(*modules);
-		modules++;
-	}
-
-	free(original_modules);
-
+	strcat(limine_config, "KERNEL_CMDLINE=--initrd=stivale:initrd.saf --load_modules=initrd:/ ");
 	strcat(limine_config, "--autoexec=");
 	strcat(limine_config, partition_name);
-	strcat(limine_config, ":/bin/init.elf ");
+	strcat(limine_config, ":/BIN/init.elf ");
 
 	strcat(limine_config, "--keymap_load_path=");
 	strcat(limine_config, partition_name);
-	strcat(limine_config, ":/res/\n");
+	strcat(limine_config, ":/RES/\n");
 
 	write_text_file(partition_path, "limine.cfg", limine_config);
 
@@ -93,7 +71,7 @@ int main() {
 
 	sprintf(foxos_config, "{\n    \"keyboard_layout\": \"%s\"\n}\n", keyboard_layout);
 
-	write_text_file(partition_path, "foxcfg/cfg.fox", foxos_config);
+	write_text_file(partition_path, "FOXCFG/cfg.fox", foxos_config);
 
 	free(foxos_config);
 
@@ -109,7 +87,7 @@ ask_again:
 	if (strcmp(answer, "y") == 0) {
 		printf("Starting limine install helper...\n");
 		char command[256] = { 0 };
-		sprintf(command, "terminal %s/res/lminst.fsh", getenv("ROOT_FS"));
+		sprintf(command, "terminal %s/RES/lminst.fsh", getenv("ROOT_FS"));
 		system(command);
 	} else if (strcmp(answer, "n") == 0) {
 	} else {

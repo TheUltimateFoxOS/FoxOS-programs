@@ -133,7 +133,7 @@ int main(int argc, char* argv[], char* envp[]) {
 		NULL
 	};
 
-	char auto_exec_path[256];
+	char auto_exec_path[256] = { 0 };
 	canresolve = resolve("FOXCFG/start.fox", auto_exec_path);
 	if (canresolve) {
 		// printf("Executing auto-exec file...\n");
