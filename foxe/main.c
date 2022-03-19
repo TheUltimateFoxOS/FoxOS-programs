@@ -6,14 +6,16 @@
 char* input_buffer;
 char* filename;
 char* file_type;
+FILE* f;
 char* mode;
 bool is_edited = false;
 bool is_in_insert_mode = true;
 uint32_t old_color;
-int current_size = 0;
+
+int current_size = 1;
 
 unsigned int ln_cnt = 1;
-unsigned int char_cnt = 1;
+unsigned int char_cnt = 0;
 
 unsigned int buffer_idx = 0;
 
@@ -22,7 +24,7 @@ char* get_file_extension(const char* filename) {
     return ++chr_ptr;
 }
 
-void render_status_bar(char* file_name,  bool is_edited, char* mode, unsigned int line_cnt, unsigned int char_count, char* f_type) {
+void render_status_bar() {
     set_color(0);
     clear_screen();
     set_color(old_color);
@@ -34,60 +36,105 @@ void render_status_bar(char* file_name,  bool is_edited, char* mode, unsigned in
     
     struct point_t screen_size = get_screen_size();
     set_cursor((struct point_t) { 0, screen_size.y - 16 });
-    printf("File: %s [%c]      Mode: --%s--                                  Line: %d,%d   Type: [%s]", file_name, edited, mode, line_cnt, char_count, f_type);
-    set_cursor((struct point_t) {0, 16});
-    printf("%s", input_buffer);
+    printf("File: %s [%c]      Mode: --%s--                                  Line: %d,%d   Type: [%s]", filename, edited, mode, ln_cnt, char_cnt, file_type);
+    set_cursor((struct point_t) {0, 16});    
+
+    for (int i = 0; i < current_size; i++) {
+        printf("%c", input_buffer[i]);
+    }
 }
 
 void listen_input(FILE* f) {
-    char inpt = getchar();
+    char input = getchar();
+
     if (!is_in_insert_mode) {
-        switch (inpt) {
+        switch (input) {
             case 'q':
                 set_color(0);
                 clear_screen();
                 set_color(old_color);
                 exit(1);
-            case 27:
+            case '\e':
                 is_in_insert_mode = !is_in_insert_mode;
-                if (is_in_insert_mode) {
-                    mode = "INSERT";
-                } else {
-                    mode = "EDIT";
+                mode = "INSERT";
+                break;
+            case 'a':
+                // move left one char
+                if (!buffer_idx <= 0) {
+                    buffer_idx -= 1;
                 }
                 break;
-            case 'p':
+            case '+':
                 // write save
+                fwrite(input_buffer, sizeof(char), current_size * sizeof(char), f);
+                break;
+            case '-':
+                // discard changes
+                set_color(0);
+                clear_screen();
+                set_color(old_color);
+
+                printf("Discard Changes (y/n)? ");
+
+                char discard_input = getchar();
+                if (discard_input == 121 || discard_input == 89) {
+                    // reallocate to whats currently in the file
+                    buffer_idx = f->size;
+                    current_size = f->size;
+                    input_buffer = (char*) realloc((void*) input_buffer, sizeof(char) * f->size);
+                    fread((void*) input_buffer, sizeof(char), f->size * sizeof(char), f);
+                    is_edited = false;
+                    render_status_bar();
+                }
                 break;
             default:
+                printf("");
                 break;
         }
     } else {
-        switch (inpt) {
-            case '\b':
-                // backspace
-                if (buffer_idx - 1 > 0) {
-                    input_buffer = (char*) realloc((void*) input_buffer, f->size + (--current_size));
-                    buffer_idx--;
-                    printf("\b");
-                }
-                break;
-            case 27:
-                is_in_insert_mode = !is_in_insert_mode;
-                if (is_in_insert_mode) {
-                    mode = "INSERT";
+        switch (input) {
+            case '\b': {
+                if (input_buffer[buffer_idx] == '\n') {
+                    ln_cnt--;
                 } else {
-                    mode = "EDIT";
+                    char_cnt--;
                 }
-                break;
-            default:
-                // just add the char at current pos and realloc
-                input_buffer = (char*) realloc((void*) input_buffer, f->size + (++current_size));
-                if (buffer_idx == f->size + current_size - 1) {
-                    input_buffer[f->size + current_size - 1] = inpt;
-                    buffer_idx++;
+
+                if (buffer_idx - 1 < 0 || current_size - 1 < 0) {
+                } else {
+                if (buffer_idx == current_size) {
+                } else {
+                    for (int i = buffer_idx + 1; i < current_size; i++) {
+                        input_buffer[i - 1] = input_buffer[i];
+                    }
+                    //input_buffer = (char*) memcpy((void*) &input_buffer[buffer_idx - 1], (void*) &input_buffer[buffer_idx + 1], (current_size-buffer_idx) * sizeof(input_buffer[0]));
                 }
+                input_buffer = (char*) realloc((void*) input_buffer, --current_size);
+                buffer_idx--;
+                }
+            }
+            break;
+            case '\e': {
+                is_in_insert_mode = !is_in_insert_mode;
+                mode = "EDIT";
                 break;
+            }
+
+
+            default: {
+                if (input == '\n') {
+                    ln_cnt++;
+                } else {
+                    char_cnt++;
+                }
+
+                is_edited = true;
+                input_buffer = (char*) realloc((void*) input_buffer, ++current_size);
+                memcpy(input_buffer + buffer_idx + 1, input_buffer + buffer_idx, current_size - buffer_idx/* - 1*/);
+                input_buffer[buffer_idx] = input;
+                buffer_idx++;
+            }
+            break;
         }
     }
 }
@@ -101,6 +148,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     filename = argv[1];
+    file_type = "";
     file_type = get_file_extension(argv[1]);
     mode = "INSERT";
 
@@ -109,11 +157,16 @@ int main(int argc, char* argv[]) {
     clear_screen();
     set_color(old_color);
 
-    FILE* f = fopen(argv[1], "w");
-    input_buffer = (char*) malloc(sizeof(char) * f->size);
+    f = fopen(argv[1], "w");
+    if (f->size != 0) {
+        input_buffer = (char*) malloc(sizeof(char) * f->size);
+    }
+    current_size = f->size;
+    buffer_idx = f->size;
+    fread((void*) input_buffer, sizeof(char), f->size * sizeof(char), f);
 
     while (true) {
-        render_status_bar(filename, is_edited, mode, ln_cnt, char_cnt, file_type);
+        render_status_bar();
         listen_input(f);
     }
 
