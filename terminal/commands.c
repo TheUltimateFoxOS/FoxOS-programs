@@ -338,7 +338,7 @@ task_t* spawn_process(char** argv, char** terminal_envp, pipe stdout, pipe stdin
 	const char** envp = (const char**) terminal_envp; //Maybe use actual enviromental vars?
 
 	errno = 0;
-	task_t* task = spawn(executable, (char**) argv, envp, true);
+	task_t* task = spawn(executable, (const char**) argv, envp, true);
 
 	if (task == NULL) {
 		return NULL;

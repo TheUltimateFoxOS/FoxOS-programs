@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
 
 	printf("Writing nyan mbr to %s... ", argv[1]);
 
-	write_sector_raw(argv[1], 0, 1, nyan_mbr);
+	write_sector_raw(argv[1], 0, 1, (uint64_t) nyan_mbr);
 
 	printf("Done.\n");
 	return 0;

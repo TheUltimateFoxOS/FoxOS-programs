@@ -43,7 +43,7 @@ int piping(int argc, char* argv[], char* envp[]) {
 		NULL
 	};
 
-    task_t* task = spawn("root:/bin/cat.elf", (char**) argv_for_new_prog, (char**) envp, true);
+    task_t* task = spawn("root:/bin/cat.elf", (const char**) argv_for_new_prog, (const char**) envp, true);
 
 	bool task_exit = false;
 	int task_exit_code = 0;

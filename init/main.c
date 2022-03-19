@@ -10,7 +10,7 @@
 #include <jsmn.h>
 
 static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
-	if (tok->type == JSMN_STRING && (int) strlen(s) == tok->end - tok->start && strncmp(json + tok->start, s, tok->end - tok->start) == 0) {
+	if (tok->type == JSMN_STRING && (int) strlen((char*) s) == tok->end - tok->start && strncmp(json + tok->start, s, tok->end - tok->start) == 0) {
 		return 0;
 	}
 	return -1;
@@ -143,7 +143,7 @@ int main(int argc, char* argv[], char* envp[]) {
 			NULL
 		};
 
-		task_t* autoexec_task = spawn(terminal_path, (char**) argv_for_auto_exec, envp_for_terminal, true);
+		task_t* autoexec_task = spawn(terminal_path, (const char**) argv_for_auto_exec, envp_for_terminal, true);
 
 		bool autoexec_task_exit = false;
 		autoexec_task->on_exit = &autoexec_task_exit;
@@ -162,7 +162,7 @@ int main(int argc, char* argv[], char* envp[]) {
 	task_t* terminal_task;
 
 respawn:
-	terminal_task = spawn(terminal_path, (char**) argv_for_terminal, envp_for_terminal, true);
+	terminal_task = spawn(terminal_path, (const char**) argv_for_terminal, envp_for_terminal, true);
 
 	if (terminal_task == NULL) {
 		printf("Could not spawn terminal with path: %s\n", terminal_path);
