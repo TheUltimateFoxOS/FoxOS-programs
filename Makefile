@@ -33,6 +33,7 @@ build:
 	@make -C foxt
 	@make -C nyanmbr
 	@make -C saf_extract
+	@make -C saf_make
 
 setup:
 	@mkdir $(BUILDDIR)

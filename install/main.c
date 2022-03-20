@@ -39,7 +39,6 @@ int main() {
 	copy_file_across_fs(getenv("ROOT_FS"), partition_path, "", "LICENSE");
 
 	copy_file_across_fs(getenv("ROOT_FS"), partition_path, "/BOOT", "foxkrnl.elf");
-	copy_file_across_fs(getenv("ROOT_FS"), partition_path, "/BOOT", "initrd.saf");
 	copy_file_across_fs(getenv("ROOT_FS"), partition_path, "/FOXCFG", "start.fox");
 
 	write_text_file(partition_path, "FOXCFG/dn.fox", partition_name);
@@ -66,6 +65,9 @@ int main() {
 
 	copy_file_across_fs(getenv("ROOT_FS"), partition_path, "", "limine.sys");
 
+	char initrd_build_cmd[512] = { 0 };
+	sprintf(initrd_build_cmd, "safm %s/BOOT/MODULES/ %s/BOOT/initrd.saf", partition_path, partition_path);
+
 	char* foxos_config = (char*) malloc(8192);
 	memset(foxos_config, 0, 8192);
 
@@ -74,6 +76,9 @@ int main() {
 	write_text_file(partition_path, "FOXCFG/cfg.fox", foxos_config);
 
 	free(foxos_config);
+
+	printf("[BUILD] Building initrd now...\n");
+	system(initrd_build_cmd);
 
 	printf("\n\n");
 	printf("FoxOS has been installed on the partition %s (%s).\n", partition_name, partition_path);
