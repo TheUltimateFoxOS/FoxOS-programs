@@ -65,9 +65,6 @@ int main() {
 
 	copy_file_across_fs(getenv("ROOT_FS"), partition_path, "", "limine.sys");
 
-	char initrd_build_cmd[512] = { 0 };
-	sprintf(initrd_build_cmd, "safm %s/BOOT/MODULES/ %s/BOOT/initrd.saf", partition_path, partition_path);
-
 	char* foxos_config = (char*) malloc(8192);
 	memset(foxos_config, 0, 8192);
 
@@ -76,6 +73,9 @@ int main() {
 	write_text_file(partition_path, "FOXCFG/cfg.fox", foxos_config);
 
 	free(foxos_config);
+
+	char initrd_build_cmd[512] = { 0 };
+	sprintf(initrd_build_cmd, "safm %s/BOOT/MODULES/ %s/BOOT/initrd.saf -q", partition_path, partition_path);
 
 	printf("[BUILD] Building initrd now...\n");
 	system(initrd_build_cmd);
