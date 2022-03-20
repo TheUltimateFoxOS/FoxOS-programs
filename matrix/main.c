@@ -56,6 +56,7 @@ void frame() {
 
 	for (int i = 0; i < rows; i++) {
 		set_cursor((struct point_t) { 0, i * 16 });
+		set_color(0);
 		clear_line();
 
 		for (int j = 0; j < cols; j++) {
@@ -71,9 +72,10 @@ void frame() {
 
 	num_frames_rendered++;
 
-	set_color(0xffffffff);
+	set_color(0);
 	set_cursor((struct point_t) { 0, screen_size.y - 16 });
 	clear_line();
+	set_color(0xffffffff);
 	printf("frames: %d (%d fps next update in %d s)", num_frames_rendered, fps, start_time + 10 - _time());
 
 	if (start_time + 10 - _time() < 0) {
