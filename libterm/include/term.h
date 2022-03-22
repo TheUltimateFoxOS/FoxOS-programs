@@ -17,3 +17,6 @@ struct point_t get_screen_size();
 
 void clear_screen();
 void clear_line();
+
+void enable_print_char();
+void disable_print_char();

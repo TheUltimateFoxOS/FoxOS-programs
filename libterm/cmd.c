@@ -7,6 +7,12 @@
 
 int font_renderer_device = 0;
 
+void __libterm_send_command_ps2(char* command, int size) {
+	int fd = open("dev:ps2_keyboard");
+	write(fd, command, size, 0);
+	close(fd);
+}
+
 void __libterm_send_command(char* command, int size) {
 	if (font_renderer_device == 0) {
 		font_renderer_device = open("dev:font_renderer");

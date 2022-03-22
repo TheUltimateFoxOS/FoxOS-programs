@@ -146,3 +146,21 @@ void clear_line() {
 
 	set_cursor((struct point_t) { 0, get_cursor().y });
 }
+
+void enable_print_char() {
+	char change_keyboard_print_char_cmd[] = {
+		0x3, // opcode change print char
+		1
+	};
+
+	__libterm_send_command_ps2(change_keyboard_print_char_cmd, sizeof(change_keyboard_print_char_cmd));
+}
+
+void disable_print_char() {
+	char change_keyboard_print_char_cmd[] = {
+		0x3, // opcode change print char
+		0
+	};
+
+	__libterm_send_command_ps2(change_keyboard_print_char_cmd, sizeof(change_keyboard_print_char_cmd));
+}
