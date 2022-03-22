@@ -144,6 +144,59 @@ static nodelist_t* make_node(char* path) {
 	return ret;
 }
 
+size_t calculate_size(char* path) {
+	size_t size = 0;
+	uint64_t nc = childcnt(path);
+	
+	char res_path[512] = { 0 };
+	if (!resolve(path, res_path)) {
+		panic("could not resolve path %s\n", path);
+	}
+
+	int idx = 0;
+	dir_t ent = dir_at(idx, res_path);
+	while (!ent.is_none) {
+		char* fullpath = (char*)malloc(MAX_PATH_SIZE);
+		sprintf(fullpath, "%s/%s", path, ent.name);
+
+		// ignore things that are not files or folders
+		if (ent.type != ENTRY_FILE && ent.type != ENTRY_DIR) {
+			info("ignoring node %s with unknown type\n", fullpath);
+			continue;
+		}
+
+		// calculate size of node structure
+		size_t nodesize;
+		if (ent.type == ENTRY_DIR) {
+			nodesize = sizeof(saf_node_folder_t) + (childcnt(fullpath) * sizeof(saf_offset_t));
+		} else {
+			nodesize = sizeof(saf_node_file_t);
+		}
+		
+		
+		size += nodesize;
+
+		// the node is a folder
+		if (ent.type == ENTRY_DIR) {
+			size_t children = calculate_size(fullpath);
+			size += children;
+		}
+		// the node is a file
+		else if (ent.type == ENTRY_FILE) {
+			FILE* f = fopen(fullpath, "rb");
+			if (!f) {
+				panic("could not open file %s\n", fullpath);
+			}
+			fseek(f, 0, SEEK_END);
+			size += ftell(f);
+			fclose(f);
+		}
+
+		ent = dir_at(++idx, res_path);
+	}
+	return size;
+}
+
 int main(int argc, char* argv[]) {
 	if (argc < 2) {
 		printf("Usage: saf-make <folder-name> <archive-name> [-q]\n");
@@ -158,11 +211,13 @@ int main(int argc, char* argv[]) {
 	} else {
 		output = argv[2];
 	}
+	
+	size_t alloc_needed = calculate_size(input) + sizeof(saf_node_folder_t) + (childcnt(input) * sizeof(saf_offset_t));
 
 	adata = (arch_data_t) {
-		.ptr = malloc(INITIAL_ALLOC_SIZE),
+		.ptr = malloc(alloc_needed),
 		.curr_offset = 0,
-		.alloc_size = INITIAL_ALLOC_SIZE
+		.alloc_size = alloc_needed
 	};
 
 	// create the root node
