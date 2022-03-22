@@ -34,6 +34,7 @@ build:
 	@make -C nyanmbr
 	@make -C saf_extract
 	@make -C saf_make
+	@make -C foxe
 
 setup:
 	@mkdir $(BUILDDIR)
