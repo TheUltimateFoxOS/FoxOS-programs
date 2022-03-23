@@ -220,6 +220,8 @@ int main(int argc, char* argv[]) {
 		.alloc_size = alloc_needed
 	};
 
+	memset(adata.ptr, 0, alloc_needed);
+
 	// create the root node
 	saf_node_folder_t* root = (saf_node_folder_t*)(adata.ptr + adata.curr_offset);
 	size_t nodesize = sizeof(saf_node_folder_t) + (childcnt(input) * sizeof(saf_offset_t));
