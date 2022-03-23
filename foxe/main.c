@@ -140,6 +140,7 @@ bool listen_input(FILE* f) {
                 break;
             case '+':
                 // write save
+                fseek(f, 0, SEEK_SET);
                 fwrite(input_buffer, sizeof(char), current_size * sizeof(char), f);
                 break;
             case '-':
