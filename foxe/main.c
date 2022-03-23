@@ -30,6 +30,25 @@ char* get_file_extension(const char* filename) {
     return ++chr_ptr;
 }
 
+void render_usage() {
+    printf("\tUsage: foxe <file-name>\n\n");
+
+    printf("Cheat sheet\n\t");
+    printf("w -> move up a line\n\t");
+    printf("a -> move left a character\n\t");
+    printf("s -> move down a line\n\t");
+    printf("d -> move right a char\n\n\t");
+
+    printf("W -> move to top of file\n\t");
+    printf("A -> move to beginning of line\n\t");
+    printf("S -> move to bottom of file\n\t");
+    printf("D -> move to the end of a line\n\n\t");
+
+    printf("+ -> write changes to file\n\t");
+    printf("- -> discard changes\n\t");
+    printf("q -> quits the editor (without saving!!!)\n");
+}
+
 void render_status_bar() {
     set_color(0);
     clear_screen();
@@ -143,18 +162,16 @@ bool listen_input(FILE* f) {
                 break;
             
             case 'A': {
-                    for (int i = buffer_idx; i >= 0; i--) {
-                        buffer_idx = i;
-                        if (input_buffer[i - 1] == '\n') {
+                    for (;buffer_idx > 0; buffer_idx--) {
+                        if (input_buffer[buffer_idx - 1] == '\n') {
                             break;
                         }
                     }
                 }
                 break;
             case 'D': {
-                    for (int i = buffer_idx; i <= current_size; i++) {
-                        buffer_idx = i;
-                        if (input_buffer[i - 1] == '\n') {
+                    for (; buffer_idx < current_size; buffer_idx++) {
+                        if (input_buffer[buffer_idx + 1] == '\n') {
                             break;
                         }
                     }
@@ -175,6 +192,7 @@ bool listen_input(FILE* f) {
                     // write save
                     fseek(f, 0, SEEK_SET);
                     fwrite(input_buffer, sizeof(char), current_size * sizeof(char), f);
+                    is_edited = false;
                 }
                 break;
             case '-': {
@@ -252,13 +270,11 @@ bool listen_input(FILE* f) {
 }
 
 int main(int argc, char* argv[]) {
-    if (argc < 2) {
-        printf("Not enough arguments. foxe takes 1 argument but 0 were given!\nUsage: foxe <file-name>\n");
-        return 1;
-    } else if (argc > 2) {
-        printf("To many arguments. foxe takes 1 argument but %d were given!\nUsage: foxe <file-name>\n", argc - 1);
+    if (argc == 1) {
+        render_usage();
         return 1;
     }
+
     filename = argv[1];
     file_type = "";
     file_type = get_file_extension(argv[1]);
