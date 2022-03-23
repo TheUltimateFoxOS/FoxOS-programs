@@ -32,6 +32,7 @@ build:
 	@make -C matrix
 	@make -C foxt
 	@make -C foxe
+	@make -C touch
 
 setup:
 	@mkdir $(BUILDDIR)
