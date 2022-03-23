@@ -47,6 +47,7 @@ void render_status_bar() {
     set_cursor((struct point_t) {0, CHAR_SIZE});
     
     int j = 0;
+    bool cursor_drawn = false;
     int allready_drawn = 0;
     for (int i = 0; i < current_size; i++) {
         if ((ln_cnt - 1 < possible_lines_to_draw || j >= buffer_ln_idx) && allready_drawn <= possible_lines_to_draw) {
@@ -54,12 +55,19 @@ void render_status_bar() {
                 set_color(0x33cccc);
                 putchar('|');
                 set_color(old_color);
+                cursor_drawn = true;
             }
             putchar(input_buffer[i]);
             if (input_buffer[i] == '\n') allready_drawn++;
         } else {
-            if (input_buffer[i] == '\n') j++; 
+            if (input_buffer[i] == '\n') j++;
         }
+    }
+
+    if (!cursor_drawn) {
+        set_color(0x33cccc);
+        putchar('|');
+        set_color(old_color);
     }
 }
 
@@ -68,24 +76,29 @@ bool listen_input(FILE* f) {
 
     if (!is_in_insert_mode) {
         switch (input) {
-            case 'q':
-				return true;
-            case '\e':
-                is_in_insert_mode = !is_in_insert_mode;
-                mode = "INSERT";
-                break;
-            case 'a':
-                // move left one char
-                if (!buffer_idx <= 0) {
-                    if (input_buffer[buffer_idx - 1] == '\n') buffer_ln_idx--;
-                    buffer_idx -= 1;
+            case 'q': {
+				    return true;
+                }
+            case '\e': {
+                    is_in_insert_mode = !is_in_insert_mode;
+                    mode = "INSERT";
                 }
                 break;
-            case 'd':
-                // move right one char
-                if (buffer_idx < current_size) {
-                    if (input_buffer[buffer_idx] == '\n') buffer_ln_idx++;
-                    buffer_idx += 1;
+            
+            case 'a': {
+                    // move left one char
+                    if (!buffer_idx <= 0) {
+                        if (input_buffer[buffer_idx - 1] == '\n') buffer_ln_idx--;
+                        buffer_idx -= 1;
+                    }
+                }
+                break;
+            case 'd': {
+                    // move right one char
+                    if (buffer_idx < current_size) {
+                        if (input_buffer[buffer_idx] == '\n') buffer_ln_idx++;
+                        buffer_idx += 1;
+                    }
                 }
                 break;
             case 'w': {
@@ -128,6 +141,25 @@ bool listen_input(FILE* f) {
                     }
                 }
                 break;
+            
+            case 'A': {
+                    for (int i = buffer_idx; i >= 0; i--) {
+                        buffer_idx = i;
+                        if (input_buffer[i - 1] == '\n') {
+                            break;
+                        }
+                    }
+                }
+                break;
+            case 'D': {
+                    for (int i = buffer_idx; i <= current_size; i++) {
+                        buffer_idx = i;
+                        if (input_buffer[i - 1] == '\n') {
+                            break;
+                        }
+                    }
+                }
+                break;
             case 'W': {
                     buffer_idx = 0;
                     buffer_ln_idx = 0;
@@ -138,33 +170,36 @@ bool listen_input(FILE* f) {
                     buffer_ln_idx = ln_cnt - 1;
                 }
                 break;
-            case '+':
-                // write save
-                fseek(f, 0, SEEK_SET);
-                fwrite(input_buffer, sizeof(char), current_size * sizeof(char), f);
-                break;
-            case '-':
-                // discard changes
-                set_color(0);
-                clear_screen();
-                set_color(old_color);
 
-                printf("Discard Changes (y/n)? ");
-
-                char discard_input = getchar();
-                if (discard_input == 121 || discard_input == 89) {
-                    // reallocate to whats currently in the file
-                    buffer_idx = f->size;
-                    current_size = f->size;
-                    input_buffer = (char*) realloc((void*) input_buffer, sizeof(char) * f->size);
-                    fread((void*) input_buffer, sizeof(char), f->size * sizeof(char), f);
-                    is_edited = false;
-                    render_status_bar();
+            case '+': {
+                    // write save
+                    fseek(f, 0, SEEK_SET);
+                    fwrite(input_buffer, sizeof(char), current_size * sizeof(char), f);
                 }
                 break;
-            default:
-                printf("");
+            case '-': {
+                    // discard changes
+                    set_color(0);
+                    clear_screen();
+                    set_color(old_color);
+
+                    printf("Discard Changes (y/n)? ");
+
+                    char discard_input = getchar();
+                    if (discard_input == 121 || discard_input == 89) {
+                        // reallocate to whats currently in the file
+                        buffer_idx = f->size;
+                        current_size = f->size;
+                        input_buffer = (char*) realloc((void*) input_buffer, sizeof(char) * f->size);
+                        fread((void*) input_buffer, sizeof(char), f->size * sizeof(char), f);
+                        is_edited = false;
+                        render_status_bar();
+                    }
+                }
                 break;
+            default: {
+                    break;
+                }
         }
     } else {
         switch (input) {
