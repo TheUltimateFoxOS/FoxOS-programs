@@ -270,7 +270,7 @@ bool listen_input(FILE* f) {
 }
 
 int main(int argc, char* argv[]) {
-    if (argc == 1) {
+    if (argc < 2 || argc > 2) {
         render_usage();
         return 1;
     }
