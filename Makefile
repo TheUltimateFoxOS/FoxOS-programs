@@ -5,6 +5,7 @@ build:
 	@echo "Building libaries"
 	@make -C libc
 	@make -C libterm
+	@make -C libgraphics
 
 	@echo "Building programs"
 	@make -C test
