@@ -18,7 +18,17 @@ static inline void fox_start_frame(bool empty_fb) {
 	if (!empty_fb) {
 		copy_from_fb(global_fb_ptr);
 	} else {
-		memset(global_fb_ptr, 0, global_fb.buffer_size);
+		uint64_t base = (uint64_t) global_fb_ptr;
+		uint64_t bytes_per_scanline = global_fb.width * 4;
+		uint64_t fb_height = global_fb.height;
+		uint64_t fb_size = global_fb.buffer_size;
+
+		for (int vertical_scanline = 0; vertical_scanline < fb_height; vertical_scanline ++){
+			uint64_t pix_ptr_base = base + (bytes_per_scanline * vertical_scanline);
+			for (uint32_t* pixPtr = (uint32_t*)pix_ptr_base; pixPtr < (uint32_t*)(pix_ptr_base + bytes_per_scanline); pixPtr ++){
+				*pixPtr = 0;
+			}
+		}
 	}
 }
 
