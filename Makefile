@@ -36,6 +36,7 @@ build:
 	@make -C saf_make
 	@make -C foxe
 	@make -C touch
+	@make -C foxp
 
 setup:
 	@mkdir $(BUILDDIR)
