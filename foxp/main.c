@@ -36,6 +36,10 @@ int main(int argc, char *argv[]) {
 	for (int y = 0; y < image->height; y++) {
 		for (int x = 0; x < image->width; x++) {
 			uint32_t pixel = image->pixels[y * image->width + x];
+			if (global_fb.width < x || global_fb.height - 16 < y) {
+				continue;
+			}
+
 			fox_set_px(x, y, pixel);
 		}
 	}
@@ -43,7 +47,11 @@ int main(int argc, char *argv[]) {
 	char font_load_path[512] = { 0 };
 	sprintf(font_load_path, "%s/RES/zap-light16.psf", getenv("ROOT_FS"));
 	psf1_font_t font = fox_load_font(font_load_path);
-	fox_draw_string(0, image->height + 16, "Press any key to exit", 0xFFFFFFFF, &font);
+	if (global_fb.width < image->width || global_fb.height < image->height) {
+		fox_draw_string(0, global_fb.height - 16, "Press any key to exit (Image was too big, rendered as much as possible)", 0xffffffff, &font);
+	} else {
+		fox_draw_string(0, image->height + 16, "Press any key to exit", 0xFFFFFFFF, &font);
+	}
 
 	fox_end_frame();
 
