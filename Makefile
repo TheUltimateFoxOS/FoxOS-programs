@@ -36,7 +36,7 @@ build:
 	@make -C saf_make
 	@make -C foxe
 	@make -C touch
-	@make -C foxp
+	@make -C imgview
 	@make -C tic_tac_toe
 
 setup:

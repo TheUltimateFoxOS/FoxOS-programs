@@ -1,7 +1,7 @@
 OBJDIR = ../lib
 BUILDDIR = ../bin
 
-OUTPUT = foxp.elf
+OUTPUT = imgview.elf
 
 rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
 

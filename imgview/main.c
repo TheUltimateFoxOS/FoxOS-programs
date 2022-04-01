@@ -5,11 +5,7 @@
 #include <fox_graphics.h>
 #include <term.h>
 
-typedef struct {
-	uint64_t width;
-	uint64_t height;
-	uint32_t pixels[];
-} fpic_image_t;
+#include <image_reader.h>
 
 int main(int argc, char *argv[]) {
 	if (argc != 2) {
@@ -27,15 +23,17 @@ int main(int argc, char *argv[]) {
 	fread(buffer, f->size, 1, f);
 	fclose(f);
 
-	fpic_image_t* image = (fpic_image_t*) buffer;
-
-	// printf("Image: %d x %d\n", image->width, image->height);
+	image_reader_t* reader = image_reader_detect(buffer);
+	assert(reader != NULL);
 
 	fox_start_frame(true);
 
-	for (int y = 0; y < image->height; y++) {
-		for (int x = 0; x < image->width; x++) {
-			uint32_t pixel = image->pixels[y * image->width + x];
+	int width = reader->get_width(buffer);
+	int height = reader->get_height(buffer);
+
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			uint32_t pixel = reader->get_pix(buffer, x, y);
 			if (global_fb.width < x || global_fb.height - 16 < y) {
 				continue;
 			}
@@ -43,14 +41,14 @@ int main(int argc, char *argv[]) {
 			fox_set_px(x, y, pixel);
 		}
 	}
-	
+
 	char font_load_path[512] = { 0 };
 	sprintf(font_load_path, "%s/RES/zap-light16.psf", getenv("ROOT_FS"));
 	psf1_font_t font = fox_load_font(font_load_path);
-	if (global_fb.width < image->width || global_fb.height < image->height) {
+	if (global_fb.width < width || global_fb.height < height) {
 		fox_draw_string(0, global_fb.height - 16, "Press any key to exit (Image was too big, rendered as much as possible)", 0xffffffff, &font);
 	} else {
-		fox_draw_string(0, image->height + 16, "Press any key to exit", 0xFFFFFFFF, &font);
+		fox_draw_string(0, height + 16, "Press any key to exit", 0xFFFFFFFF, &font);
 	}
 
 	fox_end_frame();
