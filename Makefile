@@ -37,6 +37,7 @@ build:
 	@make -C foxe
 	@make -C touch
 	@make -C foxp
+	@make -C tic_tac_toe
 
 setup:
 	@mkdir $(BUILDDIR)
