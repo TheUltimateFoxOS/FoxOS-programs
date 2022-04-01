@@ -12,7 +12,7 @@
 #define GRAPHICS_RENDERING_MODE
 #define CURSOR_COLOR 0x33cccc
 #define LINE_NUMBER_COLOR 0xa9a9a9
-#define SPACE_BETWEEN_LINE_NUMBER_TEXT 4 * CHAR_WIDTH
+#define SPACE_BETWEEN_LINE_NUMBER_TEXT 1 * CHAR_WIDTH
 
 char* copy_buffer;
 bool copy_buffer_is_set = false;
@@ -80,17 +80,26 @@ void render_status_bar() {
 	fox_draw_string(0, global_fb.height - CHAR_SIZE, buff, 0xffffffff, &font);
 
 	int j = 0;
-	int cur_x = SPACE_BETWEEN_LINE_NUMBER_TEXT;
+	int cur_x;
 	int cur_y = 0;
 	bool cursor_drawn = false;
+	bool initial_line_drawn = false;
 	int allready_drawn = 0;
 	int current_line = 1;
-	
-	//sprintf(buff, "%d.", current_line);
-	//fox_draw_string(0, cur_y, buff, LINE_NUMBER_COLOR, &font);
-	
+	int space_to_draw;
+	sprintf(buff, "%d .", ln_cnt);
+	space_to_draw = SPACE_BETWEEN_LINE_NUMBER_TEXT + (strlen(buff) * CHAR_WIDTH);
+	cur_x = space_to_draw;
+	fox_draw_line(space_to_draw - (1 * CHAR_WIDTH), 0, space_to_draw - (1 * CHAR_WIDTH), global_fb.height, LINE_NUMBER_COLOR);
+
 	for (int i = 0; i < current_size; i++) {
 		if ((ln_cnt - 1 < possible_lines_to_draw || j >= buffer_ln_idx) && allready_drawn <= possible_lines_to_draw) {
+			if (!initial_line_drawn) {
+				initial_line_drawn = true;
+				sprintf(buff, "%d.", current_line);
+				fox_draw_string(0, cur_y, buff, LINE_NUMBER_COLOR, &font);
+			}
+
 			if (i == buffer_idx) {
 				// set_color(0x33cccc);
 				// putchar('|');
@@ -107,24 +116,29 @@ void render_status_bar() {
 			if (input_buffer[i] == '\n') {
 				allready_drawn++;
 				current_line++;
-				cur_x = SPACE_BETWEEN_LINE_NUMBER_TEXT;
+				cur_x = space_to_draw;
 				cur_y += CHAR_SIZE;
-				//sprintf(buff, "%d.", current_line);
-				//fox_draw_string(0, cur_y, buff, LINE_NUMBER_COLOR, &font);
+				sprintf(buff, "%d.", current_line);
+				fox_draw_string(0, cur_y, buff, LINE_NUMBER_COLOR, &font);
 			}
             else if ((cur_x / CHAR_WIDTH) % max_length_before_line_wrap == 0) {
                 cur_y += CHAR_SIZE;
-				cur_x = SPACE_BETWEEN_LINE_NUMBER_TEXT;
+				cur_x = space_to_draw;
 				allready_drawn++;
             }
 		} else {
 			if (input_buffer[i] == '\n') {
+				current_line++;
 				j++;
 			}
 		}
 	}
 
 	if (!cursor_drawn) {
+		if (!initial_line_drawn) {
+			sprintf(buff, "%d.", current_line);
+			fox_draw_string(0, cur_y, buff, LINE_NUMBER_COLOR, &font);
+		}
 		fox_draw_char(cur_x, cur_y, '|', 0x33cccc, &font);
 	}
 
