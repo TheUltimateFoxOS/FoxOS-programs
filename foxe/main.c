@@ -90,7 +90,7 @@ void render_status_bar() {
 	sprintf(buff, "%d .", ln_cnt);
 	space_to_draw = SPACE_BETWEEN_LINE_NUMBER_TEXT + (strlen(buff) * CHAR_WIDTH);
 	cur_x = space_to_draw;
-	fox_draw_line(space_to_draw - (1 * CHAR_WIDTH), 0, space_to_draw - (1 * CHAR_WIDTH), global_fb.height, LINE_NUMBER_COLOR);
+	fox_draw_line(space_to_draw - (1 * CHAR_WIDTH), 0, space_to_draw - (1 * CHAR_WIDTH), global_fb.height - (2 * CHAR_WIDTH), LINE_NUMBER_COLOR);
 
 	for (int i = 0; i < current_size; i++) {
 		if ((ln_cnt - 1 < possible_lines_to_draw || j >= buffer_ln_idx) && allready_drawn <= possible_lines_to_draw) {
