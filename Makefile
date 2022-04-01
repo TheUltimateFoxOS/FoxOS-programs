@@ -18,7 +18,6 @@ build:
 	@make -C rm
 	@make -C mkdir
 	@make -C date
-	@make -C mujs
 	@make -C install
 	@make -C calc
 	@make -C ping
@@ -37,6 +36,8 @@ build:
 	@make -C saf_make
 	@make -C foxe
 	@make -C touch
+	@make -C foxp
+	@make -C tic_tac_toe
 
 setup:
 	@mkdir $(BUILDDIR)
