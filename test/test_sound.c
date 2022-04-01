@@ -4,6 +4,7 @@
 #include <sys/sound_get_channel_count.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <sys/delay.h>
 
 #define note_4(n) sound_push_note(ENCODE_NOTE(5, n), 0, 500); sound_push_note(0, 0, 250)
 #define note_8(n) sound_push_note(ENCODE_NOTE(5, n), 0, 300); sound_push_note(0, 0, 250)
@@ -43,5 +44,6 @@ int sound(int argc, char* argv[], char* envp[]) {
 
 		printf("Waiting for sync...\n");
 		sound_sync();
+		delay(1000);
 	}
 }

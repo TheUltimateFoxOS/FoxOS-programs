@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <term.h>
 #include <sys/time.h>
+#include <fox_graphics.h>
+
+#define GRAPHICS_RENDERING_MODE
 
 #define RAND_MAX 32767
 unsigned long next = 0;
@@ -21,12 +24,13 @@ uint64_t num_frames_rendered_in_10_seconds = 0;
 long long start_time = 0;
 int fps = 0;
 
+psf1_font_t font;
+struct point_t screen_size;
+
 void frame() {
 	if (start_time == 0) {
 		start_time = _time();
 	}
-
-	struct point_t screen_size = get_screen_size();
 
 	int rows = screen_size.y / 16 - 2;
 	int cols = screen_size.x / 8 - 1;
@@ -54,29 +58,49 @@ void frame() {
 		}
 	}
 
+#ifdef GRAPHICS_RENDERING_MODE
+	fox_start_frame(true);
+#endif
+
 	for (int i = 0; i < rows; i++) {
+	#ifndef GRAPHICS_RENDERING_MODE
 		set_cursor((struct point_t) { 0, i * 16 });
 		set_color(0);
 		clear_line();
+	#endif
 
 		for (int j = 0; j < cols; j++) {
 			
 			if (buffer[i][j]) {
+			#ifndef GRAPHICS_RENDERING_MODE
 				set_cursor((struct point_t) { j * 8, i * 16 });
 				set_color(0xff000000 | ((0xff - buffer[i][j]) << 12));
 				putchar('X');
+			#else
+				fox_draw_char(j * 8, i * 16, 'X', 0xff000000 | ((0xff - buffer[i][j]) << 12), &font);
+			#endif
 			}
 
 		}
 	}
 
+#ifdef GRAPHICS_RENDERING_MODE
+	char buffer[512] = { 0 };
+	sprintf(buffer, "frames: %d (%d fps next update in %d s)", num_frames_rendered + 1, fps, start_time + 10 - _time());
+	fox_draw_string(0, screen_size.y - 16, buffer, 0xffffffff, &font);
+
+	fox_end_frame();
+#endif
+
 	num_frames_rendered++;
 
+#ifndef GRAPHICS_RENDERING_MODE
 	set_color(0);
 	set_cursor((struct point_t) { 0, screen_size.y - 16 });
 	clear_line();
 	set_color(0xffffffff);
 	printf("frames: %d (%d fps next update in %d s)", num_frames_rendered, fps, start_time + 10 - _time());
+#endif
 
 	if (start_time + 10 - _time() < 0) {
 		start_time = 0;
@@ -88,6 +112,12 @@ void frame() {
 }
 
 int main() {
+	char font_load_path[512] = { 0 };
+	sprintf(font_load_path, "%s/RES/zap-light16.psf", getenv("ROOT_FS"));
+	font = fox_load_font(font_load_path);
+
+	screen_size = get_screen_size();
+	
 	while (1) {
 		frame();
 	}
