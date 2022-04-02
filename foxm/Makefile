@@ -1,7 +1,7 @@
 OBJDIR = ../lib
 BUILDDIR = ../bin
 
-OUTPUT = lminst.elf
+OUTPUT = foxm.elf
 
 rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
 
@@ -10,8 +10,8 @@ OBJS = $(patsubst %.c, $(OBJDIR)/%_$(OUTPUT).o, $(CPPSRC))
 
 TOOLCHAIN_BASE = /usr/local/foxos-x86_64_elf_gcc
 
-CFLAGS = -mno-red-zone -ffreestanding -fno-stack-protector -fpic -g -I ../libc/include -Iinclude
-LDFLAGS = -pic $(BUILDDIR)/libc.a
+CFLAGS = -mno-red-zone -ffreestanding -fno-stack-protector -fpic -g -I ../libc/include -I ../libterm/include -I ../libgraphics/include -Iinclude
+LDFLAGS = -pic $(BUILDDIR)/libc.a $(BUILDDIR)/libterm.a.o $(BUILDDIR)/libgraphics.a.o
 
 ifeq (,$(wildcard $(TOOLCHAIN_BASE)/bin/foxos-gcc))
 	CC = gcc
@@ -31,14 +31,9 @@ else
 	LD = $(TOOLCHAIN_BASE)/bin/foxos-ld
 endif
 
-all: ./include/limine-hdd.h $(OUTPUT)
-
 $(OUTPUT): $(OBJS)
 	@echo LD $^
 	@$(LD) $(LDFLAGS) -o $(BUILDDIR)/$@ $^
-
-./include/limine-hdd.h:
-	curl -L https://github.com/limine-bootloader/limine/raw/v2.0-branch-binary/limine-hdd.h -o $@
 
 $(OBJDIR)/%_$(OUTPUT).o: %.c
 	@echo "CC $^ -> $@"

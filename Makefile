@@ -38,6 +38,7 @@ build:
 	@make -C touch
 	@make -C imgview
 	@make -C tic_tac_toe
+	@make -C foxm
 
 setup:
 	@mkdir $(BUILDDIR)
