@@ -38,7 +38,7 @@ $(OUTPUT): $(OBJS)
 	@$(LD) $(LDFLAGS) -o $(BUILDDIR)/$@ $^
 
 ./include/limine-hdd.h:
-	curl -L https://github.com/limine-bootloader/limine/raw/v2.0-branch-binary/limine-hdd.h -o $@
+	curl -L https://github.com/limine-bootloader/limine/raw/v3.0-branch-binary/limine-hdd.h -o $@
 
 $(OBJDIR)/%_$(OUTPUT).o: %.c
 	@echo "CC $^ -> $@"
