@@ -248,8 +248,8 @@ int main(int argc, char* argv[], char* envp[]) {
 		}
 
 		if (input == '\b') {
-			buffer[buffer_len] = 0;
 			buffer_len--;
+			buffer[buffer_len] = 0;
 			if (buffer_len == -1) {
 				printf(" ");
 				buffer_len = 0;
