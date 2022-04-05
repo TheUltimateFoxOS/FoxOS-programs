@@ -7,6 +7,8 @@
 
 int get_command_type(char* command, int* token_pos, bool* double_pipe_symbol) {
 	*double_pipe_symbol = false;
+	*token_pos = 0;
+	
 	int command_length = strlen(command);
 
 	bool quote_open = false;

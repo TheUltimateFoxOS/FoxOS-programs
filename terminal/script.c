@@ -8,7 +8,7 @@
 
 bool command_received(char* command, bool* should_break, char* stdin);
 
-void run_script(char* path, int max_buffer_size) {
+void run_script(char* path) {
 	char resolved_path[256] = { 0 };
 	bool canresolve = resolve(path, resolved_path);
 	if (!canresolve) {

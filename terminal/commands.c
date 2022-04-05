@@ -92,28 +92,28 @@ bool run_command(char* command, char** terminal_envp, bool* should_break, char**
 		stdin_pos = 0;
 	}
 
-	if (strncmp(command, (char*)"loadkeymap", 10) == 0) {
+	if (strncmp(command, (char*)"loadkeymap ", 11) == 0) {
 		load_keymap(command);
 	} else if (strcmp(command, (char*)"keydbg on") == 0) {
 		keydbg(true);
 	} else if (strcmp(command, (char*)"keydbg off") == 0) {
 		keydbg(false);
-	} else if (strncmp(command, (char*)"cd", 2) == 0) {
+	} else if (strncmp(command, (char*)"cd ", 3) == 0) {
 		char** argv = argv_split(command);
 		argv = argv_env_process(argv);
 
 		cd(argv);
 
 		free_argv(argv);
-	} else if (strncmp(command, (char*)"pwd", 3) == 0) {
+	} else if (strncmp(command, (char*)"pwd ", 4) == 0) {
 		pwd();
-	} else if (strncmp(command, (char*)"export", 6) == 0) {
+	} else if (strncmp(command, (char*)"export ", 7) == 0) {
 		char* argv_str = read_env(command);
 		export(argv_str);
 		free(argv_str);
-	} else if (strncmp(command, (char*)"read", 4) == 0) {
+	} else if (strncmp(command, (char*)"read ", 5) == 0) {
 		read_(command);
-	} else if (strncmp(command, (char*)"exit", 4) == 0) {
+	} else if (strcmp(command, (char*)"exit") == 0) {
 		*should_break = true;
 	} else {
 		char** argv = argv_split(command);
