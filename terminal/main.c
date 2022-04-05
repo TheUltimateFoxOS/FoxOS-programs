@@ -14,6 +14,8 @@
 #include <argv_tools.h>
 #include <commands.h>
 
+#include <term.h>
+
 #include <script.h>
 
 #define max_buffer_size 2048
@@ -110,6 +112,8 @@ void on_shutdown() {
 	}
 
 	free(terminal_envp);
+
+	enable_print_char();
 }
 
 int main(int argc, char* argv[], char* envp[]) {
@@ -137,6 +141,8 @@ int main(int argc, char* argv[], char* envp[]) {
 		return 1;
 	}
 
+	disable_print_char();
+
 	printf("\nFoxOS %s > ", env(ENV_GET_CWD));
 
 	char* buffer = (char*) calloc(max_buffer_size, sizeof(char));
@@ -144,6 +150,9 @@ int main(int argc, char* argv[], char* envp[]) {
 
 	while (true) {
 		char input = getchar();
+		if (input >= 0x20 && input <= 0x7E || input == '\n'|| input == '\b') {
+			printf("%c", input);
+		}
 
 		if (input == '\b') {
 			buffer[buffer_len] = 0;
@@ -158,8 +167,10 @@ int main(int argc, char* argv[], char* envp[]) {
 			} else if (is_quote_open(buffer)) {
 				printf(" quote> ");
 			} else {
+				enable_print_char();
 				bool should_break;
 				command_received(buffer, &should_break, NULL); //This should block while command is running.
+				disable_print_char();
 				if (should_break) {
 					break;
 				}
