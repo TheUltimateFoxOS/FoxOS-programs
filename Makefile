@@ -39,6 +39,8 @@ build:
 	@make -C imgview
 	@make -C tic_tac_toe
 	@make -C foxm
+	@make -C rmdir
+	@make -C reboot
 
 setup:
 	@mkdir $(BUILDDIR)
