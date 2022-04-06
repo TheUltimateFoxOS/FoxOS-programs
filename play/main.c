@@ -2,10 +2,16 @@
 #include <stdlib.h>
 #include <sys/sound_push_note.h>
 #include <sys/sound_sync.h>
+#include <assert.h>
 
 struct note_t {
 	uint16_t length_ms;
 	uint16_t note;
+};
+
+struct foxm_t {
+	uint32_t magic; // 0xf0f0baba
+	struct note_t notes[];
 };
 
 int main(int argc, char* argv[], char* envp[]) {
@@ -24,9 +30,12 @@ int main(int argc, char* argv[], char* envp[]) {
 	fread(buffer, f->size, 1, f);
 	fclose(f);
 
-	struct note_t* notes = buffer;
+	struct foxm_t* foxm = buffer;
+	assert(foxm->magic == 0xf0f0baba);
 
-	for (int i = 0; i < f->size / sizeof(struct note_t); i++) {
+	struct note_t* notes = foxm->notes;
+
+	for (int i = 0; i < (f->size - sizeof(uint32_t)) / sizeof(struct note_t); i++) {
 		sound_push_note(notes[i].note, 0, notes[i].length_ms);
 		sound_push_note(0, 0, 250);
 	}

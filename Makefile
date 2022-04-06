@@ -41,6 +41,7 @@ build:
 	@make -C play
 	@make -C rmdir
 	@make -C reboot
+	@make -C file
 
 setup:
 	@mkdir $(BUILDDIR)
