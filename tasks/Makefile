@@ -1,3 +1,3 @@
-OUTPUT = safm.elf
+OUTPUT = tasks.elf
 
 include ../program.mak

@@ -1,3 +1,3 @@
-OUTPUT = safm.elf
+OUTPUT = play.elf
 
 include ../program.mak

@@ -1,8 +1,6 @@
 OBJDIR = ../lib
 BUILDDIR = ../bin
 
-OUTPUT = foxt.elf
-
 rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
 
 CPPSRC = $(call rwildcard,./,*.c)
@@ -10,8 +8,8 @@ OBJS = $(patsubst %.c, $(OBJDIR)/%_$(OUTPUT).o, $(CPPSRC))
 
 TOOLCHAIN_BASE = /usr/local/foxos-x86_64_elf_gcc
 
-CFLAGS = -mno-red-zone -ffreestanding -fno-stack-protector -fpic -g -I ../libc/include -I ../libterm/include -Iinclude
-LDFLAGS = -pic $(BUILDDIR)/libc.a $(BUILDDIR)/libterm.a.o
+CFLAGS = -mno-red-zone -ffreestanding -fpic -g -Iinclude -I../libc/include  -nostdinc -fno-stack-protector -fdata-sections -ffunction-sections
+LDFLAGS = -r
 
 ifeq (,$(wildcard $(TOOLCHAIN_BASE)/bin/foxos-gcc))
 	CC = gcc
@@ -31,9 +29,18 @@ else
 	LD = $(TOOLCHAIN_BASE)/bin/foxos-ld
 endif
 
+ifeq (,$(wildcard $(TOOLCHAIN_BASE)/bin/foxos-ar))
+	AR = ar
+else
+	AR = $(TOOLCHAIN_BASE)/bin/foxos-ar
+endif
+
 $(OUTPUT): $(OBJS)
 	@echo LD $^
-	@$(LD) $(LDFLAGS) -o $(BUILDDIR)/$@ $^
+	@$(LD) $(LDFLAGS) -o $(BUILDDIR)/$@.o $^
+	@echo AR $(BUILDDIR)/$@.o
+	@$(AR) rcs $(BUILDDIR)/$@ $(BUILDDIR)/$@.o
+	@echo Succesfully build library $(OUTPUT)
 
 $(OBJDIR)/%_$(OUTPUT).o: %.c
 	@echo "CC $^ -> $@"
