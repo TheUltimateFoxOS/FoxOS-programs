@@ -30,7 +30,7 @@ build:
 	@make -C clear
 	@make -C lolcat
 	@make -C matrix
-	@make -C foxt
+	@make -C tasks
 	@make -C nyanmbr
 	@make -C saf_extract
 	@make -C saf_make
@@ -38,7 +38,7 @@ build:
 	@make -C touch
 	@make -C imgview
 	@make -C tic_tac_toe
-	@make -C foxm
+	@make -C play
 	@make -C rmdir
 	@make -C reboot
 
