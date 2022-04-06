@@ -127,7 +127,7 @@ void tab_complete(char* command, char* extra, int extra_size) {
 
 	struct dir_node_t* root_node = malloc(sizeof(struct dir_node_t)); //Create the root node to start the list
 	memset(root_node, 0, sizeof(struct dir_node_t));
-	root_node->name[0] = '\0';
+	root_node->name[0] = 0;
 	root_node->next = NULL;
 
 	int check_dir_count = 2;
@@ -142,7 +142,7 @@ void tab_complete(char* command, char* extra, int extra_size) {
 
 	#warning Check for / in command, so that we can check the subdirectories
 
-	bool did_complete = false;
+	int did_complete = -1;
 
 	for (int check_dir_i = 0; check_dir_i < check_dir_count; check_dir_i++) {
 		char* check_dir = check_dirs[check_dir_i];
@@ -189,12 +189,8 @@ void tab_complete(char* command, char* extra, int extra_size) {
 				} else {
 					extra[current_pos - start_pos] = current_char;
 					current_pos++;
-					did_complete = true;
+					did_complete = check_dir_i;
 				}
-			}
-
-			if (did_complete) {
-				break;
 			}
 		}
 
@@ -204,7 +200,22 @@ void tab_complete(char* command, char* extra, int extra_size) {
 			free(current_node);
 			current_node = next_node;
 		}
+
+		if (did_complete != -1) {
+			break;
+		}
 	}
+
+	if (did_complete == 1) {
+		int extra_len = strlen(extra);
+		if (extra[extra_len - 4] == '.' && extra[extra_len - 3] == 'e' && extra[extra_len - 2] == 'l' && extra[extra_len - 1] == 'f') { //Remove the .elf of files from /BIN
+			extra[extra_len - 4] = 0;
+			extra[extra_len - 3] = 0;
+			extra[extra_len - 2] = 0;
+			extra[extra_len - 1] = 0;
+		}
+	}
+
 	free(root_node); //Free the root node
 }
 
