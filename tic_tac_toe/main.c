@@ -148,21 +148,29 @@ void ai_move(ttt_game_t* game) {
 }
 
 void render_board(ttt_game_t* game) {
-	printf("\n\n  ");
-	for (int i = 0; i < 3; i++) {
-		printf("%d ", i + 1);
-	}
-	printf(" y\n");
-	printf("\n");
+	// printf("\n\n  ");
+	// for (int i = 0; i < 3; i++) {
+	// 	printf("%d ", i + 1);
+	// }
+	// printf(" y\n");
+	// printf("\n");
 
-	for (int i = 0; i < 3; i++) {
-		printf("%d ", i + 1);
-		for (int j = 0; j < 3; j++) {
-			printf("%c ", game->field[i][j]);
-		}
-		printf("\n");
-	}
-	printf("x\n\n");
+	// for (int i = 0; i < 3; i++) {
+	// 	printf("%d ", i + 1);
+	// 	for (int j = 0; j < 3; j++) {
+	// 		printf("%c ", game->field[i][j]);
+	// 	}
+	// 	printf("\n");
+	// }
+	// printf("x\n\n");
+
+	printf("\n\n");
+	printf(" %c | %c | %c \n", game->field[0][0], game->field[0][1], game->field[0][2]);
+	printf("---+---+---\n");
+	printf(" %c | %c | %c \n", game->field[1][0], game->field[1][1], game->field[1][2]);
+	printf("---+---+---\n");
+	printf(" %c | %c | %c \n", game->field[2][0], game->field[2][1], game->field[2][2]);
+	printf("\n\n");
 }
 
 int parse_number(char* input) {
