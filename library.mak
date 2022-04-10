@@ -11,6 +11,8 @@ TOOLCHAIN_BASE = /usr/local/foxos-x86_64_elf_gcc
 CFLAGS = -mno-red-zone -ffreestanding -fpic -g -Iinclude -I../libc/include  -nostdinc -fno-stack-protector -fdata-sections -ffunction-sections
 LDFLAGS = -r
 
+CFLAGS += $(USER_CFLAGS)
+
 ifeq (,$(wildcard $(TOOLCHAIN_BASE)/bin/foxos-gcc))
 	CC = gcc
 else
@@ -45,6 +47,6 @@ $(OUTPUT): $(OBJS)
 $(OBJDIR)/%_$(OUTPUT).o: %.c
 	@echo "CC $^ -> $@"
 	@mkdir -p $(@D)
-	@$(CC) $(CFLAGS) -c -o $@ $^
+	$(CC) $(CFLAGS) -c -o $@ $^
 
 .PHONY: build

@@ -509,4 +509,7 @@ int main(int argc, char* argv[]) {
 	clear_screen();
 	set_color(old_color);
 	enable_print_char();
+
+	fox_free_font(&font);
+	fox_free_framebuffer();
 }

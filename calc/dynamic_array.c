@@ -5,19 +5,19 @@
 #include <stdlib.h>
 #include <string.h>
 
-// #define DEBUG
+// #define DA_DEBUG
 
 void dynamic_array_init(dynamic_array_t* array, int sizeof_element) {
 	array->length = 0;
 	array->sizeof_element = sizeof_element;
 	array->data = NULL;
 
-#ifdef DEBUG
+#ifdef DA_DEBUG
 	printf("dynamic_array_init: sizeof_element = %d\n", sizeof_element);
 #endif
 }
 void dynamic_array_free(dynamic_array_t* array) {
-#ifdef DEBUG
+#ifdef DA_DEBUG
 	printf("dynamic_array_free: array->data = %p\n", array->data);
 #endif
 
@@ -27,7 +27,7 @@ void dynamic_array_free(dynamic_array_t* array) {
 }
 
 void dynamic_array_append(dynamic_array_t* array, void* element) {
-#ifdef DEBUG
+#ifdef DA_DEBUG
 	printf("dynamic_array_append: array->length = %d\n", array->length);
 #endif
 
@@ -44,13 +44,13 @@ void dynamic_array_iterator_init(dynamic_array_t* array, dynamic_array_iterator_
 	iterator->array = array;
 	iterator->idx = 0;
 
-#ifdef DEBUG
+#ifdef DA_DEBUG
 	printf("dynamic_array_iterator_init: array->length = %d\n", array->length);
 #endif
 }
 
 void* dynamic_array_iterator_next(dynamic_array_iterator_t* iterator) {
-#ifdef DEBUG
+#ifdef DA_DEBUG
 	printf("dynamic_array_iterator_next: iterator->idx = %d\n", iterator->idx);
 #endif
 
@@ -79,7 +79,7 @@ void* dynamic_array_iterator_get_over_next(dynamic_array_iterator_t* iterator) {
 }
 
 bool dynamic_array_iterator_has_next(dynamic_array_iterator_t* iterator) {
-#ifdef DEBUG
+#ifdef DA_DEBUG
 	printf("dynamic_array_iterator_has_next: iterator->idx = %d\n", iterator->idx);
 #endif
 

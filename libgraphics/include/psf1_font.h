@@ -44,3 +44,7 @@ static inline psf1_font_t fox_load_font(char* path) {
 	
 	return font;
 }
+
+static inline void fox_free_font(psf1_font_t* font) {
+	free(font->psf1_Header);
+}

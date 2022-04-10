@@ -36,6 +36,11 @@ static inline void fox_end_frame() {
 	copy_to_fb(global_fb_ptr);
 }
 
+static inline void fox_free_framebuffer() {
+	free(global_fb_ptr);
+	global_fb_ptr = NULL;
+}
+
 static inline void fox_set_px(uint32_t x, uint32_t y, uint32_t colour) {
 	*(uint32_t*)((uint64_t) global_fb_ptr + (x * 4) + (y * 4 * global_fb.width)) = colour;
 }

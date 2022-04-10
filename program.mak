@@ -11,6 +11,8 @@ TOOLCHAIN_BASE = /usr/local/foxos-x86_64_elf_gcc
 CFLAGS = -mno-red-zone -ffreestanding -fno-stack-protector -fpic -g -I ../libc/include -I ../libterm/include -I ../libgraphics/include -Iinclude  -fdata-sections -ffunction-sections
 LDFLAGS = -pic $(BUILDDIR)/libc.a $(BUILDDIR)/libterm.a.o $(BUILDDIR)/libgraphics.a.o --gc-sections
 
+CFLAGS += $(USER_CFLAGS)
+
 ifeq (,$(wildcard $(TOOLCHAIN_BASE)/bin/foxos-gcc))
 	CC = gcc
 else

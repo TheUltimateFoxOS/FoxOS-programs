@@ -60,4 +60,8 @@ int main(int argc, char *argv[]) {
 	fox_end_frame();
 
 	set_cursor((struct point_t) { 0, 16 });
+
+	fox_free_font(&font);
+	fox_free_framebuffer();
+	free(buffer);
 }
