@@ -13,8 +13,8 @@
 #define DIV_ROUNDUP(a, b) (((a) + ((b) - 1)) / (b))
 
 int main(int argc, char* argv[], char* envp[]) {
-	const uint8_t* bootloader_img = _binary_limine_hdd_bin_data;
-	size_t bootloader_file_size = sizeof(_binary_limine_hdd_bin_data);
+	const uint8_t* bootloader_img = binary_limine_hdd_bin_data;
+	size_t bootloader_file_size = sizeof(binary_limine_hdd_bin_data);
 
 	if (argc != 2) {
 		printf("Usage: %s <device>\n", argv[0]);
