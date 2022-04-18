@@ -42,6 +42,7 @@ build:
 	@make -C rmdir
 	@make -C reboot
 	@make -C file
+	@make -C paint
 
 setup:
 	@mkdir $(BUILDDIR)

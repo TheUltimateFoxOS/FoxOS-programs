@@ -45,4 +45,15 @@ int graphics(int argc, char* argv[], char* envp[]) {
 	fox_end_frame();
 
 	set_cursor((struct point_t) { 0, 16 });
+
+	struct mouse_position_t last_pos = { 0, 0 };
+	while (true) {
+		struct mouse_position_t pos = mouse_position();
+		if (pos.x != last_pos.x || pos.y != last_pos.y) {
+			fox_start_frame(true);
+			fox_draw_rect(pos.x, pos.y, 10, 10, 0xFF0000);
+			fox_end_frame();
+			last_pos = pos;
+		}
+	}
 }

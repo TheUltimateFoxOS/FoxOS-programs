@@ -16,6 +16,6 @@ int main(int argc, char* argv[], char* envp[]) {
 	// system_(argc, argv, envp);
 	// thread_(argc, argv, envp);
 	// tasks(argc, argv, envp);
-	// graphics(argc, argv, envp);
-	sound(argc, argv, envp);
+	graphics(argc, argv, envp);
+	// sound(argc, argv, envp);
 }
