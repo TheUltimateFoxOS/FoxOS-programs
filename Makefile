@@ -43,6 +43,7 @@ build:
 	@make -C reboot
 	@make -C file
 	@make -C paint
+	@make -C lsmod
 
 setup:
 	@mkdir $(BUILDDIR)
