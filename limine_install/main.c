@@ -149,4 +149,6 @@ int main(int argc, char* argv[], char* envp[]) {
 			"          on the device, or boot will fail!\n");
 
 	printf("Limine installed successfully!\n");
+
+	return 0;
 }

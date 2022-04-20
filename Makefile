@@ -44,6 +44,7 @@ build:
 	@make -C file
 	@make -C paint
 	@make -C lsmod
+	@make -C if
 
 setup:
 	@mkdir $(BUILDDIR)
