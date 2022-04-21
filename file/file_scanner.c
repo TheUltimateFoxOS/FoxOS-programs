@@ -1,6 +1,7 @@
 #include <file_scanner.h>
 
 file_scanner_t* scanner[] = {
+	&aml_scanner,
 	&bmp_scanner,
 	&fpic_scanner,
 	&saf_scanner,

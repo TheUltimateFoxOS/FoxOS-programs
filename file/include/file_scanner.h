@@ -15,5 +15,6 @@ extern file_scanner_t saf_scanner;
 extern file_scanner_t elf_scanner;
 extern file_scanner_t psf1_scanner;
 extern file_scanner_t fm_scanner;
+extern file_scanner_t aml_scanner;
 
 file_scanner_t* find_file_scanner(void* buffer, size_t size);
