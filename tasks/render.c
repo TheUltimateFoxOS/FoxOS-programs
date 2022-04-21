@@ -56,7 +56,7 @@ void setup_terminal() {
 	clear_screen();
 }
 
-void render_list(task_t** tasks, int count) {
+void render_list(task_t** tasks, int count, uint64_t total_memory_mb, uint64_t free_memory_mb, uint64_t used_memory_mb, uint64_t reserved_memory_mb) {
 	struct point_t screen_size = get_screen_size();
 
 	set_color(0);
@@ -104,6 +104,8 @@ void render_list(task_t** tasks, int count) {
 		printf("%s\n", tasks[i]->argv[0]);
 	}
 
+	set_cursor((struct point_t) { .x = 0, .y = screen_size.y - 32 });
+	printf_rainbow("memory used: %d MB / %d MB (free: %d MB, reserved: %d MB)", used_memory_mb, total_memory_mb, free_memory_mb, reserved_memory_mb);
 	set_cursor((struct point_t) { .x = 0, .y = screen_size.y - 16 });
 	printf_rainbow("FoxT (kill, lock, unlock, exit) > ");
 }

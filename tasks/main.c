@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <term.h>
 #include <sys/env.h>
+#include <sys/memory_info.h>
 #include <render.h>
 
 #include <string.h>
@@ -17,7 +18,9 @@ int main() {
 
 		env_set2(ENV_READ_RUNNING_TASKS, 512, tasks);
 
-		render_list(tasks, max_tasks);
+		memory_info_t info = memory_info();
+
+		render_list(tasks, max_tasks, info.total / 1024 / 1024, info.free / 1024 / 1024, info.used / 1024 / 1024, info.reserved / 1024 / 1024);
 
 		char input[512] = { 0 };
 		gets(input);

@@ -45,6 +45,7 @@ build:
 	@make -C paint
 	@make -C lsmod
 	@make -C if
+	@make -C free
 
 setup:
 	@mkdir $(BUILDDIR)
