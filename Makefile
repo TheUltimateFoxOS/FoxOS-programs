@@ -46,6 +46,7 @@ build:
 	@make -C lsmod
 	@make -C if
 	@make -C free
+	@make -C lscpu
 
 setup:
 	@mkdir $(BUILDDIR)
