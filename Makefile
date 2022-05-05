@@ -47,6 +47,7 @@ build:
 	@make -C if
 	@make -C free
 	@make -C lscpu
+	@make -C smbios32
 
 setup:
 	@mkdir $(BUILDDIR)
