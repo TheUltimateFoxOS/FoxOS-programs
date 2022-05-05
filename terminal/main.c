@@ -213,6 +213,9 @@ void tab_complete(char* command, char* extra, int extra_size) {
 			extra[extra_len - 3] = 0;
 			extra[extra_len - 2] = 0;
 			extra[extra_len - 1] = 0;
+
+			// add space at the end of the command
+			extra[extra_len - 4] = ' ';
 		}
 	}
 

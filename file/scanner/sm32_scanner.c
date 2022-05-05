@@ -21,7 +21,7 @@ bool is_sm32(void* buffer, size_t size) {
 void get_sm32_information(void* buffer, size_t size, char* out, size_t out_size) {
 	struct smbios32_entry_t* entry = (struct smbios32_entry_t*) buffer;
 
-	snprintf(out, out_size, "SMBIOS v%d.%d", entry->major_version, entry->minor_version);
+	snprintf(out, out_size, "SMBIOS v%d.%d containing %d structures", entry->major_version, entry->minor_version, entry->number_of_structures);
 }
 
 file_scanner_t sm32_scanner = {
