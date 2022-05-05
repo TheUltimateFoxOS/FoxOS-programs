@@ -263,10 +263,12 @@ int main(int argc, char* argv[], char* envp[]) {
 
 		if (input == '\b') {
 			buffer_len--;
-			buffer[buffer_len] = 0;
 			if (buffer_len == -1) {
 				printf(" ");
 				buffer_len = 0;
+				buffer[buffer_len] = 0;
+			} else {
+				buffer[buffer_len] = 0;
 			}
 		} else if (input == '\t') {
 			if (buffer_len == 0) { //Don't tab complete empty commands
