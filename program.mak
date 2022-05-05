@@ -39,6 +39,6 @@ $(OUTPUT): $(OBJS)
 $(OBJDIR)/%_$(OUTPUT).o: %.c
 	@echo "CC $^ -> $@"
 	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) -c -o $@ $^
+	@$(CC) $(CFLAGS) -c -o $@ $^
 
 .PHONY: build
