@@ -1,3 +1,6 @@
 [submodule "libc"]
 	path = libc
 	url = https://github.com/TheUltimateFoxOS/libc
+[submodule "libfoxos"]
+	path = libc
+	url = https://github.com/TheUltimateFoxOS/libfoxos

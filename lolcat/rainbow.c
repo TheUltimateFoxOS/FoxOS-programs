@@ -1,6 +1,5 @@
 #include <rainbow.h>
 
-
 uint32_t true_hsv(int angle) {
 	uint8_t red, green, blue, alpha;
 

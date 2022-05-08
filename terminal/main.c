@@ -11,12 +11,12 @@
 #include <sys/dir_at.h>
 #include <errno.h>
 
+#include <foxos/term.h>
+
 #include <keyboard_helper.h>
 #include <argv_tools.h>
 #include <commands.h>
 #include <script.h>
-
-#include <term.h>
 
 #define MAX_BUFFER_SIZE 2048
 

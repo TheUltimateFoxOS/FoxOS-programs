@@ -1,6 +1,7 @@
 #include <test_libterm.h>
 
-#include <term.h>
+#include <foxos/term.h>
+
 #include <stdio.h>
 
 int libterm(int argc, char* argv[], char* envp[]) {
@@ -17,8 +18,8 @@ int libterm(int argc, char* argv[], char* envp[]) {
 
 	set_color(old_color);
 
-	struct point_t old_cursor = get_cursor();
-	set_cursor((struct point_t) { 100, 100 });
+	point_t old_cursor = get_cursor();
+	set_cursor((point_t) { 100, 100 });
 
 	set_color(0xffff0000);
 	clear_line();
@@ -27,6 +28,6 @@ int libterm(int argc, char* argv[], char* envp[]) {
 
 	set_cursor(old_cursor);
 
-	struct point_t screen_size = get_screen_size();
+	point_t screen_size = get_screen_size();
 	printf("Screen size: %d x %d\n", screen_size.x, screen_size.y);
 }

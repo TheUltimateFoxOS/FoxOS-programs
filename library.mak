@@ -3,15 +3,20 @@ BUILDDIR = ../bin
 
 rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
 
-CPPSRC = $(call rwildcard,./,*.c)
-OBJS = $(patsubst %.c, $(OBJDIR)/%_$(OUTPUT).o, $(CPPSRC))
+CSRC = $(call rwildcard,./,*.c)
+CPPSRC = $(call rwildcard,./,*.cpp)
+
+OBJS = $(patsubst %.c, $(OBJDIR)/%_$(OUTPUT).o, $(CSRC))
+OBJS += $(patsubst %.cpp, $(OBJDIR)/%_$(OUTPUT).o, $(CPPSRC))
 
 TOOLCHAIN_BASE = /usr/local/foxos-x86_64_elf_gcc
 
-CFLAGS = -mno-red-zone -ffreestanding -fpic -g -Iinclude -I../libc/include  -nostdinc -fno-stack-protector -fdata-sections -ffunction-sections
+CFLAGS = -mno-red-zone -ffreestanding -fpic -g -I ../libfoxos/include -Iinclude -I../libc/include  -nostdinc -fno-stack-protector -fdata-sections -ffunction-sections
+CPPFLAGS = $(CFLAGS)
 LDFLAGS = -r
 
 CFLAGS += $(USER_CFLAGS)
+CPPFLAGS += $(USER_CPPFLAGS)
 
 ifeq (,$(wildcard $(TOOLCHAIN_BASE)/bin/foxos-gcc))
 	CC = gcc
@@ -48,5 +53,10 @@ $(OBJDIR)/%_$(OUTPUT).o: %.c
 	@echo "CC $^ -> $@"
 	@mkdir -p $(@D)
 	@$(CC) $(CFLAGS) -c -o $@ $^
+
+$(OBJDIR)/%_$(OUTPUT).o: %.cpp
+	@echo "CC $^ -> $@"
+	@mkdir -p $(@D)
+	@$(CC) $(CPPFLAGS) -c -o $@ $^
 
 .PHONY: build

@@ -1,6 +1,7 @@
 #include <test_graphics.h>
-#include <term.h>
-#include <fox_graphics.h>
+
+#include <foxos/term.h>
+#include <foxos/fox_graphics.h>
 
 int graphics(int argc, char* argv[], char* envp[]) {
 	psf1_font_t font = fox_load_font("RES/zap-light16.psf");
@@ -44,7 +45,7 @@ int graphics(int argc, char* argv[], char* envp[]) {
 	fox_draw_string(0, 0, "Goodbye!", 0x0000FF, &font);
 	fox_end_frame();
 
-	set_cursor((struct point_t) { 0, 16 });
+	set_cursor((point_t) { 0, 16 });
 
 	// struct mouse_position_t last_pos = { 0, 0 };
 	// while (true) {

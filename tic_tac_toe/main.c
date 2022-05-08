@@ -3,7 +3,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include <term.h>
+#include <foxos/term.h>
 
 typedef struct {
 	char field[3][3];

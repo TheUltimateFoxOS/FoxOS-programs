@@ -1,7 +1,8 @@
 #include <renderer/task_bar_renderer.h>
-#include <config.h>
 
-#include <fox_graphics.h>
+#include <foxos/fox_graphics.h>
+
+#include <config.h>
 
 int icon_offset;
 

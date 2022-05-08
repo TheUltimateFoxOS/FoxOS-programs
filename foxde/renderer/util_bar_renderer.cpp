@@ -1,10 +1,11 @@
 #include <renderer/util_bar_renderer.h>
-#include <config.h>
 
 #include <buildin/unix_time.h>
 #include <sys/time.h>
 
-#include <fox_graphics.h>
+#include <config.h>
+
+#include <foxos/fox_graphics.h>
 
 void draw_util_bar() {
     fox_draw_rect(0, 0, screen_size.x, util_bar_height, util_bar_colour);

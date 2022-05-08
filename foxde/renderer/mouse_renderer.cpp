@@ -2,8 +2,8 @@
 
 #include <utils/rainbow.h>
 
-#include <fox_graphics.h>
-#include <g_syscalls.h>
+#include <foxos/fox_graphics.h>
+#include <foxos/g_syscalls.h>
 
 #define mouse_pointer_width 12
 #define mouse_pointer_height 19
@@ -32,7 +32,7 @@ uint8_t mouse_pointer[] = {
 };
 
 void draw_mouse_pointer() {
-    struct mouse_position_t pos = mouse_position();
+    mouse_position_t pos = mouse_position();
 
 	int current_x = 0;
 	int current_y = 0;

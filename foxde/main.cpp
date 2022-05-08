@@ -6,12 +6,12 @@
 
 #include <config.h>
 
-#include <fox_graphics.h>
-#include <term.h>
-#include <psf1_font.h>
+#include <foxos/fox_graphics.h>
+#include <foxos/term.h>
+#include <foxos/psf1_font.h>
 
 //Variables from config.h
-struct point_t screen_size;
+point_t screen_size;
 psf1_font_t screen_font;
 
 int main(int argc, char* argv[], char* envp[]) {

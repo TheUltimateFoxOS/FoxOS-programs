@@ -1,9 +1,10 @@
 #include <stdio.h>
-#include <term.h>
 #include <sys/env.h>
 #include <sys/memory_info.h>
-#include <render.h>
 
+#include <foxos/term.h>
+
+#include <render.h>
 #include <string.h>
 #include <commands.h>
 

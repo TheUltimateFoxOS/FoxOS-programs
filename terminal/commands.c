@@ -255,6 +255,7 @@ void cd(char** argv) {
 
 	if (!cancd) {
 		term_printf("No such file or directory: %s\n", path_buf);
+		return;
 	}
 
 	int fd = open(path_buf);

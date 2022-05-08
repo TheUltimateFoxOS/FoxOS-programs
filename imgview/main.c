@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include <fox_graphics.h>
-#include <term.h>
+#include <foxos/fox_graphics.h>
+#include <foxos/term.h>
 
 #include <image_reader.h>
 
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
 	fox_draw_string(0, 0, "Goodbye!", 0xffffffff, &font);
 	fox_end_frame();
 
-	set_cursor((struct point_t) { 0, 16 });
+	set_cursor((point_t) { 0, 16 });
 
 	fox_free_font(&font);
 	fox_free_framebuffer();

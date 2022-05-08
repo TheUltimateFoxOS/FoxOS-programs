@@ -3,9 +3,8 @@ BUILDDIR = bin
 
 build:
 	@echo "Building libaries"
+	@make -C libfoxos
 	@make -C libc
-	@make -C libterm
-	@make -C libgraphics
 
 	@echo "Building programs"
 	@make -C test

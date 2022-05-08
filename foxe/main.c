@@ -1,11 +1,13 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <term.h>
-#include <string.h>
 #include <sys/env.h>
 #include <sys/write.h>
 #include <sys/memory.h>
-#include <fox_graphics.h>
+
+#include <foxos/fox_graphics.h>
+#include <foxos/term.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define CHAR_SIZE 16
 #define CHAR_WIDTH 8
@@ -155,11 +157,11 @@ void render_status_bar() {
 		edited = '+';
 	}
 	
-	struct point_t screen_size = get_screen_size();
+	point_t screen_size = get_screen_size();
 
-	set_cursor((struct point_t) { 0, screen_size.y - CHAR_SIZE });
+	set_cursor((point_t) { 0, screen_size.y - CHAR_SIZE });
 	printf("File: %s [%c] Mode: --%s-- Current Line: %d Line: %d,%d Type: [%s]", filename, edited, mode, buffer_ln_idx, ln_cnt, char_cnt, file_type);
-	set_cursor((struct point_t) {0, CHAR_SIZE});
+	set_cursor((point_t) {0, CHAR_SIZE});
 	
 	int j = 0;
 	bool cursor_drawn = false;
@@ -472,7 +474,7 @@ int main(int argc, char* argv[]) {
 	set_color(old_color);
 	disable_print_char();
 	
-	struct point_t screen_size = get_screen_size();
+	point_t screen_size = get_screen_size();
 	possible_lines_to_draw = (screen_size.y / CHAR_SIZE) - 4;
 
 	// set keyboard input print to false

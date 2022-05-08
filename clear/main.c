@@ -1,4 +1,4 @@
-#include <term.h>
+#include <foxos/term.h>
 
 int main() {
 	uint64_t old_color = get_color();

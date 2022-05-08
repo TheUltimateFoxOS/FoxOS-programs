@@ -1,8 +1,9 @@
 #include <stdio.h>
-#include <fox_graphics.h>
 
 #include <buildin/thread.h>
-#include <term.h>
+
+#include <foxos/fox_graphics.h>
+#include <foxos/term.h>
 
 typedef struct {
 	uint64_t magic; // 0xc0ffebabe
@@ -65,7 +66,7 @@ int main(int argc, char* argv[], char* envp[]) {
 	sprintf(font_path, "%s/RES/zap-light16.psf", getenv("ROOT_FS"));
 	psf1_font_t font = fox_load_font(font_path);
 
-	struct framebuffer_t fb = fb_info();
+	framebuffer_t fb = fb_info();
 	void* pixel_field = malloc((fb.width - 4) * (fb.height - 64) * 4);
 
 	create_thread(keyboard_input_task);
@@ -97,7 +98,7 @@ int main(int argc, char* argv[], char* envp[]) {
 			status_message = "Cleared";
 		}
 
-		struct mouse_position_t pos = mouse_position();
+		mouse_position_t pos = mouse_position();
 		int button = mouse_button();
 
 		fox_start_frame(true);
@@ -144,7 +145,7 @@ int main(int argc, char* argv[], char* envp[]) {
 	fox_draw_string(0, 0, "Goodbye!", 0xffffffff, &font);
 	fox_end_frame();
 
-	set_cursor((struct point_t) { 0, 16 });
+	set_cursor((point_t) { 0, 16 });
 
 	free(pixel_field);
 	enable_print_char();

@@ -1,5 +1,6 @@
 #include <render.h>
-#include <term.h>
+
+#include <foxos/term.h>
 
 #include <stdarg.h>
 #include <rainbow.h>
@@ -57,7 +58,7 @@ void setup_terminal() {
 }
 
 void render_list(task_t** tasks, int count, uint64_t total_memory_mb, uint64_t free_memory_mb, uint64_t used_memory_mb, uint64_t reserved_memory_mb) {
-	struct point_t screen_size = get_screen_size();
+	point_t screen_size = get_screen_size();
 
 	set_color(0);
 	clear_screen();
@@ -65,10 +66,10 @@ void render_list(task_t** tasks, int count, uint64_t total_memory_mb, uint64_t f
 	// render header (in the top middle of the screen)
 	char* header_text = "FoxT The Task Manager";
 	set_color(0xFFFFFF);
-	set_cursor((struct point_t) { .x = (screen_size.x - strlen(header_text) * 8) / 2, .y = 0 });
+	set_cursor((point_t) { .x = (screen_size.x - strlen(header_text) * 8) / 2, .y = 0 });
 	printf_rainbow("%s", header_text);
 
-	set_cursor((struct point_t) { .x = 0, .y = 3 * 8 });
+	set_cursor((point_t) { .x = 0, .y = 3 * 8 });
 	printf("ID  CPU  LOCKED  NAME\n");
 
 	for (int i = 0; i < screen_size.x / 8 - 1; i++) {
@@ -104,14 +105,14 @@ void render_list(task_t** tasks, int count, uint64_t total_memory_mb, uint64_t f
 		printf("%s\n", tasks[i]->argv[0]);
 	}
 
-	set_cursor((struct point_t) { .x = 0, .y = screen_size.y - 32 });
+	set_cursor((point_t) { .x = 0, .y = screen_size.y - 32 });
 	printf_rainbow("memory used: %d MB / %d MB (free: %d MB, reserved: %d MB)", used_memory_mb, total_memory_mb, free_memory_mb, reserved_memory_mb);
-	set_cursor((struct point_t) { .x = 0, .y = screen_size.y - 16 });
+	set_cursor((point_t) { .x = 0, .y = screen_size.y - 16 });
 	printf_rainbow("FoxT (kill, lock, unlock, exit) > ");
 }
 
 int calculate_max_task_count() {
-	struct point_t screen_size = get_screen_size();
+	point_t screen_size = get_screen_size();
 
 	return screen_size.y / 16 - 10;
 	//                          ^^ numer of lines used for other stuff

@@ -3,11 +3,14 @@
 #include <sys/open.h>
 #include <sys/close.h>
 #include <sys/get_file_size.h>
+
+#include <foxos/term.h>
+
 #include <stdio.h>
-#include <term.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include <rainbow.h>
 
 uint32_t rainbow(int i) {

@@ -1,7 +1,9 @@
-#include <stdio.h>
-#include <term.h>
 #include <sys/time.h>
-#include <fox_graphics.h>
+
+#include <stdio.h>
+
+#include <foxos/term.h>
+#include <foxos/fox_graphics.h>
 
 #define GRAPHICS_RENDERING_MODE
 
@@ -25,7 +27,7 @@ long long start_time = 0;
 int fps = 0;
 
 psf1_font_t font;
-struct point_t screen_size;
+point_t screen_size;
 
 void frame() {
 	if (start_time == 0) {
@@ -64,7 +66,7 @@ void frame() {
 
 	for (int i = 0; i < rows; i++) {
 	#ifndef GRAPHICS_RENDERING_MODE
-		set_cursor((struct point_t) { 0, i * 16 });
+		set_cursor((point_t) { 0, i * 16 });
 		set_color(0);
 		clear_line();
 	#endif
@@ -73,7 +75,7 @@ void frame() {
 			
 			if (buffer[i][j]) {
 			#ifndef GRAPHICS_RENDERING_MODE
-				set_cursor((struct point_t) { j * 8, i * 16 });
+				set_cursor((point_t) { j * 8, i * 16 });
 				set_color(0xff000000 | ((0xff - buffer[i][j]) << 12));
 				putchar('X');
 			#else
@@ -96,7 +98,7 @@ void frame() {
 
 #ifndef GRAPHICS_RENDERING_MODE
 	set_color(0);
-	set_cursor((struct point_t) { 0, screen_size.y - 16 });
+	set_cursor((point_t) { 0, screen_size.y - 16 });
 	clear_line();
 	set_color(0xffffffff);
 	printf("frames: %d (%d fps next update in %d s)", num_frames_rendered, fps, start_time + 10 - _time());
