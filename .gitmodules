@@ -2,5 +2,5 @@
 	path = libc
 	url = https://github.com/TheUltimateFoxOS/libc
 [submodule "libfoxos"]
-	path = libc
+	path = libfoxos
 	url = https://github.com/TheUltimateFoxOS/libfoxos
