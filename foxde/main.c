@@ -1,36 +1,43 @@
 #include <renderer/mouse_renderer.h>
+#include <renderer/task_bar_renderer.h>
+#include <renderer/util_bar_renderer.h>
 
 #include <utils/rainbow.h>
 
+#include <config.h>
+
 #include <fox_graphics.h>
 #include <term.h>
+#include <psf1_font.h>
+
+//Variables from config.h
+struct point_t screen_size;
+psf1_font_t screen_font;
 
 int main(int argc, char* argv[], char* envp[]) {
 	disable_print_char();
 
-	struct point_t screen_size = get_screen_size();
+	//Setup config variables to use in the program
+	screen_size = get_screen_size();
 
 	char font_load_path[512] = { 0 };
 	sprintf(font_load_path, "%s/RES/zap-light16.psf", getenv("ROOT_FS"));
-	psf1_font_t font = fox_load_font(font_load_path);
+	screen_font = fox_load_font(font_load_path);
 
-	int mouse_cidx = 0;
-	int bg_cidx = 180;
+	//Main draw loop
 
 	while (true) {
 		fox_start_frame(true);
-		
-		fox_set_background(rainbow(++bg_cidx));
-		draw_mouse_pointer(rainbow(++mouse_cidx));
 
-		for (int i = -180; i <= 360; i++) {
-			fox_draw_rect(i, i, 10, 10, rainbow(i));
-		}
+		fox_set_background(background_colour);
+		draw_task_bar();
+		draw_util_bar();
 
-		bg_cidx += 2;
-		mouse_cidx += 2;
+		draw_mouse_pointer();
 		
 		fox_end_frame();
 	}
+
+	enable_print_char();
 	return 0;
 }

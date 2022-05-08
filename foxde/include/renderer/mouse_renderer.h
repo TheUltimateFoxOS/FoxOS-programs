@@ -2,4 +2,4 @@
 
 #include <stdint.h>
 
-void draw_mouse_pointer(uint32_t colour);
+void draw_mouse_pointer();
