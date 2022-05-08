@@ -48,6 +48,7 @@ build:
 	@make -C free
 	@make -C lscpu
 	@make -C smbios32
+	@make -C foxde
 
 setup:
 	@mkdir $(BUILDDIR)

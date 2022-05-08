@@ -9,59 +9,122 @@
 extern struct framebuffer_t global_fb;
 extern void* global_fb_ptr;
 
-static inline void fox_start_frame(bool empty_fb) {
+static inline void get_fb_data() {
 	if (global_fb_ptr == NULL) {
 		global_fb = fb_info();
 		global_fb_ptr = malloc(global_fb.buffer_size);
 	}
+}
 
-	if (!empty_fb) {
-		copy_from_fb(global_fb_ptr);
-	} else {
-		uint64_t base = (uint64_t) global_fb_ptr;
-		uint64_t bytes_per_scanline = global_fb.width * 4;
-		uint64_t fb_height = global_fb.height;
-		uint64_t fb_size = global_fb.buffer_size;
+static inline void fox_set_background(uint32_t colour) {
+	uint64_t base = (uint64_t) global_fb_ptr;
+	uint64_t bytes_per_scanline = global_fb.width * 4;
+	uint64_t fb_height = global_fb.height;
 
-		for (int vertical_scanline = 0; vertical_scanline < fb_height; vertical_scanline ++){
-			uint64_t pix_ptr_base = base + (bytes_per_scanline * vertical_scanline);
-			for (uint32_t* pixPtr = (uint32_t*)pix_ptr_base; pixPtr < (uint32_t*)(pix_ptr_base + bytes_per_scanline); pixPtr ++){
-				*pixPtr = 0;
-			}
+	for (int vertical_scanline = 0; vertical_scanline < fb_height; vertical_scanline ++){
+		uint64_t pix_ptr_base = base + (bytes_per_scanline * vertical_scanline);
+		for (uint32_t* pixPtr = (uint32_t*)pix_ptr_base; pixPtr < (uint32_t*)(pix_ptr_base + bytes_per_scanline); pixPtr ++){
+			*pixPtr = colour;
 		}
 	}
 }
 
+static inline void fox_start_frame(bool empty_fb) {
+	get_fb_data();
+
+	if (!empty_fb) {
+		copy_from_fb(global_fb_ptr);
+	} else {
+		fox_set_background(0);
+	}
+}
+
 static inline void fox_end_frame() {
+	if (global_fb_ptr == NULL) {
+		return;
+	}
+
 	copy_to_fb(global_fb_ptr);
 }
 
 static inline void fox_free_framebuffer() {
+	if (global_fb_ptr == NULL) {
+		return;
+	}
+
 	free(global_fb_ptr);
 	global_fb_ptr = NULL;
 }
 
 static inline void fox_set_px(uint32_t x, uint32_t y, uint32_t colour) {
+	if (x < 0 || x >= global_fb.width || y < 0 || y >= global_fb.height) {
+		return;
+	}
+
 	*(uint32_t*)((uint64_t) global_fb_ptr + (x * 4) + (y * 4 * global_fb.width)) = colour;
 }
 
-static inline void fox_draw_rect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t colour) {
-	for (uint32_t i = 0; i < w; i++) {
-		for (uint32_t j = 0; j < h; j++) {
-			fox_set_px(x + i, y + j, colour);
+static inline void fox_set_px_unsafe(uint32_t x, uint32_t y, uint32_t colour) {
+	*(uint32_t*)((uint64_t) global_fb_ptr + (x * 4) + (y * 4 * global_fb.width)) = colour;
+}
+
+static inline void fox_draw_rect(uint32_t x, uint32_t y, uint32_t width, uint32_t height, uint32_t colour) {
+	if (x >= global_fb.width || y >= global_fb.height) {
+		return;
+	}
+
+	if (x + width > global_fb.width) {
+		width = global_fb.width - x;
+	}
+	if (y + height > global_fb.height) {
+		height = global_fb.height - y;
+	}
+
+	if (x < 0 && x + width > 0) {
+		width -= x;
+		x = 0;
+	}
+	if (y < 0 && y + height > 0) {
+		height -= y;
+		y = 0;
+	}
+
+	for (uint32_t j = 0; j < height; j++) {
+		for (uint32_t i = 0; i < width; i++) {
+			fox_set_px_unsafe(i + x, j + y, colour);
 		}
 	}
 }
 
-static inline void fox_draw_rect_outline(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t colour) {
-	for (uint32_t i = 0; i < w; i++) {
-		fox_set_px(x + i, y, colour);
-		fox_set_px(x + i, y + h - 1, colour);
+static inline void fox_draw_rect_outline(uint32_t x, uint32_t y, uint32_t width, uint32_t height, uint32_t colour) {
+	if (x >= global_fb.width || y >= global_fb.height) {
+		return;
 	}
 
-	for (uint32_t i = 0; i < h; i++) {
-		fox_set_px(x, y + i, colour);
-		fox_set_px(x + w - 1, y + i, colour);
+	bool width_too_big = false;
+	bool height_too_big = false;
+
+	if (x + width > global_fb.width) {
+		width = global_fb.width - x;
+		width_too_big = true;
+	}
+	if (y + height > global_fb.height) {
+		height = global_fb.height - y;
+		height_too_big = true;
+	}
+
+	for (uint32_t i = 0; i < width; i++) {
+		fox_set_px(x + i, y, colour);
+		if (!height_too_big) {
+			fox_set_px(x + i, y + height - 1, colour);
+		}
+	}
+
+	for (uint32_t i = 0; i < height; i++) {
+		fox_set_px_unsafe(x, y + i, colour);
+		if (!width_too_big) {
+			fox_set_px_unsafe(x + width - 1, y + i, colour);
+		}
 	}
 }
 
@@ -162,7 +225,7 @@ static inline void fox_draw_circle_outline(uint32_t x, uint32_t y, uint32_t r, u
 	}
 }
 
-static void fox_draw_char(uint32_t x, uint32_t y, char c, uint32_t colour,  psf1_font_t* font) {
+static void fox_draw_char(uint32_t x, uint32_t y, char c, uint32_t colour, psf1_font_t* font) {
 	char* font_ptr = (char*) font->glyph_buffer + (c * font->psf1_Header->charsize);
 
 	for (unsigned long i = y; i < y + 16; i++){

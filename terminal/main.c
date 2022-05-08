@@ -14,10 +14,9 @@
 #include <keyboard_helper.h>
 #include <argv_tools.h>
 #include <commands.h>
+#include <script.h>
 
 #include <term.h>
-
-#include <script.h>
 
 #define MAX_BUFFER_SIZE 2048
 
@@ -156,6 +155,9 @@ void tab_complete(char* command, char* extra, int extra_size) {
 				memset(data, 0, sizeof(struct dir_node_t));
 
 				strcpy(data->name, dir.name);
+				if (dir.type == ENTRY_DIR) {
+					strcat(data->name, "/");
+				}
 				data->next = NULL;
 
 				current_node->next = data; //Set the next node to the new node

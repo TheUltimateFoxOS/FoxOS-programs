@@ -234,34 +234,37 @@ void cd(char** argv) {
 		argc++;
 	}
 
+	char path_buf[256];
+	memset(path_buf, 0, 256);
+	bool cancd = false;
+
 	if (argc == 1) {
 		char* env = getenv("ROOT_FS");
 		if (env != NULL) {
-			char path_buf[256];
-			memset(path_buf, 0, 256);
-			bool cancd = resolve(env, path_buf);
-
-			if (cancd) {
-				env_set(ENV_SET_CWD, path_buf);
-			} else {
-				term_printf("The specified root filesystem doesn't exist!\n");
-			}
+			cancd = resolve(env, path_buf);
 		} else {
 			term_printf("No root filesystem specified!\n");
+			return;
 		}
 	} else if (argc == 2) {
-		char path_buf[256];
-		memset(path_buf, 0, 256);
-		bool cancd = resolve(argv[1], path_buf);
-
-		if (cancd) {
-			env_set(ENV_SET_CWD, path_buf);
-		} else {
-			term_printf("No such file or directory: %s\n", path_buf);
-		}
+		cancd = resolve(argv[1], path_buf);
 	} else {
 		term_printf("Too many arguments.");
+		return;
 	}
+
+	if (!cancd) {
+		term_printf("No such file or directory: %s\n", path_buf);
+	}
+
+	int fd = open(path_buf);
+	if (fd != -1) {
+		term_printf("You can only change to a folder!\n");
+		close(fd);
+		return;
+	}
+
+	env_set(ENV_SET_CWD, path_buf);
 }
 
 extern char** terminal_envp;
