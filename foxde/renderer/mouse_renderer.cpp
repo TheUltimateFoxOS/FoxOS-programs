@@ -5,6 +5,8 @@
 #include <foxos/fox_graphics.h>
 #include <foxos/g_syscalls.h>
 
+#include <config.h>
+
 #define mouse_pointer_width 12
 #define mouse_pointer_height 19
 #define mouse_pointer_len (mouse_pointer_width * mouse_pointer_height)
@@ -32,16 +34,14 @@ uint8_t mouse_pointer[] = {
 };
 
 void draw_mouse_pointer() {
-    mouse_position_t pos = mouse_position();
-
 	int current_x = 0;
 	int current_y = 0;
 
 	for (int i = 0; i < mouse_pointer_len; i++) {
 		if (mouse_pointer[i] == 1) {
-			fox_set_px(pos.x + current_x, pos.y + current_y, 0xFFFFFF);
+			fox_set_px(mouse_pos.x + current_x, mouse_pos.y + current_y, 0xFFFFFF);
 		} else if (mouse_pointer[i] == 2) {
-			fox_set_px(pos.x + current_x, pos.y + current_y, 0x000000);
+			fox_set_px(mouse_pos.x + current_x, mouse_pos.y + current_y, 0x000000);
 		}
 
 		current_x++;

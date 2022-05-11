@@ -13,7 +13,7 @@ void draw_icon() {
 }
 
 void draw_task_bar() {
-    fox_draw_rect(0, 0 + task_bar_offset_y, task_bar_width, screen_size.y - task_bar_offset_y, task_bar_colour);
+    fox_draw_rect(0, 0 + task_bar_offset_y, task_bar_width, screen_size.width - task_bar_offset_y, task_bar_colour);
 
     icon_offset = task_bar_offset_y + task_bar_icon_padding;
 
