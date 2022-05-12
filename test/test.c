@@ -7,6 +7,7 @@
 #include <test_thread.h>
 #include <test_graphics.h>
 #include <test_sound.h>
+#include <test_ipc.h>
 
 int main(int argc, char* argv[], char* envp[]) {
 	// piping(argc, argv, envp);
@@ -16,6 +17,7 @@ int main(int argc, char* argv[], char* envp[]) {
 	// system_(argc, argv, envp);
 	// thread_(argc, argv, envp);
 	// tasks(argc, argv, envp);
-	graphics(argc, argv, envp);
+	// graphics(argc, argv, envp);
 	// sound(argc, argv, envp);
+	ipc(argc, argv, envp);
 }
