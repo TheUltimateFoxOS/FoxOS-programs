@@ -33,7 +33,7 @@
 #define window_border_colour 0x000000
 
 #define util_bar_text "FoxOS DE"
-#define new_window_text "FoxOS window"
+#define new_window_text "FoxOS Window"
 
 typedef struct {
     int64_t width = 0;

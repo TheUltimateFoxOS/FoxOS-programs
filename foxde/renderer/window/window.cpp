@@ -9,96 +9,21 @@
 #include <config.h>
 
 window_t::window_t(int64_t x, int64_t y, int64_t width, int64_t height) {
-    this->window_id = current_window_id++;
-
     this->window_x = x;
     this->window_y = y;
     this->window_width = width;
     this->window_height = height;
 
-    window_list_t* current_window = window_list;
-    if (current_window) {
-        while (current_window->next) {
-            current_window = current_window->next;
-        }
-
-        current_window->next = (window_list_t*) malloc(sizeof(window_list_t));
-        current_window = current_window->next;
-    } else {
-        window_list = (window_list_t*) malloc(sizeof(window_list_t));
-        current_window = window_list;
-    }
-
-    current_window->window = this;
-    current_window->next = 0;
-}
-
-window_t::~window_t() {
-    free(this->buffer);
-
-    window_list_t* current_window = window_list;
-    window_list_t* previous_window = 0;
-
-    while (current_window) {
-        if (current_window->window->window_id == this->window_id) {
-            if (previous_window) {
-                previous_window->next = current_window->next;
-            } else {
-                window_list = current_window->next;
-            }
-
-            break;
-        }
-
-        previous_window = current_window;
-        current_window = current_window->next;
-    }
-}
-
-void window_t::init() {
-    if (this->buffer != 0 || this->window_title != 0) {
-        return;
-    }
-
-    this->calculate_buffer_data();
+    this->calculate_buffer_position();
+    this->calculate_buffer_size();
 
     this->set_title((char*) new_window_text);
 }
 
-int window_t::get_window_id() {
-    return this->window_id;
-}
-
-void window_t::calculate_buffer_data() {
-    this->calculate_buffer_position();
-    this->calculate_buffer_size();
-}
-
-void window_t::calculate_buffer_size() {
-    this->buffer_width = this->window_width - 2;
-    this->buffer_height = this->window_height - (window_bar_height + 3);
-
-    size_t new_size = this->buffer_width * this->buffer_height;
-    if (new_size == this->buffer_size) {
-        return;
-    }
-    this->buffer_size = this->buffer_width * this->buffer_height;
-
-    if (this->buffer) {
+window_t::~window_t() {
+    if (this->buffer) { //Only free if the buffer is allocated
         free(this->buffer);
     }
-
-    this->buffer = (uint32_t*) malloc(sizeof(uint32_t) * this->buffer_size);
-    if (this->buffer) {
-        for (uint32_t i = 0; i < this->buffer_size; i++) {
-            this->buffer[i] = window_background_colour;
-        }
-    }
-}
-
-void window_t::calculate_buffer_position() {
-    this->buffer_x = this->window_x + 1;
-    this->buffer_y = this->window_y + window_bar_height + 2;
 }
 
 int64_t window_t::get_x() {
@@ -118,6 +43,7 @@ int64_t window_t::get_height() {
 }
 
 void window_t::draw_window() {
+    //Draw the window bars
     int64_t tmp_x = this->window_x;
     int64_t tmp_y = this->window_y;
     int64_t tmp_width = this->window_width;
@@ -221,6 +147,7 @@ void window_t::draw_window() {
     if (tmp_width > 0 && tmp_height > 0) {
         fox_draw_rect_unsafe(tmp_x, tmp_y, tmp_width, tmp_height, window_bar_colour);
 
+        //Draw the bar title
         tmp_x += window_bar_padding;
         tmp_y += window_bar_padding;
         tmp_width = tmp_width - (window_bar_padding * 2 + window_bar_button_size);
@@ -234,7 +161,7 @@ void window_t::draw_window() {
         }
     }
 
-    if (!this->buffer) {
+    if (!this->buffer) { //If there is no buffer then we can't fill it.
         return;
     }
 
@@ -271,7 +198,7 @@ void window_t::move(int64_t x, int64_t y) {
     this->window_x = x;
     this->window_y = y;
 
-    this->calculate_buffer_position();
+    this->calculate_buffer_position(); //Recalculate the buffer potition
 }
 
 void window_t::resize(int64_t width, int64_t height) {
@@ -287,7 +214,7 @@ void window_t::resize(int64_t width, int64_t height) {
         this->window_height = height;
     }
 
-    this->calculate_buffer_size();
+    this->calculate_buffer_size(); //Recalculate the buffer size
 }
 
 void window_t::set_title(char* title) {
@@ -297,7 +224,34 @@ void window_t::set_title(char* title) {
 
     this->title_length = strlen(title);
 
-    this->window_title = (char*) malloc(this->title_length + 1);
+    this->window_title = (char*) malloc(this->title_length + 1); //Allocate the title and copy the data
     memset(this->window_title, 0, this->title_length + 1);
     strcpy(this->window_title, title);
+}
+
+void window_t::calculate_buffer_size() {
+    this->buffer_width = this->window_width - 2;
+    this->buffer_height = this->window_height - (window_bar_height + 3);
+
+    size_t new_size = this->buffer_width * this->buffer_height; //Check to see if the size has changed
+    if (new_size == this->buffer_size) {
+        return;
+    }
+    this->buffer_size = this->buffer_width * this->buffer_height;
+
+    if (this->buffer) { //Make we free any existing buffer
+        free(this->buffer);
+    }
+
+    this->buffer = (uint32_t*) malloc(sizeof(uint32_t) * this->buffer_size);
+    if (this->buffer) {
+        for (uint32_t i = 0; i < this->buffer_size; i++) {
+            this->buffer[i] = window_background_colour; //This probably should use previous data if there was any
+        }
+    }
+}
+
+void window_t::calculate_buffer_position() {
+    this->buffer_x = this->window_x + 1;
+    this->buffer_y = this->window_y + window_bar_height + 2;
 }
