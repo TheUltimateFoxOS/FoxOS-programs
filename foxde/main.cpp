@@ -32,8 +32,19 @@ int main(int argc, char* argv[], char* envp[]) {
 	sprintf(font_load_path, "%s/RES/zap-light16.psf", getenv("ROOT_FS"));
 	screen_font = fox_load_font(font_load_path);
 
-	window_t* window = new window_t(200, 200, 400, 200);
-	window->init();
+	window_t* window1 = new window_t(100, 100, 400, 200);
+	window1->set_title((char*) "Window 1");
+	register_window(window1);
+
+	window_t* window2 = new window_t(200, 200, 400, 200);
+	window2->set_title((char*) "Window 2");
+	register_window(window2);
+
+	window_t* window3 = new window_t(300, 300, 400, 200);
+	window3->set_title((char*) "Window 3");
+	register_window(window3);
+
+	bring_window_to_front(window2);
 
 	//Main draw loop
 	while (true) {
@@ -51,6 +62,8 @@ int main(int argc, char* argv[], char* envp[]) {
 		draw_mouse_pointer();
 		
 		fox_end_frame();
+
+		window2->move(window2->get_x() + 1, window2->get_y() + 1);
 	}
 
 	destroy_all_windows();
