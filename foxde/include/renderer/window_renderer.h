@@ -20,6 +20,11 @@ class window_t {
 
         void set_title(char* title);
 
+        uint32_t* buffer = 0;
+        size_t buffer_size = 0;
+
+		bool frame_ready = false;
+
     private:
         void calculate_buffer_size();
         void calculate_buffer_position();
@@ -33,9 +38,6 @@ class window_t {
         int64_t buffer_y = 0;
         int64_t buffer_width = 0;
         int64_t buffer_height = 0;
-
-        uint32_t* buffer = 0;
-        size_t buffer_size = 0;
 
         char* window_title = 0;
         uint8_t title_length = 0;

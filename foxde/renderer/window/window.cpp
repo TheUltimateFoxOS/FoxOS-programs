@@ -165,6 +165,10 @@ void window_t::draw_window() {
         return;
     }
 
+	if (!this->frame_ready) {
+		return;
+	}
+
     tmp_x = this->buffer_x;
     tmp_y = this->buffer_y;
     tmp_width = this->buffer_width;
@@ -192,6 +196,8 @@ void window_t::draw_window() {
 			fox_set_px_unsafe(i + tmp_x, j + tmp_y, this->buffer[offset + i]);
 		}
 	}
+
+	frame_ready = false;
 }
 
 void window_t::move(int64_t x, int64_t y) {
