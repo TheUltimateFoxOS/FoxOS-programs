@@ -7,7 +7,7 @@
 #define font_width 8
 #define font_height 16
 
-#define background_colour 0xFFFFFF
+#define background_colour 0xff00ff00
 
 #define util_bar_padding 5
 #define util_bar_height font_height + (util_bar_padding * 2)

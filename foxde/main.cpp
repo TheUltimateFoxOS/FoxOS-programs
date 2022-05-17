@@ -60,14 +60,13 @@ void ipc_message(int func, void* data) {
 }
 
 int main(int argc, char* argv[], char* envp[]) {
-	disable_print_char();
+	// disable_print_char();
 
 	//Setup config variables to use in the program
 	point_t siz = get_screen_size();
-	screen_size = {
-		.width = (int64_t) siz.x,
-		.height = (int64_t) siz.y
-	};
+
+	screen_size.width = (int64_t) siz.x;
+	screen_size.height = (int64_t) siz.y;
 
 	char font_load_path[512] = { 0 };
 	sprintf(font_load_path, "%s/RES/zap-light16.psf", getenv("ROOT_FS"));
