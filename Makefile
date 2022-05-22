@@ -8,7 +8,7 @@ build:
 
 	@echo "Building programs"
 	@make -C test
-	@make -C ipc_test
+	@make -C window_test
 	@make -C terminal
 	@make -C init
 	@make -C cat

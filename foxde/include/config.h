@@ -3,11 +3,12 @@
 #include <foxos/psf1_font.h>
 #include <foxos/term.h>
 #include <foxos/g_syscalls.h>
+#include <foxos/fox_graphics.h>
 
 #define font_width 8
 #define font_height 16
 
-#define background_colour 0xff00ff00
+#define main_background_colour 0xFFFFFF
 
 #define util_bar_padding 5
 #define util_bar_height font_height + (util_bar_padding * 2)
@@ -26,6 +27,11 @@
 #define window_bar_height font_height + (window_bar_padding * 2)
 #define window_bar_button_size window_bar_height
 
+#define window_buffer_width_diff 2
+#define window_buffer_height_diff window_bar_height + 3
+#define window_buffer_offset_x 1
+#define window_buffer_offset_y window_bar_height + 2
+
 #define window_min_width window_bar_button_size * 2 + 2
 #define window_min_height window_bar_height * 2 + 3
 
@@ -33,16 +39,14 @@
 #define window_border_colour 0x000000
 
 #define util_bar_text "FoxOS DE"
-#define new_window_text "FoxOS Window"
 
 typedef struct {
     int64_t width = 0;
     int64_t height = 0;
 } screen_data_t;
 
-
 extern mouse_position_t mouse_pos;
 extern int mouse_button_down;
 
-extern screen_data_t screen_size;
 extern psf1_font_t screen_font;
+extern graphics_buffer_info_t graphics_buffer_info;

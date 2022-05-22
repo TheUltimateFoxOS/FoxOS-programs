@@ -6,7 +6,6 @@
 #include <utils/rainbow.h>
 
 #include <config.h>
-#include <ipc.h>
 
 #include <sys/ipc.h>
 #include <sys/env.h>
@@ -16,13 +15,14 @@
 #include <foxos/fox_graphics.h>
 #include <foxos/term.h>
 #include <foxos/psf1_font.h>
+#include <foxos/fox_graphics.h>
 
 //Variables from config.h
 mouse_position_t mouse_pos;
 int mouse_button_down;
 
-screen_data_t screen_size;
 psf1_font_t screen_font;
+graphics_buffer_info_t graphics_buffer_info;
 
 void on_stdout(char* buffer, uint64_t size) {
 	env_set(ENV_PIPE_DISABLE_ENABLE, (void*) 0); // we run here in the task context of the child process, so we disable the pipe while using the stdout/stderr/stdin
@@ -36,75 +36,72 @@ void on_stderr(char* buffer, uint64_t size) {
 
 void ipc_message(int func, void* data) {
 	switch (func) {
+		case IPC_GET_WINDOW_INFO:
+			{
+				standard_foxos_window_info_t* window_info = (standard_foxos_window_info_t*) data;
+				window_info->buffer_width_diff = window_buffer_width_diff;
+				window_info->buffer_height_diff = window_buffer_height_diff;
+				window_info->buffer_offset_x = window_buffer_offset_x;
+				window_info->buffer_offset_y = window_buffer_offset_y;
+
+				window_info->min_width = window_min_width;
+				window_info->min_height = window_min_height;
+
+				window_info->background_colour = window_background_colour;
+			}
 		case IPC_CREATE_WINDOW:
 			{
-				window_create_ipc_t* ipc_data = (window_create_ipc_t*) data;
-				window_t* window = new window_t(100, 100, ipc_data->x, ipc_data->y);
-				window->set_title((char*) ipc_data->text);
-				ipc_data->buffer = window->buffer;
-				ipc_data->buffer_size = window->buffer_size;
-				ipc_data->window = window;
-				ipc_data->x = window->get_width() - 2;
-				ipc_data->y = window->get_height() - window_bar_height;
-
-				ipc_data->frame_ready = &window->frame_ready;
+				standard_foxos_window_t* new_window = (standard_foxos_window_t*) data;
 
 				task_t* task = (task_t*) env(ENV_GET_TASK);
 				task->stdout_pipe = on_stdout;
 				task->stderr_pipe = on_stderr;
 
-				register_window(window);
+				register_window(new_window);
+			}
+			break;
+		case IPC_DESTORY_WINDOW:
+			{
+				standard_foxos_window_t* window = (standard_foxos_window_t*) data;
+				unregister_window(window);
 			}
 			break;
 	}
 }
 
 int main(int argc, char* argv[], char* envp[]) {
-	// disable_print_char();
+	if (de_running()) {
+		printf("Error: a desktop environment is already running!\n");
+		return 1;
+	}
+
+	disable_print_char();
 
 	//Setup config variables to use in the program
-	point_t siz = get_screen_size();
-
-	screen_size.width = (int64_t) siz.x;
-	screen_size.height = (int64_t) siz.y;
+	graphics_buffer_info = create_screen_buffer();
+	if (graphics_buffer_info.buffer == NULL) {
+		printf("Could not allocate memory for the graphics buffer\n");
+		return 1;
+	}
 
 	char font_load_path[512] = { 0 };
 	sprintf(font_load_path, "%s/RES/zap-light16.psf", getenv("ROOT_FS"));
 	screen_font = fox_load_font(font_load_path);
 
-	// window_t* window1 = new window_t(100, 100, 400, 200);
-	// window1->set_title((char*) "Window 1");
-	// register_window(window1);
-
-	// window_t* window2 = new window_t(200, 200, 400, 200);
-	// window2->set_title((char*) "Window 2");
-	// register_window(window2);
-
-	// window_t* window3 = new window_t(300, 300, 400, 200);
-	// for (int i = 0; i < window3->get_height(); i++) {
-	// 	for (int j = 0; j < window3->get_width(); j++) {
-	// 		window3->buffer[i * window3->get_width() + j] = rainbow(i * window3->get_width() + j);
-	// 	}
-	// }
-	// window3->set_title((char*) "Window 3");
-	// register_window(window3);
-
-	// bring_window_to_front(window2);
-
-	int ipc_id = ipc_register("foxde", ipc_message);
+	int ipc_id = ipc_register(standard_foxos_de_ipc_name, ipc_message);
 
 	char* nargv[] = {
-		"ipc_test",
+		"window_test",
 		nullptr
 	};
 
-	spawn("root:/BIN/ipc_test.elf", (const char**) nargv, (const char**) envp, true);
+	spawn("root:/BIN/window_test.elf", (const char**) nargv, (const char**) envp, true);
 
 	//Main draw loop
 	while (true) {
-		fox_start_frame(true);
+		fox_start_frame(&graphics_buffer_info, true);
 
-		fox_set_background(background_colour);
+		fox_set_background(&graphics_buffer_info, main_background_colour);
 
 		draw_windows();
 
@@ -115,9 +112,7 @@ int main(int argc, char* argv[], char* envp[]) {
 		mouse_pos = mouse_position();
 		draw_mouse_pointer();
 		
-		fox_end_frame();
-
-		// window2->move(window2->get_x() + 1, window2->get_y() + 1);
+		fox_end_frame(&graphics_buffer_info);
 	}
 
 	destroy_all_windows();
@@ -129,6 +124,8 @@ int main(int argc, char* argv[], char* envp[]) {
 	set_color(old_color);
 
 	ipc_unregister(ipc_id);
+
+	free(graphics_buffer_info.buffer);
 
 	return 0;
 }

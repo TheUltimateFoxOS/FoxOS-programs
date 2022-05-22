@@ -29,6 +29,8 @@ int fps = 0;
 psf1_font_t font;
 point_t screen_size;
 
+graphics_buffer_info_t graphics_buffer_info;
+
 void frame() {
 	if (start_time == 0) {
 		start_time = _time();
@@ -61,7 +63,7 @@ void frame() {
 	}
 
 #ifdef GRAPHICS_RENDERING_MODE
-	fox_start_frame(true);
+	fox_start_frame(&graphics_buffer_info, true);
 #endif
 
 	for (int i = 0; i < rows; i++) {
@@ -79,7 +81,7 @@ void frame() {
 				set_color(0xff000000 | ((0xff - buffer[i][j]) << 12));
 				putchar('X');
 			#else
-				fox_draw_char(j * 8, i * 16, 'X', 0xff000000 | ((0xff - buffer[i][j]) << 12), &font);
+				fox_draw_char(&graphics_buffer_info, j * 8, i * 16, 'X', 0xff000000 | ((0xff - buffer[i][j]) << 12), &font);
 			#endif
 			}
 
@@ -89,9 +91,9 @@ void frame() {
 #ifdef GRAPHICS_RENDERING_MODE
 	char buffer[512] = { 0 };
 	sprintf(buffer, "frames: %d (%d fps next update in %d s)", num_frames_rendered + 1, fps, start_time + 10 - _time());
-	fox_draw_string(0, screen_size.y - 16, buffer, 0xffffffff, &font);
+	fox_draw_string(&graphics_buffer_info, 0, screen_size.y - 16, buffer, 0xffffffff, &font);
 
-	fox_end_frame();
+	fox_end_frame(&graphics_buffer_info);
 #endif
 
 	num_frames_rendered++;
@@ -114,6 +116,8 @@ void frame() {
 }
 
 int main() {
+	graphics_buffer_info = create_screen_buffer();
+
 	char font_load_path[512] = { 0 };
 	sprintf(font_load_path, "%s/RES/zap-light16.psf", getenv("ROOT_FS"));
 	font = fox_load_font(font_load_path);
@@ -123,6 +127,9 @@ int main() {
 	while (1) {
 		frame();
 	}
+
+	fox_free_framebuffer(&graphics_buffer_info);
+	fox_free_font(&font);
 
 	return 0;
 }

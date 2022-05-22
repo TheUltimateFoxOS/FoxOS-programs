@@ -39,9 +39,9 @@ void draw_mouse_pointer() {
 
 	for (int i = 0; i < mouse_pointer_len; i++) {
 		if (mouse_pointer[i] == 1) {
-			fox_set_px(mouse_pos.x + current_x, mouse_pos.y + current_y, 0xFFFFFF);
+			fox_set_px(&graphics_buffer_info, mouse_pos.x + current_x, mouse_pos.y + current_y, 0xFFFFFF);
 		} else if (mouse_pointer[i] == 2) {
-			fox_set_px(mouse_pos.x + current_x, mouse_pos.y + current_y, 0x000000);
+			fox_set_px(&graphics_buffer_info, mouse_pos.x + current_x, mouse_pos.y + current_y, 0x000000);
 		}
 
 		current_x++;

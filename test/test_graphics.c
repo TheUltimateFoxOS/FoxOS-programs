@@ -25,27 +25,32 @@ int graphics(int argc, char* argv[], char* envp[]) {
 
 	// fox_end_frame();
 
-	fox_start_frame(true);
+	graphics_buffer_info_t graphics_buffer_info = create_screen_buffer();
 
-	fox_draw_rect(0, 0, 50, 50, 0xFF0000);
-	fox_draw_string(55, 25, "This is a rectangle!", 0x0000FF, &font);
+	fox_start_frame(&graphics_buffer_info, true);
 
-	fox_draw_circle(25, 60 + 25, 25, 0x0000FF);
-	fox_draw_string(55, 60 + 25, "This is a circle!", 0x0000FF, &font);
+	fox_draw_rect(&graphics_buffer_info, 0, 0, 50, 50, 0xFF0000);
+	fox_draw_string(&graphics_buffer_info, 55, 25, "This is a rectangle!", 0x0000FF, &font);
 
-	fox_draw_line(0, 120, 50, 120 + 50, 0x0000FF);
-	fox_draw_string(55, 120 + 25, "This is a line!", 0x0000FF, &font);
+	fox_draw_circle(&graphics_buffer_info, 25, 60 + 25, 25, 0x0000FF);
+	fox_draw_string(&graphics_buffer_info, 55, 60 + 25, "This is a circle!", 0x0000FF, &font);
 
-	fox_draw_string(0, 190, "Press any key to exit.", 0x0000FF, &font);
-	fox_end_frame();
+	fox_draw_line(&graphics_buffer_info, 0, 120, 50, 120 + 50, 0x0000FF);
+	fox_draw_string(&graphics_buffer_info, 55, 120 + 25, "This is a line!", 0x0000FF, &font);
+
+	fox_draw_string(&graphics_buffer_info, 0, 190, "Press any key to exit.", 0x0000FF, &font);
+	fox_end_frame(&graphics_buffer_info);
 
 	getchar();
 
-	fox_start_frame(true);
-	fox_draw_string(0, 0, "Goodbye!", 0x0000FF, &font);
-	fox_end_frame();
+	fox_start_frame(&graphics_buffer_info, true);
+	fox_draw_string(&graphics_buffer_info, 0, 0, "Goodbye!", 0x0000FF, &font);
+	fox_end_frame(&graphics_buffer_info);
 
 	set_cursor((point_t) { 0, 16 });
+
+	fox_free_framebuffer(&graphics_buffer_info);
+	fox_free_font(&font);
 
 	// struct mouse_position_t last_pos = { 0, 0 };
 	// while (true) {

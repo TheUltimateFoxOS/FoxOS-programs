@@ -42,6 +42,10 @@ unsigned int buffer_idx = 0;
 
 psf1_font_t font;
 
+#ifdef GRAPHICS_RENDERING_MODE
+graphics_buffer_info_t graphics_buffer_info;
+#endif
+
 char* get_file_extension(const char* filename) {
 	char* chr_ptr = strchr(filename, '.');
 	return ++chr_ptr;
@@ -70,8 +74,8 @@ void render_usage() {
 
 #ifdef GRAPHICS_RENDERING_MODE
 void render_status_bar() {
-	fox_start_frame(true);
-    max_length_before_line_wrap = global_fb.width / CHAR_WIDTH;
+	fox_start_frame(&graphics_buffer_info, true);
+    max_length_before_line_wrap = graphics_buffer_info.width / CHAR_WIDTH;
 	char edited = '-';
 	if (is_edited) {
 		edited = '+';
@@ -79,7 +83,7 @@ void render_status_bar() {
 
 	char buff[512] = { 0 };
 	sprintf(buff, "File: %s [%c] Mode: --%s-- Current Line: %d Line: %d,%d Type: [%s]", filename, edited, mode, buffer_ln_idx, ln_cnt, char_cnt, file_type);
-	fox_draw_string(0, global_fb.height - CHAR_SIZE, buff, 0xffffffff, &font);
+	fox_draw_string(&graphics_buffer_info, 0, graphics_buffer_info.height - CHAR_SIZE, buff, 0xffffffff, &font);
 
 	int j = 0;
 	int cur_x;
@@ -92,27 +96,27 @@ void render_status_bar() {
 	sprintf(buff, "%d .", ln_cnt);
 	space_to_draw = SPACE_BETWEEN_LINE_NUMBER_TEXT + (strlen(buff) * CHAR_WIDTH);
 	cur_x = space_to_draw;
-	fox_draw_line(space_to_draw - (1 * CHAR_WIDTH), 0, space_to_draw - (1 * CHAR_WIDTH), global_fb.height - (2 * CHAR_WIDTH), LINE_NUMBER_COLOR);
+	fox_draw_line(&graphics_buffer_info, space_to_draw - (1 * CHAR_WIDTH), 0, space_to_draw - (1 * CHAR_WIDTH), graphics_buffer_info.height - (2 * CHAR_WIDTH), LINE_NUMBER_COLOR);
 
 	for (int i = 0; i < current_size; i++) {
 		if ((ln_cnt - 1 < possible_lines_to_draw || j >= buffer_ln_idx) && allready_drawn <= possible_lines_to_draw) {
 			if (!initial_line_drawn) {
 				initial_line_drawn = true;
 				sprintf(buff, "%d.", current_line);
-				fox_draw_string(0, cur_y, buff, LINE_NUMBER_COLOR, &font);
+				fox_draw_string(&graphics_buffer_info, 0, cur_y, buff, LINE_NUMBER_COLOR, &font);
 			}
 
 			if (i == buffer_idx) {
 				// set_color(0x33cccc);
 				// putchar('|');
 				// set_color(old_color);
-				fox_draw_char(cur_x, cur_y, '|', CURSOR_COLOR, &font);
+				fox_draw_char(&graphics_buffer_info, cur_x, cur_y, '|', CURSOR_COLOR, &font);
 				cur_x += CHAR_WIDTH;
 				cursor_drawn = true;
 			}
 			// putchar(input_buffer[i]);
 			if (input_buffer[i] >= 0x20 && input_buffer[i] <= 0x7E) {
-			fox_draw_char(cur_x, cur_y, input_buffer[i], 0xffffffff, &font);
+				fox_draw_char(&graphics_buffer_info, cur_x, cur_y, input_buffer[i], 0xffffffff, &font);
 			}
 			cur_x += CHAR_WIDTH;
 			if (input_buffer[i] == '\n') {
@@ -121,9 +125,8 @@ void render_status_bar() {
 				cur_x = space_to_draw;
 				cur_y += CHAR_SIZE;
 				sprintf(buff, "%d.", current_line);
-				fox_draw_string(0, cur_y, buff, LINE_NUMBER_COLOR, &font);
-			}
-            else if ((cur_x / CHAR_WIDTH) % max_length_before_line_wrap == 0) {
+				fox_draw_string(&graphics_buffer_info, 0, cur_y, buff, LINE_NUMBER_COLOR, &font);
+			} else if ((cur_x / CHAR_WIDTH) % max_length_before_line_wrap == 0) {
                 cur_y += CHAR_SIZE;
 				cur_x = space_to_draw;
 				allready_drawn++;
@@ -139,12 +142,12 @@ void render_status_bar() {
 	if (!cursor_drawn) {
 		if (!initial_line_drawn) {
 			sprintf(buff, "%d.", current_line);
-			fox_draw_string(0, cur_y, buff, LINE_NUMBER_COLOR, &font);
+			fox_draw_string(&graphics_buffer_info, 0, cur_y, buff, LINE_NUMBER_COLOR, &font);
 		}
-		fox_draw_char(cur_x, cur_y, '|', 0x33cccc, &font);
+		fox_draw_char(&graphics_buffer_info, cur_x, cur_y, '|', 0x33cccc, &font);
 	}
 
-	fox_end_frame();
+	fox_end_frame(&graphics_buffer_info);
 }
 #else
 void render_status_bar() {
@@ -451,13 +454,14 @@ bool listen_input(FILE* f) {
 }
 
 int main(int argc, char* argv[]) {
-	
 	if (argc != 2) {
 		render_usage();
 		return 1;
 	}
 
 #ifdef GRAPHICS_RENDERING_MODE
+	graphics_buffer_info = create_screen_buffer();
+
 	char font_path[512] = { 0 };
 	sprintf(font_path, "%s/RES/zap-light16.psf", getenv("ROOT_FS"));
 	font = fox_load_font(font_path);
@@ -512,6 +516,6 @@ int main(int argc, char* argv[]) {
 	set_color(old_color);
 	enable_print_char();
 
+	fox_free_framebuffer(&graphics_buffer_info);
 	fox_free_font(&font);
-	fox_free_framebuffer();
 }

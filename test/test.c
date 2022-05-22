@@ -11,13 +11,13 @@
 
 int main(int argc, char* argv[], char* envp[]) {
 	// piping(argc, argv, envp);
-	//disk(argc, argv, envp);
-	//net(argc, argv, envp);
+	// disk(argc, argv, envp);
+	// net(argc, argv, envp);
 	// libterm(argc, argv, envp);
 	// system_(argc, argv, envp);
 	// thread_(argc, argv, envp);
 	// tasks(argc, argv, envp);
-	// graphics(argc, argv, envp);
+	graphics(argc, argv, envp);
 	// sound(argc, argv, envp);
-	ipc(argc, argv, envp);
+	// ipc(argc, argv, envp);
 }

@@ -66,8 +66,8 @@ int main(int argc, char* argv[], char* envp[]) {
 	sprintf(font_path, "%s/RES/zap-light16.psf", getenv("ROOT_FS"));
 	psf1_font_t font = fox_load_font(font_path);
 
-	framebuffer_t fb = fb_info();
-	void* pixel_field = malloc((fb.width - 4) * (fb.height - 64) * 4);
+	graphics_buffer_info_t graphics_buffer_info = create_screen_buffer();
+	void* pixel_field = malloc((graphics_buffer_info.width - 4) * (graphics_buffer_info.height - 64) * 4);
 
 	create_thread(keyboard_input_task);
 
@@ -80,12 +80,12 @@ int main(int argc, char* argv[], char* envp[]) {
 
 			fpic_image_header_t header = {
 				.magic = 0xc0ffebabe,
-				.width = fb.width - 4,
-				.height = fb.height - 64,
+				.width = graphics_buffer_info.width - 4,
+				.height = graphics_buffer_info.height - 64,
 			};
 
 			fwrite(&header, sizeof(header), 1, f);
-			fwrite(pixel_field, (fb.width - 4) * (fb.height - 64) * 4, 1, f);
+			fwrite(pixel_field, (graphics_buffer_info.width - 4) * (graphics_buffer_info.height - 64) * 4, 1, f);
 			fclose(f);
 
 			save = false;
@@ -93,7 +93,7 @@ int main(int argc, char* argv[], char* envp[]) {
 		}
 
 		if (clear) {
-			memset(pixel_field, 0, (fb.width - 4) * (fb.height - 64) * 4);
+			memset(pixel_field, 0, (graphics_buffer_info.width - 4) * (graphics_buffer_info.height - 64) * 4);
 			clear = false;
 			status_message = "Cleared";
 		}
@@ -101,49 +101,49 @@ int main(int argc, char* argv[], char* envp[]) {
 		mouse_position_t pos = mouse_position();
 		int button = mouse_button();
 
-		fox_start_frame(true);
+		fox_start_frame(&graphics_buffer_info, true);
 
-		fox_draw_rect_outline(0, 0, fb.width, fb.height - 62, 0xFFFFFFFF);
+		fox_draw_rect_outline(&graphics_buffer_info, 0, 0, graphics_buffer_info.width, graphics_buffer_info.height - 62, 0xFFFFFFFF);
 
 		// draw the pixel field
-		for (int y = 0; y < fb.height - 64; y++) {
-			for (int x = 0; x < fb.width - 4; x++) {
-				int offset = (x + y * (fb.width - 4)) * 4;
+		for (int y = 0; y < graphics_buffer_info.height - 64; y++) {
+			for (int x = 0; x < graphics_buffer_info.width - 4; x++) {
+				int offset = (x + y * (graphics_buffer_info.width - 4)) * 4;
 				uint32_t color = ((uint32_t*) pixel_field)[offset / 4];
-				fox_set_px(x + 2, y + 1, color);
+				fox_set_px(&graphics_buffer_info, x + 2, y + 1, color);
 			}
 		}
 
-		fox_draw_rect(pos.x, pos.y, 10, 10, current_color);
+		fox_draw_rect(&graphics_buffer_info, pos.x, pos.y, 10, 10, current_color);
 
 		if (button == MOUSE_BUTTON_LEFT) {
 			// if mouse pos is inside the pixel field, draw a pixel
-			if (pos.x >= 4 && pos.x < fb.width - 4 && pos.y >= 64 && pos.y < fb.height - 4) {
+			if (pos.x >= 4 && pos.x < graphics_buffer_info.width - 4 && pos.y >= 64 && pos.y < graphics_buffer_info.height - 4) {
 				int x = pos.x;
 				int y = pos.y;
-				int offset = (x + y * (fb.width - 4)) * 4;
+				int offset = (x + y * (graphics_buffer_info.width - 4)) * 4;
 				((uint32_t*) pixel_field)[offset / 4] = current_color;
 			}
 		} else if (button == MOUSE_BUTTON_RIGHT) {
 			// if mouse pos is inside the pixel field, clear the pixel
-			if (pos.x >= 4 && pos.x < fb.width - 4 && pos.y >= 64 && pos.y < fb.height - 4) {
+			if (pos.x >= 4 && pos.x < graphics_buffer_info.width - 4 && pos.y >= 64 && pos.y < graphics_buffer_info.height - 4) {
 				int x = pos.x;
 				int y = pos.y;
-				int offset = (x + y * (fb.width - 4)) * 4;
+				int offset = (x + y * (graphics_buffer_info.width - 4)) * 4;
 				((uint32_t*) pixel_field)[offset / 4] = 0;
 			}
 		}
 
-		fox_draw_string(0, fb.height - 60, "Press 's' to save, 'esc' to exit, 'c ' to clear, 'r', 'g', 'b', 'y', 'w' to change color.", 0xFFFFFFFF, &font);
+		fox_draw_string(&graphics_buffer_info, 0, graphics_buffer_info.height - 60, "Press 's' to save, 'esc' to exit, 'c ' to clear, 'r', 'g', 'b', 'y', 'w' to change color.", 0xFFFFFFFF, &font);
 		if (status_message != NULL) {
-			fox_draw_string(0, fb.height - 40, status_message, 0xFFFFFFFF, &font);
+			fox_draw_string(&graphics_buffer_info, 0, graphics_buffer_info.height - 40, status_message, 0xFFFFFFFF, &font);
 		}
-		fox_end_frame();
+		fox_end_frame(&graphics_buffer_info);
 	}
 
-	fox_start_frame(true);
-	fox_draw_string(0, 0, "Goodbye!", 0xffffffff, &font);
-	fox_end_frame();
+	fox_start_frame(&graphics_buffer_info, true);
+	fox_draw_string(&graphics_buffer_info, 0, 0, "Goodbye!", 0xffffffff, &font);
+	fox_end_frame(&graphics_buffer_info);
 
 	set_cursor((point_t) { 0, 16 });
 
@@ -151,7 +151,7 @@ int main(int argc, char* argv[], char* envp[]) {
 	enable_print_char();
 
 	fox_free_font(&font);
-	fox_free_framebuffer();
+	fox_free_framebuffer(&graphics_buffer_info);
 
 	return 0;
 }
