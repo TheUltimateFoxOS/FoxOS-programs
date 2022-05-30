@@ -38,6 +38,9 @@
 #define window_background_colour 0xFFFF00
 #define window_border_colour 0x000000
 
+#define bg_console_offset_width 8
+#define bg_console_offset_height 2
+
 #define util_bar_text "FoxOS DE"
 
 typedef struct {

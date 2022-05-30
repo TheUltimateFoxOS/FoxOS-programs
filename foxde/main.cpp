@@ -24,13 +24,66 @@ int mouse_button_down;
 psf1_font_t screen_font;
 graphics_buffer_info_t graphics_buffer_info;
 
+char* background_console = nullptr;
+int background_console_colum = 0;
+int background_console_row = 0;
+int num_background_console_colums = 0;
+int num_background_console_rows = 0;
+
+void scroll_bg_console() {
+	for (int i = 0; i < num_background_console_rows - 1; i++) {
+		for (int j = 0; j < num_background_console_colums; j++) {
+			background_console[i * num_background_console_colums + j] = background_console[(i + 1) * num_background_console_colums + j];
+		}
+	}
+
+	for (int i = 0; i < num_background_console_colums; i++) {
+		background_console[(num_background_console_rows - 1) * num_background_console_colums + i] = 0;
+	}
+
+	background_console_row--;
+}
+
+void print_bg_console(char* s, int l) {
+	int i = 0;
+	while (i < l) {
+		if (s[i] == '\n') {
+			background_console_colum = 0;
+			background_console_row++;
+			if (background_console_row >= num_background_console_rows) {
+				scroll_bg_console();
+			}
+
+		} else if (s[i] == '\b') {
+			if (background_console_colum > 0) {
+				background_console_colum--;
+			}
+
+			background_console[(background_console_row * num_background_console_colums) + background_console_colum] = ' ';
+		} else {
+			background_console[background_console_colum + (background_console_row * num_background_console_colums)] = s[i];
+			background_console_colum++;
+			if (background_console_colum >= num_background_console_colums) {
+				background_console_colum = 0;
+				background_console_row++;
+				if (background_console_row >= num_background_console_rows) {
+					scroll_bg_console();
+				}
+			}
+		}
+		i++;
+	}
+}
+
 void on_stdout(char* buffer, uint64_t size) {
 	env_set(ENV_PIPE_DISABLE_ENABLE, (void*) 0); // we run here in the task context of the child process, so we disable the pipe while using the stdout/stderr/stdin
+	print_bg_console(buffer, size);
 	env_set(ENV_PIPE_DISABLE_ENABLE, (void*) 1); // re-enable the pipe
 }
 
 void on_stderr(char* buffer, uint64_t size) {
 	env_set(ENV_PIPE_DISABLE_ENABLE, (void*) 0); // we run here in the task context of the child process, so we disable the pipe while using the stdout/stderr/stdin
+	print_bg_console(buffer, size);
 	env_set(ENV_PIPE_DISABLE_ENABLE, (void*) 1); // re-enable the pipe
 }
 
@@ -49,6 +102,7 @@ void ipc_message(int func, void* data) {
 
 				window_info->background_colour = window_background_colour;
 			}
+			break;
 		case IPC_CREATE_WINDOW:
 			{
 				standard_foxos_window_t* new_window = (standard_foxos_window_t*) data;
@@ -88,20 +142,39 @@ int main(int argc, char* argv[], char* envp[]) {
 	sprintf(font_load_path, "%s/RES/zap-light16.psf", getenv("ROOT_FS"));
 	screen_font = fox_load_font(font_load_path);
 
+	num_background_console_colums = graphics_buffer_info.width / font_width - bg_console_offset_width;
+	num_background_console_rows = graphics_buffer_info.height / font_height - bg_console_offset_height;
+	background_console = (char*) malloc(num_background_console_colums * num_background_console_rows);
+	memset(background_console, 0, sizeof(char) * num_background_console_colums * num_background_console_rows);
+
 	int ipc_id = ipc_register(standard_foxos_de_ipc_name, ipc_message);
 
-	char* nargv[] = {
-		"window_test",
-		nullptr
-	};
+	char* nargv[2];
+	nargv[0] = "terminal";
+	nargv[1] = nullptr;
 
-	spawn("root:/BIN/window_test.elf", (const char**) nargv, (const char**) envp, true);
+
+	task_t* terminal_task = spawn("root:/BIN/terminal.elf", (const char**) nargv, (const char**) envp, true);
+	assert(terminal_task != NULL);
+	terminal_task->stdout_pipe = on_stdout;
+	terminal_task->stderr_pipe = on_stderr;
+	terminal_task->pipe_enabled = true;
 
 	//Main draw loop
 	while (true) {
 		fox_start_frame(&graphics_buffer_info, true);
 
 		fox_set_background(&graphics_buffer_info, main_background_colour);
+
+		for (int x = 0; x < num_background_console_colums; x++) {
+			for (int y = 0; y < num_background_console_rows; y++) {
+				if (background_console[(y * num_background_console_colums) + x] == 0) {
+					continue;
+				}
+
+				fox_draw_char(&graphics_buffer_info, (x + bg_console_offset_width) * font_width, (y + bg_console_offset_height) * font_height, background_console[x + (y * num_background_console_colums)], 0x0, &screen_font);
+			}
+		}
 
 		draw_windows();
 
