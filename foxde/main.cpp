@@ -138,9 +138,7 @@ int main(int argc, char* argv[], char* envp[]) {
 		return 1;
 	}
 
-	char font_load_path[512] = { 0 };
-	sprintf(font_load_path, "%s/RES/zap-light16.psf", getenv("ROOT_FS"));
-	screen_font = fox_load_font(font_load_path);
+	screen_font = fox_load_font(root_fs "/RES/zap-light16.psf");
 
 	num_background_console_colums = graphics_buffer_info.width / font_width - bg_console_offset_width;
 	num_background_console_rows = graphics_buffer_info.height / font_height - bg_console_offset_height;
@@ -150,11 +148,11 @@ int main(int argc, char* argv[], char* envp[]) {
 	int ipc_id = ipc_register(standard_foxos_de_ipc_name, ipc_message);
 
 	char* nargv[2];
-	nargv[0] = "terminal";
+	nargv[0] = startup_task;
 	nargv[1] = nullptr;
 
 
-	task_t* terminal_task = spawn("root:/BIN/terminal.elf", (const char**) nargv, (const char**) envp, true);
+	task_t* terminal_task = spawn(root_fs "/BIN/" startup_task ".elf", (const char**) nargv, (const char**) envp, true);
 	assert(terminal_task != NULL);
 	terminal_task->stdout_pipe = on_stdout;
 	terminal_task->stderr_pipe = on_stderr;
