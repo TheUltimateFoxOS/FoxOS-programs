@@ -4,6 +4,7 @@
 #include <renderer/window_renderer.h>
 
 #include <utils/rainbow.h>
+#include <utils/bmp.h>
 
 #include <config.h>
 
@@ -123,11 +124,25 @@ void ipc_message(int func, void* data) {
 	}
 }
 
+uint32_t* background_image = nullptr;
+void draw_background(graphics_buffer_info_t* graphics_buffer_info) {
+	for (int i = 0; i < graphics_buffer_info->height; i++) {
+		for (int j = 0; j < graphics_buffer_info->width; j++) {
+			fox_set_px_unsafe(graphics_buffer_info, j, i, background_image[(i * graphics_buffer_info->width) + j]);
+		}
+	}
+}
+
+char* root_fs = nullptr;
+
 int main(int argc, char* argv[], char* envp[]) {
+	root_fs = getenv("ROOT_FS");
 	if (de_running()) {
 		printf("Error: a desktop environment is already running!\n");
 		return 1;
 	}
+
+	printf("Starting desktop environment...\n");
 
 	disable_print_char();
 
@@ -138,12 +153,43 @@ int main(int argc, char* argv[], char* envp[]) {
 		return 1;
 	}
 
-	screen_font = fox_load_font(root_fs "/RES/zap-light16.psf");
+	char font_path[256];
+	sprintf(font_path, "%s/RES/zap-light16.psf", root_fs);
+	screen_font = fox_load_font(font_path);
 
 	num_background_console_colums = graphics_buffer_info.width / font_width - bg_console_offset_width;
 	num_background_console_rows = graphics_buffer_info.height / font_height - bg_console_offset_height;
 	background_console = (char*) malloc(num_background_console_colums * num_background_console_rows);
 	memset(background_console, 0, sizeof(char) * num_background_console_colums * num_background_console_rows);
+
+	background_image = (uint32_t*) malloc(graphics_buffer_info.width * graphics_buffer_info.height * sizeof(uint32_t));
+	memset(background_image, 0xff, graphics_buffer_info.width * graphics_buffer_info.height * sizeof(uint32_t));
+
+	char background_image_path[256];
+	sprintf(background_image_path, "%s/FOXCFG/foxde-bg.bmp", root_fs);
+	file_t* background_image_file = fopen(background_image_path, "rb");
+	if (background_image_file != NULL) {
+		uint8_t* buffer = (uint8_t*) malloc(background_image_file->size);
+		fread(buffer, 1, background_image_file->size, background_image_file);
+		fclose(background_image_file);
+
+		assert(is_bmp(buffer));
+
+		int width = get_bmp_width(buffer);
+		int height = get_bmp_height(buffer);
+
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				if (i >= graphics_buffer_info.height || j >= graphics_buffer_info.width) {
+					buffer[(i * width) + j] = 0;
+				} else {
+					background_image[(i * graphics_buffer_info.width) + j] = get_bmp_pixel(buffer, j, i);
+				}
+			}
+		}
+
+		free(buffer);
+	}
 
 	int ipc_id = ipc_register(standard_foxos_de_ipc_name, ipc_message);
 
@@ -152,17 +198,22 @@ int main(int argc, char* argv[], char* envp[]) {
 	nargv[1] = nullptr;
 
 
-	task_t* terminal_task = spawn(root_fs "/BIN/" startup_task ".elf", (const char**) nargv, (const char**) envp, true);
+	char startup_task_path[256];
+	sprintf(startup_task_path, "%s/BIN/%s.elf", root_fs, startup_task);
+	task_t* terminal_task = spawn(startup_task_path, (const char**) nargv, (const char**) envp, true);
 	assert(terminal_task != NULL);
 	terminal_task->stdout_pipe = on_stdout;
 	terminal_task->stderr_pipe = on_stderr;
 	terminal_task->pipe_enabled = true;
 
+	bool on_terminal_task_exit = false;
+	terminal_task->on_exit = &on_terminal_task_exit;
+
 	//Main draw loop
-	while (true) {
+	while (!on_terminal_task_exit) {
 		fox_start_frame(&graphics_buffer_info, true);
 
-		fox_set_background(&graphics_buffer_info, main_background_colour);
+		draw_background(&graphics_buffer_info);
 
 		for (int x = 0; x < num_background_console_colums; x++) {
 			for (int y = 0; y < num_background_console_rows; y++) {

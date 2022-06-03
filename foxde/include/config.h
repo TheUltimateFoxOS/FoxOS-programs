@@ -44,7 +44,7 @@
 #define util_bar_text "FoxOS DE"
 
 #define startup_task "terminal"
-#define root_fs "root:"
+//#define root_fs "root:"
 
 typedef struct {
     int64_t width = 0;
