@@ -2,8 +2,10 @@
 #include <renderer/task_bar_renderer.h>
 #include <renderer/util_bar_renderer.h>
 #include <renderer/window_renderer.h>
+#include <renderer/background_renderer.h>
 
 #include <utils/rainbow.h>
+#include <utils/bmp.h>
 
 #include <config.h>
 
@@ -23,7 +25,9 @@ int mouse_button_down;
 
 psf1_font_t screen_font;
 graphics_buffer_info_t graphics_buffer_info;
+char* root_fs = nullptr;
 
+//Global variables
 char* background_console = nullptr;
 int background_console_colum = 0;
 int background_console_row = 0;
@@ -122,10 +126,13 @@ void ipc_message(int func, void* data) {
 }
 
 int main(int argc, char* argv[], char* envp[]) {
+	root_fs = getenv("ROOT_FS");
 	if (de_running()) {
 		printf("Error: a desktop environment is already running!\n");
 		return 1;
 	}
+
+	printf("Starting desktop environment...\n");
 
 	disable_print_char();
 
@@ -136,12 +143,16 @@ int main(int argc, char* argv[], char* envp[]) {
 		return 1;
 	}
 
-	screen_font = fox_load_font((char*) root_fs "/RES/zap-light16.psf");
+	char font_path[256];
+	sprintf(font_path, (char*) "%s/RES/zap-light16.psf", root_fs);
+	screen_font = fox_load_font(font_path);
 
 	num_background_console_colums = graphics_buffer_info.width / font_width - bg_console_offset_width;
 	num_background_console_rows = graphics_buffer_info.height / font_height - bg_console_offset_height;
 	background_console = (char*) malloc(num_background_console_colums * num_background_console_rows);
 	memset(background_console, 0, sizeof(char) * num_background_console_colums * num_background_console_rows);
+
+	load_background_image();
 
 	int ipc_id = ipc_register(standard_foxos_de_ipc_name, ipc_message);
 
@@ -149,17 +160,23 @@ int main(int argc, char* argv[], char* envp[]) {
 	nargv[0] = (char*) startup_task;
 	nargv[1] = nullptr;
 
-	task_t* terminal_task = spawn((char*) root_fs "/BIN/" startup_task ".elf", (const char**) nargv, (const char**) envp, true);
+	char startup_task_path[256];
+	sprintf(startup_task_path, (char*) "%s/BIN/%s.elf", root_fs, startup_task);
+	task_t* terminal_task = spawn(startup_task_path, (const char**) nargv, (const char**) envp, true);
+
 	assert(terminal_task != NULL);
 	terminal_task->stdout_pipe = on_stdout;
 	terminal_task->stderr_pipe = on_stderr;
 	terminal_task->pipe_enabled = true;
 
+	bool on_terminal_task_exit = false;
+	terminal_task->on_exit = &on_terminal_task_exit;
+
 	//Main draw loop
-	while (true) {
+	while (!on_terminal_task_exit) {
 		fox_start_frame(&graphics_buffer_info, true);
 
-		fox_set_background(&graphics_buffer_info, main_background_colour);
+		draw_background();
 
 		for (int x = 0; x < num_background_console_colums; x++) {
 			for (int y = 0; y < num_background_console_rows; y++) {

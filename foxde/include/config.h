@@ -44,7 +44,7 @@
 #define util_bar_text "FoxOS DE"
 
 #define startup_task "terminal"
-#define root_fs "root:"
+//#define root_fs "root:"
 
 typedef struct {
     int64_t width = 0;
@@ -54,5 +54,6 @@ typedef struct {
 extern mouse_position_t mouse_pos;
 extern int mouse_button_down;
 
+extern char* root_fs;
 extern psf1_font_t screen_font;
 extern graphics_buffer_info_t graphics_buffer_info;

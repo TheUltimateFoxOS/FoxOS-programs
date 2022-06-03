@@ -50,7 +50,7 @@ int main() {
 
 	strcat(limine_config, "MODULE_PATH=boot:///BOOT/initrd.saf\nMODULE_STRING=initrd.saf\n");
 
-	strcat(limine_config, "KERNEL_CMDLINE=--initrd=stivale:initrd.saf --load_modules=initrd:/ ");
+	strcat(limine_config, "KERNEL_CMDLINE=--initrd=modules:initrd.saf --load_modules=initrd:/ ");
 	strcat(limine_config, "--autoexec=");
 	strcat(limine_config, partition_name);
 	strcat(limine_config, ":/BIN/init.elf ");
