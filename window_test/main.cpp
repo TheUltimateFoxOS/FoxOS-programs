@@ -13,10 +13,7 @@ int main(int argc, char* argv[], char* envp[]) {
 		return 1;
 	}
 
-	graphics_buffer_info_t buffer_info;
-	buffer_info.buffer = window->buffer;
-	buffer_info.width = window->get_buffer_width();
-	buffer_info.height = window->get_buffer_height();
+	graphics_buffer_info_t buffer_info = window->get_buffer_info();
 
 	char font_load_path[512] = { 0 };
 	sprintf(font_load_path, "%s/RES/zap-light16.psf", getenv("ROOT_FS"));
