@@ -220,10 +220,6 @@ void draw_window(standard_foxos_window_t* window) {
         return;
     }
 
-	if (!window->frame_ready) {
-		return;
-	}
-
     tmp_x = window->get_x() + window_buffer_offset_x;
     tmp_y = window->get_y() + window_buffer_offset_y;
     tmp_width = window->get_buffer_width();
@@ -245,10 +241,20 @@ void draw_window(standard_foxos_window_t* window) {
         tmp_height = graphics_buffer_info.height - tmp_y;
     }
 
-	for (int64_t j = 0; j < tmp_height; j++) {
-        int64_t offset = j * tmp_width;
-		for (int64_t i = 0; i < tmp_width; i++) {
-			fox_set_px_unsafe(&graphics_buffer_info, i + tmp_x, j + tmp_y, window->buffer[offset + i]);
+	if (window->frame_ready) {
+		for (int64_t j = 0; j < tmp_height; j++) {
+			int64_t offset = j * tmp_width;
+			for (int64_t i = 0; i < tmp_width; i++) {
+				window->old_frame[offset + i] = window->buffer[offset + i];
+				fox_set_px_unsafe(&graphics_buffer_info, i + tmp_x, j + tmp_y, window->buffer[offset + i]);
+			}
+		}
+	} else {
+		for (int64_t j = 0; j < tmp_height; j++) {
+			int64_t offset = j * tmp_width;
+			for (int64_t i = 0; i < tmp_width; i++) {
+				fox_set_px_unsafe(&graphics_buffer_info, i + tmp_x, j + tmp_y, window->old_frame[offset + i]);
+			}
 		}
 	}
 

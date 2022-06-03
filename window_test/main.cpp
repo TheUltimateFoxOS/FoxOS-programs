@@ -22,10 +22,6 @@ int main(int argc, char* argv[], char* envp[]) {
 	uint32_t color = 0;
 
 	while (1) {
-		while (window->frame_ready) {
-			__asm__ __volatile__("pause" ::: "memory");
-		}
-
 		fox_start_frame(&buffer_info, true);
 
 		fox_set_background(&buffer_info, color);
@@ -35,7 +31,7 @@ int main(int argc, char* argv[], char* envp[]) {
 		fox_draw_rect(&buffer_info, 20, 20, 10, 10, 0xffffffff);
 		fox_draw_circle(&buffer_info, 50, 50, 10, 0xffffffff);
 
-		window->frame_ready = true;
+		fox_end_frame(&buffer_info);
 	}
 
 	fox_unregister_window(window);

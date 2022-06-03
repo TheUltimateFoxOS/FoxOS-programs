@@ -478,8 +478,12 @@ int main(int argc, char* argv[]) {
 	set_color(old_color);
 	disable_print_char();
 	
+#ifndef GRAPHICS_RENDERING_MODE
 	point_t screen_size = get_screen_size();
 	possible_lines_to_draw = (screen_size.y / CHAR_SIZE) - 4;
+#else
+	possible_lines_to_draw = graphics_buffer_info.height / CHAR_SIZE - 4;
+#endif
 
 	// set keyboard input print to false
 	// env_set(ENV_NO_PRINT_ON_INPUT, (void*) true);
