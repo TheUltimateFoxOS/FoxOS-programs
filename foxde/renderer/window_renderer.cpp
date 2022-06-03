@@ -224,8 +224,8 @@ void draw_window(standard_foxos_window_t* window) {
 		return;
 	}
 
-    tmp_x = window->get_buffer_x();
-    tmp_y = window->get_buffer_y();
+    tmp_x = window->get_x() + window_buffer_offset_x;
+    tmp_y = window->get_y() + window_buffer_offset_y;
     tmp_width = window->get_buffer_width();
     tmp_height = window->get_buffer_height();
 

@@ -94,8 +94,6 @@ void ipc_message(int func, void* data) {
 				standard_foxos_window_info_t* window_info = (standard_foxos_window_info_t*) data;
 				window_info->buffer_width_diff = window_buffer_width_diff;
 				window_info->buffer_height_diff = window_buffer_height_diff;
-				window_info->buffer_offset_x = window_buffer_offset_x;
-				window_info->buffer_offset_y = window_buffer_offset_y;
 
 				window_info->min_width = window_min_width;
 				window_info->min_height = window_min_height;
@@ -138,7 +136,7 @@ int main(int argc, char* argv[], char* envp[]) {
 		return 1;
 	}
 
-	screen_font = fox_load_font(root_fs "/RES/zap-light16.psf");
+	screen_font = fox_load_font((char*) root_fs "/RES/zap-light16.psf");
 
 	num_background_console_colums = graphics_buffer_info.width / font_width - bg_console_offset_width;
 	num_background_console_rows = graphics_buffer_info.height / font_height - bg_console_offset_height;
@@ -148,11 +146,10 @@ int main(int argc, char* argv[], char* envp[]) {
 	int ipc_id = ipc_register(standard_foxos_de_ipc_name, ipc_message);
 
 	char* nargv[2];
-	nargv[0] = startup_task;
+	nargv[0] = (char*) startup_task;
 	nargv[1] = nullptr;
 
-
-	task_t* terminal_task = spawn(root_fs "/BIN/" startup_task ".elf", (const char**) nargv, (const char**) envp, true);
+	task_t* terminal_task = spawn((char*) root_fs "/BIN/" startup_task ".elf", (const char**) nargv, (const char**) envp, true);
 	assert(terminal_task != NULL);
 	terminal_task->stdout_pipe = on_stdout;
 	terminal_task->stderr_pipe = on_stderr;
