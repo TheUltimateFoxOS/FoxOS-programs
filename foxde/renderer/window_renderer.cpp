@@ -241,6 +241,11 @@ void draw_window(standard_foxos_window_t* window) {
         tmp_height = graphics_buffer_info.height - tmp_y;
     }
 
+#ifdef DEBUG
+	graphics_buffer_info_t window_info_buffer = window->get_buffer_info();
+	window->all_buttons_draw_outline(&window_info_buffer, 0xffff0000);
+#endif
+
 	if (window->frame_ready) {
 		for (int64_t j = 0; j < tmp_height; j++) {
 			int64_t offset = j * tmp_width;
@@ -269,6 +274,42 @@ void draw_windows() {
     for (int i = 0; i < window_number; i++) {
         draw_window(window_list[i].window_address);
     }
+}
+
+void mouse_handle_windows(int mouse_x, int mouse_y, int mouse_button) {
+	if (!window_list) {
+		return;
+	}
+
+	for (int i = 0; i < window_number; i++) {
+		// if the mouse is inside of the window then translate the mouse cords to the window cords
+		if (mouse_x >= window_list[i].window_address->get_x() && mouse_x <= window_list[i].window_address->get_x() + window_list[i].window_address->get_width() && mouse_y >= window_list[i].window_address->get_y() && mouse_y <= window_list[i].window_address->get_y() + window_list[i].window_address->get_height()) {
+			int tmp_x = window_list[i].window_address->get_x() + window_buffer_offset_x;
+			int tmp_y = window_list[i].window_address->get_y() + window_buffer_offset_y;
+			int tmp_width = window_list[i].window_address->get_buffer_width();
+			int tmp_height = window_list[i].window_address->get_buffer_height();
+
+			if (tmp_x < 0) {
+				tmp_width += tmp_x; //x is negative
+				tmp_x = 0;
+			}
+			if (tmp_y < 0) {
+				tmp_height += tmp_y; //y is negative
+				tmp_y = 0;
+			}
+			if (tmp_x + tmp_width > graphics_buffer_info.width) {
+				tmp_width = graphics_buffer_info.width - tmp_x;
+			}
+			if (tmp_y + tmp_height > graphics_buffer_info.height) {
+				tmp_height = graphics_buffer_info.height - tmp_y;
+			}
+			if (tmp_width > 0 && tmp_height > 0) {
+				mouse_x -= tmp_x;
+				mouse_y -= tmp_y;
+				window_list[i].window_address->all_buttons_call_callback_if_necessary(mouse_x, mouse_y, mouse_button);
+			}
+		}
+	}
 }
 
 void destroy_all_windows() {

@@ -154,6 +154,14 @@ int main(int argc, char* argv[], char* envp[]) {
 
 	load_background_image();
 
+	task_t* self = (task_t*) env(ENV_GET_TASK);
+	self->stdout_pipe = on_stdout;
+	self->stderr_pipe = on_stderr;
+	self->pipe_enabled = true;
+
+	printf("Welcome to FoxDE!\n");
+	printf("Copyright (c) 2022 TheUltimateFoxOS\n");
+
 	int ipc_id = ipc_register(standard_foxos_de_ipc_name, ipc_message);
 
 	char* nargv[2];
@@ -195,6 +203,9 @@ int main(int argc, char* argv[], char* envp[]) {
 
 		mouse_button_down = mouse_button();
 		mouse_pos = mouse_position();
+		if (mouse_button_down) {
+			mouse_handle_windows(mouse_pos.x, mouse_pos.y, mouse_button_down);
+		}
 		draw_mouse_pointer();
 		
 		fox_end_frame(&graphics_buffer_info);

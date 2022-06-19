@@ -15,3 +15,4 @@ void bring_window_to_front(standard_foxos_window_t* window_address);
 
 void draw_windows();
 void destroy_all_windows();
+void mouse_handle_windows(int mouse_x, int mouse_y, int mouse_button);

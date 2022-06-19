@@ -6,6 +6,13 @@
 
 int main(int argc, char* argv[], char* envp[]) {
 	standard_foxos_window_t* window = new standard_foxos_window_t(100, 100, 200, 200, (char*) "IPC Test");
+	window->add_button([](int mouse_button) {
+		printf("Button 1 pressed %d\n", mouse_button);
+	}, 20, 20, 10, 10);
+
+	window->add_button([](int mouse_button) {
+		printf("Button 2 pressed %d\n", mouse_button);
+	}, 100, 100, 30, 30);
 
 	bool did_register = fox_register_window(window);
 	if (!did_register) {
@@ -21,6 +28,8 @@ int main(int argc, char* argv[], char* envp[]) {
 
 	uint32_t color = 0;
 
+	printf("going into loop\n");
+
 	while (1) {
 		fox_start_frame(&buffer_info, true);
 
@@ -28,7 +37,10 @@ int main(int argc, char* argv[], char* envp[]) {
 		color += 0xff;
 
 		fox_draw_string(&buffer_info, 0, 0, (char*) "Hello!", 0xffffffff, &font);
-		fox_draw_rect(&buffer_info, 20, 20, 10, 10, 0xffffffff);
+		
+		fox_draw_rect(&buffer_info, 20, 20, 10, 10, 0xffffffff); // visualize the button
+		fox_draw_rect(&buffer_info, 100, 100, 30, 30, 0xffffffff); // visualize the button
+
 		fox_draw_circle(&buffer_info, 50, 50, 10, 0xffffffff);
 
 		fox_end_frame(&buffer_info);
