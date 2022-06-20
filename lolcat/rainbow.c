@@ -1,7 +1,7 @@
 #include <rainbow.h>
 
 uint32_t true_hsv(int angle) {
-	uint8_t red, green, blue, alpha;
+	uint64_t red, green, blue, alpha;
 
 	const uint8_t hsv_lights[61] = {
 		0, 4, 8, 13, 17, 21, 25, 30, 34, 38, 42, 47, 51, 55, 59, 64, 68, 72, 76,

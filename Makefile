@@ -49,6 +49,7 @@ build:
 	@make -C lscpu
 	@make -C smbios32
 	@make -C foxde
+	@make -C insmod
 
 setup:
 	@mkdir $(BUILDDIR)
