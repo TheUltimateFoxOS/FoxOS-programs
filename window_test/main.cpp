@@ -20,6 +20,8 @@ int main(int argc, char* argv[], char* envp[]) {
 		return 1;
 	}
 
+	window->exit_button = true;
+
 	graphics_buffer_info_t buffer_info = window->get_buffer_info();
 
 	char font_load_path[512] = { 0 };
@@ -30,7 +32,7 @@ int main(int argc, char* argv[], char* envp[]) {
 
 	printf("going into loop\n");
 
-	while (1) {
+	while (!window->should_exit) {
 		fox_start_frame(&buffer_info, true);
 
 		fox_set_background(&buffer_info, color);
@@ -45,6 +47,8 @@ int main(int argc, char* argv[], char* envp[]) {
 
 		fox_end_frame(&buffer_info);
 	}
+
+	printf("exiting loop\n");
 
 	fox_unregister_window(window);
 	delete window;

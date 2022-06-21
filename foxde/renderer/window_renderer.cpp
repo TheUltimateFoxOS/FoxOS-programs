@@ -216,6 +216,15 @@ void draw_window(standard_foxos_window_t* window) {
         }
     }
 
+	if (window->exit_button) {
+		fox_draw_rect_outline(&graphics_buffer_info, window->get_x() + window->get_width() - font_height - 6, tmp_y, font_height, font_height, 0xffff0000);
+		fox_draw_char(&graphics_buffer_info, window->get_x() + window->get_width() - font_height - 6 + font_height / 2 - font_width / 2, tmp_y, 'X', 0xffff0000, &screen_font);
+
+		window->exit_button_x = window->get_x() + window->get_width() - font_height - 6;
+		window->exit_button_y = tmp_y;
+	}
+
+
     if (!window->buffer) { //If there is no buffer then we can't fill it.
         return;
     }
@@ -282,6 +291,15 @@ void mouse_handle_windows(int mouse_x, int mouse_y, int mouse_button) {
 	}
 
 	for (int i = 0; i < window_number; i++) {
+		// check if exit button is pressed
+		if (window_list[i].window_address->exit_button) {
+			if (mouse_x >= window_list[i].window_address->exit_button_x && mouse_x <= window_list[i].window_address->exit_button_x + font_height &&
+				mouse_y >= window_list[i].window_address->exit_button_y && mouse_y <= window_list[i].window_address->exit_button_y + font_height) {
+				window_list[i].window_address->exit_button = false;
+				window_list[i].window_address->should_exit = true;
+			}
+
+		}
 		// if the mouse is inside of the window then translate the mouse cords to the window cords
 		if (mouse_x >= window_list[i].window_address->get_x() && mouse_x <= window_list[i].window_address->get_x() + window_list[i].window_address->get_width() && mouse_y >= window_list[i].window_address->get_y() && mouse_y <= window_list[i].window_address->get_y() + window_list[i].window_address->get_height()) {
 			int tmp_x = window_list[i].window_address->get_x() + window_buffer_offset_x;

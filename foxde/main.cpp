@@ -161,6 +161,7 @@ int main(int argc, char* argv[], char* envp[]) {
 
 	printf("Welcome to FoxDE!\n");
 	printf("Copyright (c) 2022 TheUltimateFoxOS\n");
+	
 
 	int ipc_id = ipc_register(standard_foxos_de_ipc_name, ipc_message);
 
