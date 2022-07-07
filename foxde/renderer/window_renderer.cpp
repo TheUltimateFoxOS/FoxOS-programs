@@ -96,7 +96,9 @@ void bring_window_to_front(standard_foxos_window_t* window_address) {
     window_list[window_number - 1] = temp; //Move the window to the end of the array
 }
 
-void draw_window(standard_foxos_window_t* window) {
+void draw_window(window_list_node_t* window_node) {
+    standard_foxos_window_t* window = window_node->window_address;
+
     //Draw the window bars
     int64_t tmp_x = window->get_x();
     int64_t tmp_y = window->get_y();
@@ -217,11 +219,11 @@ void draw_window(standard_foxos_window_t* window) {
     }
 
 	if (window->exit_button) {
-		fox_draw_rect_outline(&graphics_buffer_info, window->get_x() + window->get_width() - font_height - 6, tmp_y, font_height, font_height, 0xffff0000);
-		fox_draw_char(&graphics_buffer_info, window->get_x() + window->get_width() - font_height - 6 + font_height / 2 - font_width / 2, tmp_y, 'X', 0xffff0000, &screen_font);
+        window_node->exit_button_x = window->get_x() + (window->get_width() - (window_bar_button_size + window_bar_padding));
+		window_node->exit_button_y = tmp_y;
 
-		window->exit_button_x = window->get_x() + window->get_width() - font_height - 6;
-		window->exit_button_y = tmp_y;
+		fox_draw_rect_outline(&graphics_buffer_info, window_node->exit_button_x, window_node->exit_button_y, window_bar_button_size, window_bar_button_size, 0xff0000);
+		fox_draw_char(&graphics_buffer_info, window_node->exit_button_x + ((font_height - font_width) / 2), window_node->exit_button_y, 'X', 0xff0000, &screen_font);
 	}
 
 
@@ -250,11 +252,6 @@ void draw_window(standard_foxos_window_t* window) {
         tmp_height = graphics_buffer_info.height - tmp_y;
     }
 
-#ifdef DEBUG
-	graphics_buffer_info_t window_info_buffer = window->get_buffer_info();
-	window->all_buttons_draw_outline(&window_info_buffer, 0xffff0000);
-#endif
-
 	if (window->frame_ready) {
 		for (int64_t j = 0; j < tmp_height; j++) {
 			int64_t offset = j * tmp_width;
@@ -281,31 +278,34 @@ void draw_windows() {
     }
 
     for (int i = 0; i < window_number; i++) {
-        draw_window(window_list[i].window_address);
+        draw_window(&window_list[i]);
     }
 }
 
-void mouse_handle_windows(int mouse_x, int mouse_y, int mouse_button) {
+void mouse_handle_windows(int64_t mouse_x, int64_t mouse_y, mouse_buttons_e mouse_button) {
 	if (!window_list) {
 		return;
 	}
 
 	for (int i = 0; i < window_number; i++) {
-		// check if exit button is pressed
-		if (window_list[i].window_address->exit_button) {
-			if (mouse_x >= window_list[i].window_address->exit_button_x && mouse_x <= window_list[i].window_address->exit_button_x + font_height &&
-				mouse_y >= window_list[i].window_address->exit_button_y && mouse_y <= window_list[i].window_address->exit_button_y + font_height) {
-				window_list[i].window_address->exit_button = false;
-				window_list[i].window_address->should_exit = true;
-			}
+        window_list_node_t* window_node = &window_list[i];
+        standard_foxos_window_t* window = window_node->window_address;
 
+		// check if exit button is pressed
+		if (window->exit_button) {
+			if (mouse_x >= window_node->exit_button_x && mouse_x <= window_node->exit_button_x + window_bar_button_size &&
+				mouse_y >= window_node->exit_button_y && mouse_y <= window_node->exit_button_y + window_bar_button_size) {
+				window->exit_button = false;
+				window->should_exit = true;
+			}
 		}
+
 		// if the mouse is inside of the window then translate the mouse cords to the window cords
-		if (mouse_x >= window_list[i].window_address->get_x() && mouse_x <= window_list[i].window_address->get_x() + window_list[i].window_address->get_width() && mouse_y >= window_list[i].window_address->get_y() && mouse_y <= window_list[i].window_address->get_y() + window_list[i].window_address->get_height()) {
-			int tmp_x = window_list[i].window_address->get_x() + window_buffer_offset_x;
-			int tmp_y = window_list[i].window_address->get_y() + window_buffer_offset_y;
-			int tmp_width = window_list[i].window_address->get_buffer_width();
-			int tmp_height = window_list[i].window_address->get_buffer_height();
+		if (mouse_x >= window->get_x() && mouse_x <= window->get_x() + window->get_width() && mouse_y >= window->get_y() && mouse_y <= window->get_y() + window->get_height()) {
+			int tmp_x = window->get_x() + window_buffer_offset_x;
+			int tmp_y = window->get_y() + window_buffer_offset_y;
+			int tmp_width = window->get_buffer_width();
+			int tmp_height = window->get_buffer_height();
 
 			if (tmp_x < 0) {
 				tmp_width += tmp_x; //x is negative
@@ -324,7 +324,7 @@ void mouse_handle_windows(int mouse_x, int mouse_y, int mouse_button) {
 			if (tmp_width > 0 && tmp_height > 0) {
 				mouse_x -= tmp_x;
 				mouse_y -= tmp_y;
-				window_list[i].window_address->all_buttons_call_callback_if_necessary(mouse_x, mouse_y, mouse_button);
+				window->send_click(mouse_x, mouse_y, mouse_button);
 			}
 		}
 	}

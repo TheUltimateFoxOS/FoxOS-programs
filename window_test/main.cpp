@@ -2,17 +2,22 @@
 #include <stdint.h>
 
 #include <foxos/fox_graphics.h>
+#include <foxos/g_syscalls.h>
 #include <foxos/window.h>
 
 int main(int argc, char* argv[], char* envp[]) {
-	standard_foxos_window_t* window = new standard_foxos_window_t(100, 100, 200, 200, (char*) "IPC Test");
-	window->add_button([](int mouse_button) {
+	standard_foxos_window_t* window = new standard_foxos_window_t(100, 100, 200, 200, (char*) "My very long window name to try and reach the maximum limit allowed to render");
+	window->add_click_listner([](int64_t mouse_x, int64_t mouse_y, mouse_buttons_e mouse_button) {
 		printf("Button 1 pressed %d\n", mouse_button);
 	}, 20, 20, 10, 10);
 
-	window->add_button([](int mouse_button) {
+	window->add_click_listner([](int64_t mouse_x, int64_t mouse_y, mouse_buttons_e mouse_button) {
 		printf("Button 2 pressed %d\n", mouse_button);
 	}, 100, 100, 30, 30);
+
+	window->add_click_listner([](int64_t mouse_x, int64_t mouse_y, mouse_buttons_e mouse_button) {
+		printf("Window clicked %d\n", mouse_button);
+	});
 
 	bool did_register = fox_register_window(window);
 	if (!did_register) {
@@ -30,7 +35,7 @@ int main(int argc, char* argv[], char* envp[]) {
 
 	uint32_t color = 0;
 
-	printf("going into loop\n");
+	printf("Going into loop\n");
 
 	while (!window->should_exit) {
 		fox_start_frame(&buffer_info, true);
@@ -48,7 +53,7 @@ int main(int argc, char* argv[], char* envp[]) {
 		fox_end_frame(&buffer_info);
 	}
 
-	printf("exiting loop\n");
+	printf("Exiting loop\n");
 
 	fox_unregister_window(window);
 	delete window;

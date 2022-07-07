@@ -6,6 +6,7 @@
 #include <utils/bmp.h>
 #include <config.h>
 
+#ifdef enable_background
 uint32_t* background_image = nullptr;
 
 void load_background_image() {
@@ -15,6 +16,7 @@ void load_background_image() {
 	char background_image_path[256];
 	sprintf(background_image_path, "%s/FOXCFG/foxde-bg.bmp", root_fs);
 	file_t* background_image_file = fopen(background_image_path, "rb");
+
 	if (background_image_file != NULL) {
 		uint8_t* buffer = (uint8_t*) malloc(background_image_file->size);
 		fread(buffer, 1, background_image_file->size, background_image_file);
@@ -46,3 +48,13 @@ void draw_background() {
 		}
 	}
 }
+
+#else
+void draw_background() {
+    for (int i = 0; i < graphics_buffer_info.height; i++) {
+		for (int j = 0; j < graphics_buffer_info.width; j++) {
+			fox_set_px_unsafe(&graphics_buffer_info, j, i, 0xffffff);
+		}
+	}
+}
+#endif

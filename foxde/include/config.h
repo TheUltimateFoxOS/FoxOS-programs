@@ -5,6 +5,9 @@
 #include <foxos/g_syscalls.h>
 #include <foxos/fox_graphics.h>
 
+#define enable_background
+#define enable_terminal
+
 #define font_width 8
 #define font_height 16
 
@@ -25,7 +28,7 @@
 #define window_bar_colour 0xFFFFFF
 #define window_bar_text_colour 0x000000
 #define window_bar_height font_height + (window_bar_padding * 2)
-#define window_bar_button_size window_bar_height
+#define window_bar_button_size font_height
 
 #define window_buffer_width_diff 2
 #define window_buffer_height_diff window_bar_height + 3
@@ -52,7 +55,7 @@ typedef struct {
 } screen_data_t;
 
 extern mouse_position_t mouse_pos;
-extern int mouse_button_down;
+extern mouse_buttons_e mouse_button_down;
 
 extern char* root_fs;
 extern psf1_font_t screen_font;
