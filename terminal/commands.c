@@ -155,6 +155,7 @@ bool run_command(char* command, char** terminal_envp, bool* should_break, char**
 
 char* search_executable(char* command) {
 	char* path = getenv("PATH");
+	char* cwd = (char*) env(ENV_GET_CWD);
 
 	if (path == NULL) {
 		abort();
@@ -199,6 +200,20 @@ char* search_executable(char* command) {
 	}
 
 	free(path_copy);
+
+	char* executable = malloc(strlen(cwd) + strlen(command) + 2);
+	memset(executable, 0, strlen(cwd) + strlen(command) + 2);
+	strcpy(executable, cwd);
+	strcat(executable, "/");
+	strcat(executable, command);
+
+	int fd;
+	if ((fd = open(executable)) != -1) {
+		close(fd);
+		return executable;
+	}
+
+	free(executable);
 
 	char* command_copy = malloc(strlen(command) + 1);
 	memset(command_copy, 0, strlen(command) + 1);
