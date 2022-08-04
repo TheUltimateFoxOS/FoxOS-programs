@@ -55,7 +55,7 @@ typedef struct {
 } screen_data_t;
 
 extern mouse_position_t mouse_pos;
-extern mouse_buttons_e mouse_button_down;
+extern int mouse_button_down;
 
 extern char* root_fs;
 extern psf1_font_t screen_font;

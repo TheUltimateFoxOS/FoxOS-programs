@@ -23,7 +23,7 @@
 
 //Variables from config.h
 mouse_position_t mouse_pos;
-mouse_buttons_e mouse_button_down;
+int mouse_button_down;
 
 psf1_font_t screen_font;
 graphics_buffer_info_t graphics_buffer_info;
