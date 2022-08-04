@@ -192,6 +192,60 @@ void render_status_bar() {
 }
 #endif
 
+void arrow_keys_sighandler(uint8_t signum) {
+	special_keys_down_t* keys = (special_keys_down_t*) env(ENV_GET_SPECIAL_KEYS);
+
+	if (keys->up_arrow) {
+		if (buffer_ln_idx <= 0 || buffer_idx <= 0) {
+		} else {
+			// move one line up
+			int prev_buff = buffer_idx;
+
+			for (int i = buffer_idx; i > 0; i--) {
+				buffer_idx--;
+				if (input_buffer[i - 1] == '\n' || buffer_idx < 0) {
+					break;
+				}
+			}
+			if (buffer_idx < 0) {
+				buffer_idx = prev_buff;
+			} else {
+				buffer_ln_idx--;
+			}
+		}
+	} else if (keys->down_arrow) {
+		if (buffer_ln_idx >= ln_cnt - 1 || buffer_idx >= current_size) {
+		} else {
+			// move one line up
+			int prev_buff = buffer_idx;
+
+			for (int i = buffer_idx; i < current_size; i++) {
+				buffer_idx++;
+				if (input_buffer[i] == '\n' || buffer_idx > current_size) {
+					break;
+				}
+			}
+			if (buffer_idx > current_size) {
+				buffer_idx = prev_buff;
+			} else {
+				buffer_ln_idx++;
+			}
+		}
+	} else if (keys->left_arrow) {
+		if (!buffer_idx <= 0) {
+			if (input_buffer[buffer_idx - 1] == '\n') buffer_ln_idx--;
+			buffer_idx -= 1;
+		}
+	} else if (keys->right_arrow) {
+		if (buffer_idx < current_size) {
+			if (input_buffer[buffer_idx] == '\n') buffer_ln_idx++;
+			buffer_idx += 1;
+		}
+	}
+
+	render_status_bar();
+}
+
 bool listen_input(FILE* f) {
 	char input = getchar();
 
@@ -487,6 +541,8 @@ int main(int argc, char* argv[]) {
 
 	// set keyboard input print to false
 	// env_set(ENV_NO_PRINT_ON_INPUT, (void*) true);
+
+	env_set2(ENV_SIGHANDLER, SIG_SPECIAL_KEY_DOWN, arrow_keys_sighandler);
 
 	f = fopen(argv[1], "w");
 	if (f->size != 0) {
