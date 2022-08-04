@@ -125,7 +125,7 @@ int main(int argc, char* argv[], char* envp[]) {
 		mouse_button_down = mouse_button();
 		mouse_pos = mouse_position();
 		if (mouse_button_down) {
-			mouse_handle_windows(mouse_pos.x, mouse_pos.y, mouse_button_down);
+			mouse_handle_windows(mouse_pos.x, mouse_pos.y, (mouse_buttons_e) mouse_button_down);
 		}
 		draw_mouse_pointer();
 		
