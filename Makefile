@@ -50,6 +50,7 @@ build:
 	@make -C smbios32
 	@make -C foxde
 	@make -C insmod
+	@make -C nslookup
 
 setup:
 	@mkdir $(BUILDDIR)
