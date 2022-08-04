@@ -11,17 +11,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <rainbow.h>
-
-uint32_t rainbow(int i) {
-	return __builtin_bswap32(true_hsv(i % 360));
-}
-
+#include <buildin/rainbow.h>
 int cidx = 0;
 
 void write_rainbow(char* what) {
 	for (int i = 0; i < strlen(what); i++) {
-		uint32_t color = rainbow(++cidx);
+		uint32_t color = __libc_rainbow(++cidx);
 		set_color(color);
 		putchar(what[i]);
 	}

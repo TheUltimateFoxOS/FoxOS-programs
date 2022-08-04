@@ -3,7 +3,7 @@
 #include <foxos/term.h>
 
 #include <stdarg.h>
-#include <rainbow.h>
+#include <buildin/rainbow.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -22,13 +22,10 @@ int num_length(int num) {
 	return len;
 }
 
-uint32_t rainbow(int i) {
-	return __builtin_bswap32(true_hsv(i % 360));
-}
 
 void write_rainbow(char* what) {
 	for (int i = 0; i < strlen(what); i++) {
-		uint32_t color = rainbow(++cidx * 4);
+		uint32_t color = __libc_rainbow(++cidx * 4);
 		set_color(color);
 		putchar(what[i]);
 	}

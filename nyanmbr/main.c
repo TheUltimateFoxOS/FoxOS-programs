@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include <disk_access.h>
+#include <foxos/disk_access.h>
 
 extern uint8_t nyan_mbr[];
 extern uint64_t nyan_mbr_size;
@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
 
 	printf("Writing nyan mbr to %s... ", argv[1]);
 
-	write_sector_raw(argv[1], 0, 1, (uint64_t) nyan_mbr);
+	foxos_write_sector_raw(argv[1], 0, 1, (uint64_t) nyan_mbr);
 
 	printf("Done.\n");
 	return 0;

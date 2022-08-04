@@ -13,7 +13,6 @@
 
 #include <foxos/term.h>
 
-#include <keyboard_helper.h>
 #include <argv_tools.h>
 #include <commands.h>
 #include <script.h>

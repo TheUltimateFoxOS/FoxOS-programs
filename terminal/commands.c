@@ -13,7 +13,7 @@
 #include <sys/read.h>
 #include <errno.h>
 
-#include <keyboard_helper.h>
+#include <foxos/keyboard_helper.h>
 #include <argv_tools.h>
 
 char* term_stdout = NULL;
@@ -229,16 +229,16 @@ void load_keymap(char* command) {
 		char* keymap_name = &command[11];
 		term_printf("Loading keymap %s!\n", keymap_name);
 
-		set_keymap(keymap_name);
+		foxos_set_keymap(keymap_name);
 	}
 }
 
 void keydbg(bool onoff) {
 	if (onoff) {
-		set_keyboard_debug(true);
+		foxos_set_keyboard_debug(true);
 		term_printf("Keyboard debugging enabled!\n");
 	} else {
-		set_keyboard_debug(false);
+		foxos_set_keyboard_debug(false);
 		term_printf("Keyboard debugging disabled!\n");
 	}
 }

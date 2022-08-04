@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <sys/spawn.h>
 #include <sys/env.h>
-#include <keyboard_helper.h>
+#include <foxos/keyboard_helper.h>
 #include <stdlib.h>
 
 #include <jsmn.h>
@@ -107,7 +107,7 @@ int main(int argc, char* argv[], char* envp[]) {
 					char keyboard_layout[8] = { 0 };
 					strncpy(keyboard_layout, config_data + t[i + 1].start, t[i + 1].end - t[i + 1].start);
 
-					set_keymap(keyboard_layout);
+					foxos_set_keymap(keyboard_layout);
 				} else if (jsoneq(config_data, &t[i], "keyboard_debug") == 0) {
 					bool keyboard_debug;
 					if (strncmp(config_data + t[i + 1].start, "true", 4) == 0) {
@@ -116,7 +116,7 @@ int main(int argc, char* argv[], char* envp[]) {
 						keyboard_debug = false;
 					}
 					// printf("Got keyboard_debug: %s\n", keyboard_debug ? "true" : "false");
-					set_keyboard_debug(keyboard_debug);
+					foxos_set_keyboard_debug(keyboard_debug);
 				}
 			}
 

@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <string.h>
 
-#include <disk_access.h>
+#include <foxos/disk_access.h>
 #include <crc32.h>
 #include <gpt.h>
 
@@ -26,7 +26,7 @@ int main(int argc, char* argv[], char* envp[]) {
 	char buffer[512];
 	struct gpt_table_header* header = (struct gpt_table_header*) buffer;
 
-	read_sector_raw(device, 1, 1, (uint64_t) buffer);
+	foxos_read_sector_raw(device, 1, 1, (uint64_t) buffer);
 
 	if (memcmp(header->signature, "EFI PART", 8) != 0) {
 		printf("Invalid signature\n");
@@ -38,7 +38,7 @@ int main(int argc, char* argv[], char* envp[]) {
 	char buffer2[512];
 	struct gpt_table_header* header2 = (struct gpt_table_header*) buffer2;
 
-	read_sector_raw(device, header->alternate_lba, 1, (uint64_t) buffer2);
+	foxos_read_sector_raw(device, header->alternate_lba, 1, (uint64_t) buffer2);
 
 	if (memcmp(header2->signature, "EFI PART", 8) != 0) {
 		printf("Invalid signature\n");
@@ -57,7 +57,7 @@ int main(int argc, char* argv[], char* envp[]) {
 
 	char buffer3[header->number_of_partition_entries * header->size_of_partition_entry + 512];
 	int num_entries_sectors = header->number_of_partition_entries * header->size_of_partition_entry / 512 + 1;
-	read_sector_raw(device, header->partition_entry_lba, num_entries_sectors, (uint64_t) buffer3);
+	foxos_read_sector_raw(device, header->partition_entry_lba, num_entries_sectors, (uint64_t) buffer3);
 
 	int64_t max_partition_entry_used = -1;
 	for (int64_t i = 0; i < (int64_t)header->number_of_partition_entries; i++) {
@@ -93,8 +93,8 @@ int main(int argc, char* argv[], char* envp[]) {
 		memset(entry, 0, header->size_of_partition_entry);
 	}
 
-	write_sector_raw(device, header->partition_entry_lba, num_entries_sectors, (uint64_t) buffer3);
-	write_sector_raw(device, header2->partition_entry_lba, num_entries_sectors, (uint64_t) buffer3);
+	foxos_write_sector_raw(device, header->partition_entry_lba, num_entries_sectors, (uint64_t) buffer3);
+	foxos_write_sector_raw(device, header2->partition_entry_lba, num_entries_sectors, (uint64_t) buffer3);
 
 	uint32_t crc_partition_array = crc32((uint8_t*) &buffer3[0], new_partition_entry_count * header->size_of_partition_entry);
 	// printf("CRC32 of partition array: 0x%x.\n", crc_partition_array);
@@ -109,16 +109,16 @@ int main(int argc, char* argv[], char* envp[]) {
 	header2->crc32 = 0;
 	header2->crc32 = crc32((uint8_t*) header2, 92);
 
-	write_sector_raw(device, 1, 1, (uint64_t) buffer);
-	write_sector_raw(device, header->alternate_lba, 1, (uint64_t) buffer2);
+	foxos_write_sector_raw(device, 1, 1, (uint64_t) buffer);
+	foxos_write_sector_raw(device, header->alternate_lba, 1, (uint64_t) buffer2);
 
 	printf("Stage 2 to be located at 0x%x and 0x%x.\n", stage2_loc_a, stage2_loc_b);
 
 	char orig_mbr[512];
 	char mod_mbr[512];
 
-	read_sector_raw(device, 0, 1, (uint64_t) orig_mbr);
-	read_sector_raw(device, 0, 1, (uint64_t) mod_mbr);
+	foxos_read_sector_raw(device, 0, 1, (uint64_t) orig_mbr);
+	foxos_read_sector_raw(device, 0, 1, (uint64_t) mod_mbr);
 
 	memcpy(&mod_mbr, &bootloader_img[0], 512);
 	uint16_t* loc = (uint16_t*) &mod_mbr[0x1a4];
@@ -134,15 +134,15 @@ int main(int argc, char* argv[], char* envp[]) {
 	memcpy(&mod_mbr[218], &orig_mbr[218], 6);
 	memcpy(&mod_mbr[440], &orig_mbr[440], 70);
 
-	write_sector_raw(device, 0, 1, (uint64_t) mod_mbr);
+	foxos_write_sector_raw(device, 0, 1, (uint64_t) mod_mbr);
 
 	assert(stage2_loc_a % 512 == 0);
 	assert(stage2_loc_b % 512 == 0);
 	assert(stage2_size_a % 512 == 0);
 	assert(stage2_size_b % 512 == 0);
 
-	write_sector_raw(device, stage2_loc_a / 512, stage2_size_a / 512, (uint64_t) &bootloader_img[512]);
-	write_sector_raw(device, stage2_loc_b / 512, stage2_size_b / 512, (uint64_t) &bootloader_img[512 + stage2_size_a]);
+	foxos_write_sector_raw(device, stage2_loc_a / 512, stage2_size_a / 512, (uint64_t) &bootloader_img[512]);
+	foxos_write_sector_raw(device, stage2_loc_b / 512, stage2_size_b / 512, (uint64_t) &bootloader_img[512 + stage2_size_a]);
 
 	printf("Reminder: Remember to copy the limine.sys file in either\n"
 			"          the root or /boot directories of one of the partitions\n"
