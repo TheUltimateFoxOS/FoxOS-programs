@@ -62,12 +62,14 @@ void print_bg_console(char* s, int l) {
 	}
 }
 
-void load_terminal(bool* on_exit, char* envp[]) {
+void load_terminal() {
     num_background_console_colums = graphics_buffer_info.width / font_width - bg_console_offset_width;
 	num_background_console_rows = graphics_buffer_info.height / font_height - bg_console_offset_height;
 	background_console = (char*) malloc(num_background_console_colums * num_background_console_rows);
 	memset(background_console, 0, sizeof(char) * num_background_console_colums * num_background_console_rows);
+}
 
+void start_terminal(bool* on_exit, char* envp[]) {
 	terminal_argv[0] = (char*) startup_task;
 	terminal_argv[1] = nullptr;
 

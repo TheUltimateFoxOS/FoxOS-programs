@@ -29,6 +29,9 @@ psf1_font_t screen_font;
 graphics_buffer_info_t graphics_buffer_info;
 char* root_fs = nullptr;
 
+//Other globals
+special_keys_down_t* pressed_special_keys = 0;
+
 void ipc_message(int func, void* data) {
 	switch (func) {
 		case IPC_GET_WINDOW_INFO:
@@ -65,6 +68,16 @@ void ipc_message(int func, void* data) {
 	}
 }
 
+#warning Very nasty way to do this, some keystrokes will be lost
+uint8_t cache_signum = 0;
+void special_key_sighandler(uint8_t signum) {
+	cache_signum = signum;
+
+	if (!pressed_special_keys) {
+		pressed_special_keys = (special_keys_down_t*) env(ENV_GET_SPECIAL_KEYS);
+	}
+}
+
 int main(int argc, char* argv[], char* envp[]) {
 	root_fs = getenv("ROOT_FS");
 	if (de_running()) {
@@ -97,14 +110,21 @@ int main(int argc, char* argv[], char* envp[]) {
 	self->stderr_pipe = foxde_stderr;
 	self->pipe_enabled = true;
 
+	int ipc_id = ipc_register(standard_foxos_de_ipc_name, ipc_message);
+
+#ifdef enable_terminal
+	load_terminal();
+#endif
+
+	env_set2(ENV_SIGHANDLER, SIG_SPECIAL_KEY_DOWN, (void*) special_key_sighandler);
+	env_set2(ENV_SIGHANDLER, SIG_SPECIAL_KEY_UP, (void*) special_key_sighandler);
+
 	printf("Welcome to FoxDE!\n");
 	printf("Copyright (c) 2022 TheUltimateFoxOS\n");
 
-	int ipc_id = ipc_register(standard_foxos_de_ipc_name, ipc_message);
-
 	bool on_terminal_task_exit = false;
 #ifdef enable_terminal
-	load_terminal(&on_terminal_task_exit, envp);
+	start_terminal(&on_terminal_task_exit, envp);
 #endif
 
 	//Main draw loop
@@ -128,6 +148,19 @@ int main(int argc, char* argv[], char* envp[]) {
 			mouse_handle_windows(mouse_pos.x, mouse_pos.y, (mouse_buttons_e) mouse_button_down);
 		}
 		draw_mouse_pointer();
+
+		if (cache_signum) {
+			standard_foxos_window_t* window = get_front_window();
+			if (window != nullptr) {
+				if (cache_signum == SIG_SPECIAL_KEY_DOWN) {
+					window->send_special_key_down(pressed_special_keys->triggered_by);
+				} else if (cache_signum == SIG_SPECIAL_KEY_UP) {
+					window->send_special_key_up(pressed_special_keys->triggered_by);
+				}
+			}
+
+			cache_signum = 0;
+		}
 		
 		fox_end_frame(&graphics_buffer_info);
 	}

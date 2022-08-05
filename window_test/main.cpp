@@ -7,16 +7,24 @@
 
 int main(int argc, char* argv[], char* envp[]) {
 	standard_foxos_window_t* window = new standard_foxos_window_t(100, 100, 200, 200, (char*) "My very long window name to try and reach the maximum limit allowed to render");
-	window->add_click_listner([](int64_t mouse_x, int64_t mouse_y, mouse_buttons_e mouse_button) {
+	window->add_click_listener([](int64_t mouse_x, int64_t mouse_y, mouse_buttons_e mouse_button) {
 		printf("Button 1 pressed %d\n", mouse_button);
 	}, 20, 20, 10, 10);
 
-	window->add_click_listner([](int64_t mouse_x, int64_t mouse_y, mouse_buttons_e mouse_button) {
+	window->add_click_listener([](int64_t mouse_x, int64_t mouse_y, mouse_buttons_e mouse_button) {
 		printf("Button 2 pressed %d\n", mouse_button);
 	}, 100, 100, 30, 30);
 
-	window->add_click_listner([](int64_t mouse_x, int64_t mouse_y, mouse_buttons_e mouse_button) {
+	window->add_click_listener([](int64_t mouse_x, int64_t mouse_y, mouse_buttons_e mouse_button) {
 		printf("Window clicked %d\n", mouse_button);
+	});
+
+	window->add_special_key_down_listener([](special_key_e key) {
+		printf("Special key down %d\n", key);
+	});
+
+	window->add_special_key_up_listener([](special_key_e key) {
+		printf("Special key up %d\n", key);
 	});
 
 	bool did_register = fox_register_window(window);

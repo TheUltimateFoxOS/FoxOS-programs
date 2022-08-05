@@ -1,99 +1,76 @@
 #include <renderer/window_renderer.h>
 
+#include <foxos/list.h>
+
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
 #include <config.h>
 
-window_list_node_t* window_list = 0;
-int window_number = 0;
-int current_window_id = 0;
+list_t<window_list_node_t>* window_list = new list_t<window_list_node_t>();
 
 void register_window(standard_foxos_window_t* window_address) {
-    for (int i = 0; i < window_number; i++) { //Don't register the window again
-        if (window_list[i].window_address == window_address) {
-            return;
-        }
-    }
-
-    window_number++;
-    window_list = (window_list_node_t*) realloc((void*) window_list, sizeof(window_list_node_t) * window_number);
-
-    if (!window_list) {
+    list_t<window_list_node_t>::node* found_window = window_list->find<standard_foxos_window_t*>([](standard_foxos_window_t* window_address, list_t<window_list_node_t>::node* node) {
+        return node->data.window_address == window_address;
+    }, window_address);
+    if (found_window != nullptr) { //Don't register the window again if it already exists
         return;
     }
-    
-    //Get the new node address and set it's data
-    window_list_node_t* new_window_node = (window_list_node_t*) ((uint64_t) window_list + (sizeof(window_list_node_t) * (window_number - 1)));
-    memset(new_window_node, 0, sizeof(window_list_node_t));
-    new_window_node->window_address = window_address;
+
+    window_list_node_t new_window_node;
+    memset(&new_window_node, 0, sizeof(window_list_node_t));
+    new_window_node.window_address = window_address;
+
+    window_list->add(new_window_node);
 }
 
 void unregister_window(standard_foxos_window_t* window_address) {
-    if (!window_list) {
+    list_t<window_list_node_t>::node* found_window = window_list->find<standard_foxos_window_t*>([](standard_foxos_window_t* window_address, list_t<window_list_node_t>::node* node) {
+        return node->data.window_address == window_address;
+    }, window_address);
+    if (found_window == nullptr) { //The window isn't registered
         return;
     }
 
-    int found_index = -1; //Find the index of the window to remove
-    for (int i = 0; i < window_number; i++) {
-        if (window_list[i].window_address == window_address) {
-            found_index = i;
-            break;
-        }
-    }
-
-    if (found_index == -1) { //The window was not found
-        return;
-    }
-
-    window_number--;
-    if (window_number == 0) { //If there are no more windows, then just free the list
-        free(window_list);
-        window_list = 0;
-    } else { //If there are still windows, then reallocate the list
-        window_list_node_t* new_window_list = (window_list_node_t*) malloc(sizeof(window_list_node_t) * window_number);
-
-        int current_id = 0;
-        for (int i = 0; i < window_number + 1; i++) {
-            if (i != found_index) {
-                new_window_list[current_id] = window_list[i];
-                current_id++;
-            }
-        }
-
-        free(window_list);
-        window_list = new_window_list;
-
-        assert(current_id == window_number);
-    }  
+    window_list->remove(found_window);
 }
 
 void bring_window_to_front(standard_foxos_window_t* window_address) {
-    if (!window_list) {
-        return;
-    }
-    if (window_number == 1) {
-        return;
-    }
-
-    int found_index = -1; //Find the index of the window to bring to the front
-    for (int i = 0; i < window_number; i++) {
-        if (window_list[i].window_address == window_address) {
-            found_index = i;
-            break;
-        }
-    }
-
-    if (found_index == -1) { //The window was not found
+    list_t<window_list_node_t>::node* found_window = window_list->find<standard_foxos_window_t*>([](standard_foxos_window_t* window_address, list_t<window_list_node_t>::node* node) {
+        return node->data.window_address == window_address;
+    }, window_address);
+    if (found_window == nullptr) { //The window isn't registered
         return;
     }
 
-    window_list_node_t temp = window_list[found_index]; //Store the window to be moved
-    for (int i = found_index + 1; i < window_number; i++) { //Move all the windows after the found window
-        window_list[i - 1] = window_list[i];
+    window_list_node_t window_node;
+    memcpy(&window_node, &found_window->data, sizeof(window_list_node_t));
+
+    window_list->remove(found_window);
+    window_list->add(window_node);
+}
+
+int get_window_number() {
+    return window_list->get_length();
+}
+
+standard_foxos_window_t* get_window_by_index(int index) {
+    list_t<window_list_node_t>::node* node = window_list->get(index);
+    if (node == nullptr) {
+        return nullptr;
     }
-    window_list[window_number - 1] = temp; //Move the window to the end of the array
+
+    return node->data.window_address;
+}
+
+standard_foxos_window_t* get_front_window() {
+    list_t<window_list_node_t>::node* node = window_list->get(window_list->get_length() - 1);
+    if (node == nullptr) {
+        return nullptr;
+    }
+
+    return node->data.window_address;
 }
 
 void draw_window(window_list_node_t* window_node) {
@@ -273,35 +250,40 @@ void draw_window(window_list_node_t* window_node) {
 }
 
 void draw_windows() {
-    if (!window_list) { //Don't draw if there are no windows
-        return;
-    }
-
-    for (int i = 0; i < window_number; i++) {
-        draw_window(&window_list[i]);
-    }
+    window_list->foreach([](list_t<window_list_node_t>::node* node) {
+        draw_window(&node->data);
+    });
 }
 
 void mouse_handle_windows(int64_t mouse_x, int64_t mouse_y, mouse_buttons_e mouse_button) {
-	if (!window_list) {
-		return;
-	}
+    struct lambda_callback_data_t {
+        int64_t mouse_x;
+        int64_t mouse_y;
+        mouse_buttons_e mouse_button;
+    };
 
-	for (int i = 0; i < window_number; i++) {
-        window_list_node_t* window_node = &window_list[i];
+    lambda_callback_data_t data;
+    data.mouse_x = mouse_x;
+    data.mouse_y = mouse_y;
+    data.mouse_button = mouse_button;
+
+	window_list->foreach([](list_t<window_list_node_t>::node* node, void* lambda_data) {
+        window_list_node_t* window_node = &node->data;
         standard_foxos_window_t* window = window_node->window_address;
+
+        lambda_callback_data_t* data = (lambda_callback_data_t*) lambda_data;
 
 		// check if exit button is pressed
 		if (window->exit_button) {
-			if (mouse_x >= window_node->exit_button_x && mouse_x <= window_node->exit_button_x + window_bar_button_size &&
-				mouse_y >= window_node->exit_button_y && mouse_y <= window_node->exit_button_y + window_bar_button_size) {
+			if (data->mouse_x >= window_node->exit_button_x && data->mouse_x <= window_node->exit_button_x + window_bar_button_size &&
+				data->mouse_y >= window_node->exit_button_y && data->mouse_y <= window_node->exit_button_y + window_bar_button_size) {
 				window->exit_button = false;
 				window->should_exit = true;
 			}
 		}
 
 		// if the mouse is inside of the window then translate the mouse cords to the window cords
-		if (mouse_x >= window->get_x() && mouse_x <= window->get_x() + window->get_width() && mouse_y >= window->get_y() && mouse_y <= window->get_y() + window->get_height()) {
+		if (data->mouse_x >= window->get_x() && data->mouse_x <= window->get_x() + window->get_width() && data->mouse_y >= window->get_y() && data->mouse_y <= window->get_y() + window->get_height()) {
 			int tmp_x = window->get_x() + window_buffer_offset_x;
 			int tmp_y = window->get_y() + window_buffer_offset_y;
 			int tmp_width = window->get_buffer_width();
@@ -322,23 +304,16 @@ void mouse_handle_windows(int64_t mouse_x, int64_t mouse_y, mouse_buttons_e mous
 				tmp_height = graphics_buffer_info.height - tmp_y;
 			}
 			if (tmp_width > 0 && tmp_height > 0) {
-				mouse_x -= tmp_x;
-				mouse_y -= tmp_y;
-				window->send_click(mouse_x, mouse_y, mouse_button);
+				data->mouse_x -= tmp_x;
+				data->mouse_y -= tmp_y;
+				window->send_click(data->mouse_x, data->mouse_y, data->mouse_button);
 			}
 		}
-	}
+	}, &data);
 }
 
 void destroy_all_windows() {
-    if (!window_list) {
-        return;
-    }
+    delete window_list;
 
-    for (int i = 0; i < window_number; i++) { //Delete the window classes
-        delete window_list[i].window_address;
-    }
-    free(window_list); //Free the list
-
-    window_list = 0;
+    window_list = new list_t<window_list_node_t>();
 }

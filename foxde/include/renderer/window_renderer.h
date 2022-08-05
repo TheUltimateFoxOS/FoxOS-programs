@@ -15,6 +15,9 @@ typedef struct {
 void register_window(standard_foxos_window_t* window_address);
 void unregister_window(standard_foxos_window_t* window_address);
 void bring_window_to_front(standard_foxos_window_t* window_address);
+int get_window_number();
+standard_foxos_window_t* get_window_by_index(int index);
+standard_foxos_window_t* get_front_window();
 
 void draw_windows();
 void destroy_all_windows();
