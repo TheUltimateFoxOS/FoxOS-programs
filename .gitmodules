@@ -4,3 +4,6 @@
 [submodule "libfoxos"]
 	path = libfoxos
 	url = https://github.com/TheUltimateFoxOS/libfoxos
+[submodule "libtinf"]
+	path = libtinf
+	url = https://github.com/TheUltimateFoxOS/libtinf

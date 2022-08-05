@@ -5,6 +5,7 @@ build:
 	@echo "Building libaries"
 	@make -C libfoxos
 	@make -C libc
+	@make -C libtinf
 
 	@echo "Building programs"
 	@make -C test
@@ -51,6 +52,7 @@ build:
 	@make -C foxde
 	@make -C insmod
 	@make -C nslookup
+	@make -C gunzip
 
 setup:
 	@mkdir $(BUILDDIR)
