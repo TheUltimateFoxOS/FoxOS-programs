@@ -49,6 +49,8 @@
 #define startup_task "terminal"
 //#define root_fs "root:"
 
+#define MAX_ICONS 10
+
 typedef struct {
     int64_t width = 0;
     int64_t height = 0;

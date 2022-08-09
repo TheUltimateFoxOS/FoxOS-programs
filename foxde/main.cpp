@@ -105,6 +105,9 @@ int main(int argc, char* argv[], char* envp[]) {
 	load_background_image();
 #endif
 
+	add_icon("window_test");
+	add_icon("matrix");
+
 	task_t* self = (task_t*) env(ENV_GET_TASK);
 	self->stdout_pipe = foxde_stdout;
 	self->stderr_pipe = foxde_stderr;
