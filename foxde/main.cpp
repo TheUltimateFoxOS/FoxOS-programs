@@ -20,6 +20,7 @@
 #include <foxos/term.h>
 #include <foxos/psf1_font.h>
 #include <foxos/fox_graphics.h>
+#include <cfg.h>
 
 //Variables from config.h
 mouse_position_t mouse_pos;
@@ -105,8 +106,50 @@ int main(int argc, char* argv[], char* envp[]) {
 	load_background_image();
 #endif
 
-	add_icon("window_test");
-	add_icon("matrix");
+	char cfg_path[256];
+	sprintf(cfg_path, (char*) "%s/FOXCFG/foxde/config.cfg", root_fs);
+	printf("Loading config file: %s\n", cfg_path);
+	file_t* config_file = fopen(cfg_path, "r");
+	if (config_file == NULL) {
+		printf("WARNING: Could not open config file!\n");
+	} else {
+		char* buffer = (char*) malloc(config_file->size + 1);
+		fread(buffer, config_file->size, 1, config_file);
+		buffer[config_file->size] = '\0';
+
+		config_loader* config = new config_loader(buffer);
+
+		char* icons = config->get_key((char*) "icons");
+		if (icons != NULL) {
+			// icons are , separated
+			char* old_icons = icons;
+			int icons_len = strlen(icons);
+			for (int i = 0; i < icons_len; i++) {
+				if (icons[i] == ',') {
+					icons[i] = '\0';
+					char* icon_cpy = (char*) malloc(strlen(old_icons) + 1);
+					memset(icon_cpy, 0, strlen(old_icons) + 1);
+					strcpy(icon_cpy, old_icons);
+
+					add_icon(icon_cpy);
+
+					old_icons = &icons[i + 1];
+				}
+			}
+
+			char* icon_cpy = (char*) malloc(strlen(old_icons) + 1);
+			memset(icon_cpy, 0, strlen(old_icons) + 1);
+			strcpy(icon_cpy, old_icons);
+
+			add_icon(icon_cpy);
+		} else {
+			printf("WARNING: Could not find key 'icons' in config file!\n");
+		}
+
+		delete config;
+		free(buffer);
+		fclose(config_file);
+	}
 
 	task_t* self = (task_t*) env(ENV_GET_TASK);
 	self->stdout_pipe = foxde_stdout;

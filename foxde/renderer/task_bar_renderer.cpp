@@ -22,7 +22,7 @@ void add_icon(char* name) {
 	icon->height = task_bar_icon_size;
 
 	char image_path[256];
-	sprintf(image_path, "%s/FOXCFG/%s.bmp", root_fs, name);
+	sprintf(image_path, "%s/FOXCFG/foxde/%s.bmp", root_fs, name);
 	printf("Loading icon: %s\n", image_path);
 	file_t* image = fopen(image_path, "rb");
 	assert(image != NULL);

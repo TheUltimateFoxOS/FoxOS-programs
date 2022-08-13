@@ -14,7 +14,8 @@ void load_background_image() {
 	memset(background_image, 0xff, graphics_buffer_info.width * graphics_buffer_info.height * sizeof(uint32_t));
 
 	char background_image_path[256];
-	sprintf(background_image_path, "%s/FOXCFG/foxde-bg.bmp", root_fs);
+	sprintf(background_image_path, "%s/FOXCFG/foxde/bg.bmp", root_fs);
+	printf("Loading background: %s\n", background_image_path);
 	file_t* background_image_file = fopen(background_image_path, "rb");
 
 	if (background_image_file != NULL) {
