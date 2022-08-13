@@ -6,15 +6,7 @@
 #include <sys/env.h>
 #include <foxos/keyboard_helper.h>
 #include <stdlib.h>
-
-#include <jsmn.h>
-
-static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
-	if (tok->type == JSMN_STRING && (int) strlen((char*) s) == tok->end - tok->start && strncmp(json + tok->start, s, tok->end - tok->start) == 0) {
-		return 0;
-	}
-	return -1;
-}
+#include <cfg.h>
 
 int main(int argc, char* argv[], char* envp[]) {
 	char argv_0[256];
@@ -22,10 +14,10 @@ int main(int argc, char* argv[], char* envp[]) {
 	strcpy(argv_0, argv[0]);
 
 	int num_toks = 0;
-	char* tok = strtok(argv_0, "/");
+	char* tok = strtok(argv_0, (char*) "/");
 	while (tok != NULL) {
 		num_toks++;
-		tok = strtok(NULL, "/");
+		tok = strtok((char*) NULL, (char*) "/");
 	}
 
 	strcpy(argv_0, argv[0]);
@@ -33,12 +25,12 @@ int main(int argc, char* argv[], char* envp[]) {
 	char path_buf[256];
 	memset(path_buf, 0, 256);
 
-	char* tok_2 = strtok(argv_0, "/");
+	char* tok_2 = strtok(argv_0, (char*) "/");
 	int i = 0;
 	while (i < num_toks - 1) {
 		strcat(path_buf, tok_2);
-		strcat(path_buf, "/");
-		tok_2 = strtok(NULL, "/");
+		strcat(path_buf, (char*) "/");
+		tok_2 = strtok((char*) NULL, (char*) "/");
 		i++;
 	}
 
@@ -50,19 +42,19 @@ int main(int argc, char* argv[], char* envp[]) {
 	char path_for_envp[256];
 	memset(path_for_envp, 0, 256);
 
-	strcpy(path_for_envp, "PATH=");
+	strcpy(path_for_envp, (char*) "PATH=");
 	strcat(path_for_envp, path_buf);
 
 	const char* argv_for_terminal[] = {
-		"terminal.elf",
-		NULL
+		(const char*) "terminal.elf",
+		(const char*) NULL
 	};
 
 	char terminal_path[256];
 	memset(terminal_path, 0, 256);
 
 	strcpy(terminal_path, path_buf);
-	strcat(terminal_path, "/terminal.elf");
+	strcat(terminal_path, (char*) "/terminal.elf");
 
 	char root_fs[256];
 	memset(root_fs, 0, 256);
@@ -71,7 +63,7 @@ int main(int argc, char* argv[], char* envp[]) {
 
 	char* root_fs_path = strtok(argv_0, ":");
 
-	strcpy(root_fs, "ROOT_FS=");
+	strcpy(root_fs, (char*) "ROOT_FS=");
 	strcat(root_fs, root_fs_path);
 	strcat(root_fs, ":");
 
@@ -83,64 +75,64 @@ int main(int argc, char* argv[], char* envp[]) {
 	env_set(ENV_SET_CWD, new_cwd);
 
 	char config_file_path[256] = {0};
-	bool canresolve = resolve("FOXCFG/cfg.fox", config_file_path);
+	bool canresolve = resolve((char*)(char*) "FOXCFG/init.cfg", config_file_path);
 	if (canresolve) {
 		FILE* config_file = fopen(config_file_path, "r");
 		if (config_file != NULL) {
 			// printf("Loading config file...\n");
-			char* config_data = malloc(config_file->size + 1);
+			char* config_data = (char*) malloc(config_file->size + 1);
 			memset(config_data, 0, config_file->size + 1);
 			fread(config_data, config_file->size, 1, config_file);
 
-			jsmn_parser p;
-			jsmntok_t t[128]; // We expect no more than 128 JSON tokens
+			config_loader* config = new config_loader(config_data);
 
-			jsmn_init(&p);
-			int r = jsmn_parse(&p, config_data, strlen(config_data), t, sizeof(t) / sizeof(t[0]));
-			if (r < 0) {
-				printf("Failed to parse JSON: %d\n", r);
-				return 1;
+			char* keyboard_layout = config->get_key((char*) "keyboard_layout");
+			if (keyboard_layout != NULL) {
+				foxos_set_keymap(keyboard_layout);
+			} else {
+				printf("WARNING: key 'keyboard_layout' not found in config file.\n");
 			}
 
-			for (int i = 0; i < r; i++) {
-				if (jsoneq(config_data, &t[i], "keyboard_layout") == 0) {
-					char keyboard_layout[8] = { 0 };
-					strncpy(keyboard_layout, config_data + t[i + 1].start, t[i + 1].end - t[i + 1].start);
-
-					foxos_set_keymap(keyboard_layout);
-				} else if (jsoneq(config_data, &t[i], "keyboard_debug") == 0) {
-					bool keyboard_debug;
-					if (strncmp(config_data + t[i + 1].start, "true", 4) == 0) {
-						keyboard_debug = true;
-					} else {
-						keyboard_debug = false;
-					}
-					// printf("Got keyboard_debug: %s\n", keyboard_debug ? "true" : "false");
-					foxos_set_keyboard_debug(keyboard_debug);
+			char* keyboard_debug = config->get_key((char*) "keyboard_debug");
+			if (keyboard_debug != NULL) {
+				bool debug = false;
+				if (strcmp(keyboard_debug, "true") == 0) {
+					debug = true;
+				} else if (strcmp(keyboard_debug, "false") == 0) {
+					debug = false;
+				} else {
+					printf("WARNING: value for key 'keyboard_debug' is not 'true' or 'false'. Defaulting to 'false'.\n");
 				}
+				foxos_set_keyboard_debug(debug);
+			} else {
+				printf("WARNING: key 'keyboard_debug' not found in config file.\n");
 			}
+
+			delete config;
+			free(config_data);
+			fclose(config_file);
 
 		} else {
-			printf("WARNING: Could not open config (cfg.fox) file.\n");
+			printf("WARNING: Could not open config (init.cfg) file.\n");
 		}
 	} else {
-		printf("WARNING: Could not resolve config (cfg.fox) file.\n");
+		printf("WARNING: Could not resolve config (init.cfg) file.\n");
 	}
 
 	const char* envp_for_terminal[] = {
 		path_for_envp,
 		root_fs,
-		NULL
+		(const char*) NULL
 	};
 
 	char auto_exec_path[256] = { 0 };
-	canresolve = resolve("FOXCFG/start.fox", auto_exec_path);
+	canresolve = resolve((char*) "FOXCFG/start.fox", auto_exec_path);
 	if (canresolve) {
 		// printf("Executing auto-exec file...\n");
 		char* argv_for_auto_exec[] = {
-			"terminal.elf",
+			(char*) "terminal.elf",
 			auto_exec_path,
-			NULL
+			(char*) NULL
 		};
 
 		task_t* autoexec_task = spawn(terminal_path, (const char**) argv_for_auto_exec, envp_for_terminal, true);

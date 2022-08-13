@@ -7,3 +7,6 @@
 [submodule "libtinf"]
 	path = libtinf
 	url = https://github.com/TheUltimateFoxOS/libtinf
+[submodule "libcfg"]
+	path = libcfg
+	url = https://github.com/TheUltimateFoxOS/libcfg

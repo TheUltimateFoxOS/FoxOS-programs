@@ -6,6 +6,7 @@ build:
 	@make -C libfoxos
 	@make -C libc
 	@make -C libtinf
+	@make -C libcfg
 
 	@echo "Building programs"
 	@make -C test

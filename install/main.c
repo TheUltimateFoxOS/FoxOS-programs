@@ -68,9 +68,9 @@ int main() {
 	char* foxos_config = (char*) malloc(8192);
 	memset(foxos_config, 0, 8192);
 
-	sprintf(foxos_config, "{\n    \"keyboard_layout\": \"%s\"\n}\n", keyboard_layout);
+	sprintf(foxos_config, "keyboard_layout=%s\nkeyboard_debug=false\n", keyboard_layout);
 
-	write_text_file(partition_path, "FOXCFG/cfg.fox", foxos_config);
+	write_text_file(partition_path, "FOXCFG/init.cfg", foxos_config);
 
 	free(foxos_config);
 
