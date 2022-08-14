@@ -13,7 +13,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <sys/dbg.h>
+
 int main(int argc, char* argv[], char* envp[]) {
+	debugf("Hello world from %s", argv[0]);
 	// char buffer[256] = { 0 };
 	// long num1 = 0;
 	// long num2 = 0;
