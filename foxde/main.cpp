@@ -10,6 +10,7 @@
 
 #include <foxde_std.h>
 #include <config.h>
+#include <launcher.h>
 
 #include <sys/ipc.h>
 #include <sys/env.h>
@@ -162,6 +163,8 @@ int main(int argc, char* argv[], char* envp[]) {
 	load_terminal();
 #endif
 
+	launcher_init();
+
 	env_set2(ENV_SIGHANDLER, SIG_SPECIAL_KEY_DOWN, (void*) special_key_sighandler);
 	env_set2(ENV_SIGHANDLER, SIG_SPECIAL_KEY_UP, (void*) special_key_sighandler);
 
@@ -175,6 +178,8 @@ int main(int argc, char* argv[], char* envp[]) {
 
 	//Main draw loop
 	while (!on_terminal_task_exit) {
+		launcher_tick();
+		
 		fox_start_frame(&graphics_buffer_info, true);
 
 		draw_background();

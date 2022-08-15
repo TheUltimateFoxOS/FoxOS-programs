@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <sys/spawn.h>
 #include <config.h>
+#include <launcher.h>
 
 #include <renderer/task_bar_renderer.h>
 
@@ -263,24 +264,7 @@ void mouse_handle_windows(int64_t mouse_x, int64_t mouse_y, mouse_buttons_e mous
 	for (int i = 0; i < num_icons; i++) {
 		if (mouse_x >= icons[i].x && mouse_x <= icons[i].x + icons[i].width && mouse_y >= icons[i].y && mouse_y <= icons[i].y + icons[i].height) {
 			if (mouse_button == MOUSE_BUTTON_LEFT) {
-				#warning this is a really bad way to do this. FUCKING FIX ME!!!
-				printf("%s\n", icons[i].name);
-				char startup_script_path[1024] = { 0 };
-				sprintf(startup_script_path, "%s/%s.fsh", root_fs, icons[i].name);
-				file_t* startup_script = fopen(startup_script_path, "w");
-				if (startup_script) {
-					fprintf(startup_script, "%s\n", icons[i].name);
-					fclose(startup_script);
-
-					char command[1024] = { 0 };
-					sprintf(command, "terminal %s", startup_script_path);
-					program_spawn_terminal_argv[0] = (char*) "root:/BIN/terminal.elf";
-					program_spawn_terminal_argv[1] = startup_script_path;
-					program_spawn_terminal_argv[2] = (char*) NULL;
-					spawn(program_spawn_terminal_argv[0], (const char**) program_spawn_terminal_argv, (const char**) env(ENV_ENVP), true);
-				} else {
-					printf("Failed to open %s\n", startup_script_path);
-				}
+				launcher_run(icons[i].name);
 			}
 			return;
 		}
