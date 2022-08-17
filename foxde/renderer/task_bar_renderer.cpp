@@ -1,8 +1,11 @@
 #include <renderer/task_bar_renderer.h>
 
 #include <foxos/fox_graphics.h>
-#include <config.h>
+
 #include <utils/bmp.h>
+#include <config.h>
+#include <launcher.h>
+
 #include <assert.h>
 
 icon_t icons[MAX_ICONS] = { 0 };
@@ -65,4 +68,17 @@ void draw_task_bar() {
 	for (int i = 0; i < num_icons; i++) {
 		draw_icon(&icons[i]);
 	}
+}
+
+bool mouse_handle_icons(int64_t mouse_x, int64_t mouse_y, mouse_buttons_e mouse_button) {
+	for (int i = 0; i < num_icons; i++) {
+		if (mouse_x >= icons[i].x && mouse_x <= icons[i].x + icons[i].width && mouse_y >= icons[i].y && mouse_y <= icons[i].y + icons[i].height) {
+			if (mouse_button == MOUSE_BUTTON_LEFT) {
+				launcher_run(icons[i].name);
+			}
+			return true;
+		}
+	}
+
+	return false;
 }

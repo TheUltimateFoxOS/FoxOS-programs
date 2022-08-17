@@ -7,7 +7,6 @@
 #include <assert.h>
 #include <sys/spawn.h>
 #include <config.h>
-#include <launcher.h>
 
 #include <renderer/task_bar_renderer.h>
 
@@ -260,32 +259,30 @@ void draw_windows() {
 
 char* program_spawn_terminal_argv[3];
 
-void mouse_handle_windows(int64_t mouse_x, int64_t mouse_y, mouse_buttons_e mouse_button) {
-	for (int i = 0; i < num_icons; i++) {
-		if (mouse_x >= icons[i].x && mouse_x <= icons[i].x + icons[i].width && mouse_y >= icons[i].y && mouse_y <= icons[i].y + icons[i].height) {
-			if (mouse_button == MOUSE_BUTTON_LEFT) {
-				launcher_run(icons[i].name);
-			}
-			return;
-		}
-	}
-
+bool mouse_handle_windows(int64_t mouse_x, int64_t mouse_y, mouse_buttons_e mouse_button) {
     struct lambda_callback_data_t {
         int64_t mouse_x;
         int64_t mouse_y;
         mouse_buttons_e mouse_button;
+
+        bool handled;
     };
 
     lambda_callback_data_t data;
     data.mouse_x = mouse_x;
     data.mouse_y = mouse_y;
     data.mouse_button = mouse_button;
+    data.handled = false;
 
 	window_list->foreach([](list_t<window_list_node_t>::node* node, void* lambda_data) {
+        lambda_callback_data_t* data = (lambda_callback_data_t*) lambda_data;
+
+        if (data->handled) {
+            return;
+        }
+
         window_list_node_t* window_node = &node->data;
         standard_foxos_window_t* window = window_node->window_address;
-
-        lambda_callback_data_t* data = (lambda_callback_data_t*) lambda_data;
 
 		// check if exit button is pressed
 		if (window->exit_button) {
@@ -293,6 +290,8 @@ void mouse_handle_windows(int64_t mouse_x, int64_t mouse_y, mouse_buttons_e mous
 				data->mouse_y >= window_node->exit_button_y && data->mouse_y <= window_node->exit_button_y + window_bar_button_size) {
 				window->exit_button = false;
 				window->should_exit = true;
+                data->handled = true;
+                return;
 			}
 		}
 
@@ -322,8 +321,12 @@ void mouse_handle_windows(int64_t mouse_x, int64_t mouse_y, mouse_buttons_e mous
 				data->mouse_y -= tmp_y;
 				window->send_click(data->mouse_x, data->mouse_y, data->mouse_button);
 			}
+
+            data->handled = true;
 		}
 	}, &data);
+
+    return data.handled;
 }
 
 void destroy_all_windows() {

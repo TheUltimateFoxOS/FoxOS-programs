@@ -13,8 +13,7 @@ typedef struct icon_t {
 	char* name;
 } icon_t;
 
-extern icon_t icons[MAX_ICONS];
-extern int num_icons;
-
 void add_icon(char* name);
 void draw_task_bar();
+
+bool mouse_handle_icons(int64_t mouse_x, int64_t mouse_y, mouse_buttons_e mouse_button);

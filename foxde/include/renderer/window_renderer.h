@@ -21,4 +21,5 @@ standard_foxos_window_t* get_front_window();
 
 void draw_windows();
 void destroy_all_windows();
-void mouse_handle_windows(int64_t mouse_x, int64_t mouse_y, mouse_buttons_e mouse_button);
+
+bool mouse_handle_windows(int64_t mouse_x, int64_t mouse_y, mouse_buttons_e mouse_button);
