@@ -28,7 +28,6 @@ build:
 	@make -C keymap_tool
 	@make -C cp
 	@make -C limine_install
-	@make -C lsfs
 	@make -C clear
 	@make -C tasks
 	@make -C saf_extract
@@ -40,10 +39,8 @@ build:
 	@make -C rmdir
 	@make -C reboot
 	@make -C file
-	@make -C lsmod
 	@make -C if
 	@make -C free
-	@make -C lscpu
 	@make -C smbios32
 	@make -C foxde
 	@make -C insmod

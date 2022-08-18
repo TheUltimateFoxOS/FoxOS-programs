@@ -3,9 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <buildin/number_parser.h>
-
-#define arg(name) bool name = false; for (int i = 1; i < argc; i++) { if (strcmp(argv[i], "--"#name) == 0) { name = true; break; } }
-#define arg_str(name) char* name = NULL; for (int i = 1; i < argc; i++) { if (strcmp(argv[i], "--"#name) == 0) { name = argv[i + 1]; break; } }
+#include <buildin/arg.h>
 
 char* remove_quotes(char* str) {
 	if (str[0] == '"') {

@@ -6,7 +6,7 @@
 int main() {
 	printf("Welcome to the FoxOS installer!\n");
 	char partition_path[256] = { 0 };
-	printf("On witch partition do you want to install FoxOS? (you can get a list of all partitions using the \"lsfs\" command) > ");
+	printf("On witch partition do you want to install FoxOS? (you can get a list of all partitions using the \"ls --lsfs\" command) > ");
 	int len = gets(partition_path);
 
 	if (partition_path[len - 1] != ':') {
