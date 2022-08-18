@@ -115,6 +115,10 @@ bool run_command(char* command, char** terminal_envp, bool* should_break, char**
 		read_(command);
 	} else if (strcmp(command, (char*)"exit") == 0) {
 		*should_break = true;
+	} else if (strncmp(command, (char*)"fault ", 6) == 0) {
+		char* argv_str = read_env(command);
+		fault(argv_str);
+		free(argv_str);
 	} else {
 		char** argv = argv_split(command);
 		argv = argv_env_process(argv);
@@ -240,6 +244,21 @@ void keydbg(bool onoff) {
 	} else {
 		foxos_set_keyboard_debug(false);
 		term_printf("Keyboard debugging disabled!\n");
+	}
+}
+
+void fault(char* command) {
+	if (strcmp("#pf", &command[6]) == 0) {
+		uint8_t* ptr = (uint8_t*) ~0;
+		*ptr = 69;
+	} else if (strcmp("#de", &command[6]) == 0) {
+		printf("%d\n", 1 / 0);
+	} else if (strcmp("#gp", &command[6]) == 0) {
+		asm volatile ("hlt");
+	} else if (strcmp("help", &command[6]) == 0) {
+		printf("fault #pf, #de, #gp");
+	} else {
+		term_printf("Unknown fault: %s", &command[6]);
 	}
 }
 
