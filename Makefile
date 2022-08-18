@@ -30,21 +30,16 @@ build:
 	@make -C limine_install
 	@make -C lsfs
 	@make -C clear
-	@make -C lolcat
-	@make -C matrix
 	@make -C tasks
-	@make -C nyanmbr
 	@make -C saf_extract
 	@make -C saf_make
 	@make -C foxe
 	@make -C touch
 	@make -C imgview
-	@make -C tic_tac_toe
 	@make -C play
 	@make -C rmdir
 	@make -C reboot
 	@make -C file
-	@make -C paint
 	@make -C lsmod
 	@make -C if
 	@make -C free
