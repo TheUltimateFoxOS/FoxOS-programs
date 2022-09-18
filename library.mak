@@ -11,7 +11,7 @@ OBJS += $(patsubst %.cpp, $(OBJDIR)/%_$(OUTPUT).o, $(CPPSRC))
 
 TOOLCHAIN_BASE = /usr/local/foxos-x86_64_elf_gcc
 
-CFLAGS = -O2 -mno-red-zone -ffreestanding -fno-exceptions -fpic -g -I ../libfoxos/include -Iinclude -I../libc/include -I../libtinf/include -I../libcfg/include -nostdinc -fno-stack-protector -fdata-sections -ffunction-sections
+CFLAGS = -O2 -mno-red-zone -ffreestanding -fno-exceptions -fpic -g -I ../libfoxos/include -Iinclude -I../libc/include -I../libtinf/include -I../libcfg/include -I../libfoxdb/include -nostdinc -fno-stack-protector -fdata-sections -ffunction-sections
 CPPFLAGS = $(CFLAGS)
 LDFLAGS = -r
 

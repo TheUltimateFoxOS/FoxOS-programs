@@ -7,6 +7,7 @@ build:
 	@make -C libc
 	@make -C libtinf
 	@make -C libcfg
+	@make -C libfoxdb
 
 	@echo "Building programs"
 	@make -C test
@@ -46,6 +47,7 @@ build:
 	@make -C insmod
 	@make -C nslookup
 	@make -C gunzip
+	@make -C db_test
 
 setup:
 	@mkdir $(BUILDDIR)
