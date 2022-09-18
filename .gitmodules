@@ -10,3 +10,6 @@
 [submodule "libcfg"]
 	path = libcfg
 	url = https://github.com/TheUltimateFoxOS/libcfg
+[submodule "libfoxdb"]
+	path = libfoxdb
+	url = https://github.com/TheUltimateFoxOS/libfoxdb
