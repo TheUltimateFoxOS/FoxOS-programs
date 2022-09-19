@@ -52,16 +52,28 @@ void* help(int argc, char** argv, void* db) {
 	return db;
 }
 
+void* load_or_create(char* db_path) {
+	FILE* db_file = fopen(db_path, "rb");
+	void* db;
+	if (!db_file) {
+		db_file = fopen(db_path, "wb");
+		fclose(db_file);
+		db = foxdb_new();
+	} else {
+		db = foxdb_from_file(db_file);
+		fclose(db_file);
+	}
+
+	return db;
+}
+
 int main(int argc, char* argv[]) {
 	if (argc < 3) {
 		printf("Usage: %s [file] [command] [args...]\n", argv[0]);
 		return -1;
 	}
 
-	FILE* db_file = fopen(argv[1], "rb");
-	assert(db_file != NULL);
-	void* db = foxdb_from_file(db_file);
-	fclose(db_file);
+	void* db = load_or_create(argv[1]);
 
 	for (int i = 0; i < sizeof(commands) / sizeof(command_t); i++) {
 		if (strcmp(argv[2], commands[i].name) == 0) {
@@ -75,6 +87,7 @@ int main(int argc, char* argv[]) {
 
 	printf("Command %s not found!\n", argv[2]);
 
+	FILE* db_file; // doesent work if i declare it below exit_ok. I HATE YOU GCC
 exit_ok:
 	db_file = fopen(argv[1], "wb");
 	foxdb_to_file(db, db_file);

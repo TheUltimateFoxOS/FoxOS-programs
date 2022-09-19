@@ -1,4 +1,5 @@
 #include <db_commands.h>
+#include <string.h>
 #include <foxdb.h>
 
 void* new_bool(int argc, char** argv, void* db) {
