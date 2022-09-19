@@ -7,7 +7,9 @@ void* new_str(int argc, char** argv, void* db) {
 	char str[512] = { 0 };
 	for (int i = 2; i < argc; i++) {
 		strcat(str, argv[i]);
-		strcat(str, " ");
+		if (i != argc - 1) {
+			strcat(str, " ");
+		}
 	}
 
 	foxdb_str_t* e = foxdb_str(argv[1], str);

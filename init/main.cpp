@@ -7,6 +7,7 @@
 #include <foxos/keyboard_helper.h>
 #include <stdlib.h>
 #include <cfg.h>
+#include <foxdb.h>
 
 int main(int argc, char* argv[], char* envp[]) {
 	char argv_0[256];
@@ -74,49 +75,17 @@ int main(int argc, char* argv[], char* envp[]) {
 	strcat(new_cwd, ":/");
 	env_set(ENV_SET_CWD, new_cwd);
 
-	char config_file_path[256] = {0};
-	bool canresolve = resolve((char*)(char*) "FOXCFG/init.cfg", config_file_path);
-	if (canresolve) {
-		FILE* config_file = fopen(config_file_path, "r");
-		if (config_file != NULL) {
-			// printf("Loading config file...\n");
-			char* config_data = (char*) malloc(config_file->size + 1);
-			memset(config_data, 0, config_file->size + 1);
-			fread(config_data, config_file->size, 1, config_file);
+	SYSDB(sysdb, "root:");
+	if (sysdb) {
+		foxdb_str_t* keyboard_layout = foxdb_get_str(sysdb, "keyboard_layout");
+		foxos_set_keymap(keyboard_layout->val);
+		foxdb_del_entry((foxdb_entry_t*) keyboard_layout);
 
-			config_loader* config = new config_loader(config_data);
-
-			char* keyboard_layout = config->get_key((char*) "keyboard_layout");
-			if (keyboard_layout != NULL) {
-				foxos_set_keymap(keyboard_layout);
-			} else {
-				printf("WARNING: key 'keyboard_layout' not found in config file.\n");
-			}
-
-			char* keyboard_debug = config->get_key((char*) "keyboard_debug");
-			if (keyboard_debug != NULL) {
-				bool debug = false;
-				if (strcmp(keyboard_debug, "true") == 0) {
-					debug = true;
-				} else if (strcmp(keyboard_debug, "false") == 0) {
-					debug = false;
-				} else {
-					printf("WARNING: value for key 'keyboard_debug' is not 'true' or 'false'. Defaulting to 'false'.\n");
-				}
-				foxos_set_keyboard_debug(debug);
-			} else {
-				printf("WARNING: key 'keyboard_debug' not found in config file.\n");
-			}
-
-			delete config;
-			free(config_data);
-			fclose(config_file);
-
-		} else {
-			printf("WARNING: Could not open config (init.cfg) file.\n");
-		}
+		foxdb_bool_t* keyboard_debug = foxdb_get_bool(sysdb, "keyboard_debug");
+		foxos_set_keyboard_debug(keyboard_debug->val);
+		foxdb_del_entry((foxdb_entry_t*) keyboard_debug);
 	} else {
-		printf("WARNING: Could not resolve config (init.cfg) file.\n");
+		printf("WARNING: Could not open sysdb (sys.fdb) file.\n");
 	}
 
 	const char* envp_for_terminal[] = {
@@ -126,7 +95,7 @@ int main(int argc, char* argv[], char* envp[]) {
 	};
 
 	char auto_exec_path[256] = { 0 };
-	canresolve = resolve((char*) "FOXCFG/start.fox", auto_exec_path);
+	bool canresolve = resolve((char*) "FOXCFG/start.fox", auto_exec_path);
 	if (canresolve) {
 		// printf("Executing auto-exec file...\n");
 		char* argv_for_auto_exec[] = {
