@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <tools.h>
 #include <string.h>
+#include <foxdb.h>
 
 int main() {
 	printf("Welcome to the FoxOS installer!\n");
@@ -65,14 +66,30 @@ int main() {
 
 	copy_file_across_fs(getenv("ROOT_FS"), partition_path, "", "limine.sys");
 
-	char* foxos_config = (char*) malloc(8192);
-	memset(foxos_config, 0, 8192);
+	// char* foxos_config = (char*) malloc(8192);
+	// memset(foxos_config, 0, 8192);
+	// sprintf(foxos_config, "keyboard_layout=%s\nkeyboard_debug=false\n", keyboard_layout);
+	// write_text_file(partition_path, "FOXCFG/init.cfg", foxos_config);
+	// free(foxos_config);
 
-	sprintf(foxos_config, "keyboard_layout=%s\nkeyboard_debug=false\n", keyboard_layout);
+	void* sysdb = foxdb_new();
 
-	write_text_file(partition_path, "FOXCFG/init.cfg", foxos_config);
+	foxdb_str_t* kl = foxdb_str("keyboard_layout", keyboard_layout);
+	foxdb_bool_t* kd = foxdb_bool("nkeyboard_debug", false);
 
-	free(foxos_config);
+	sysdb = foxdb_insert(sysdb, (foxdb_entry_t*) kl);
+	sysdb = foxdb_insert(sysdb, (foxdb_entry_t*) kd);
+
+	foxdb_del_entry((foxdb_entry_t*) kl);
+	foxdb_del_entry((foxdb_entry_t*) kd);
+	
+	char sys_db_path[128] = { 0 };
+	sprintf(sys_db_path, "%s/FOXCFG/sys.fdb", partition_path);
+	printf("[WRITE] %s\n", sys_db_path);
+	FILE* sysdb_file = fopen(sys_db_path, "wb");
+	foxdb_to_file(sysdb, sysdb_file);
+	fclose(sysdb_file);
+	foxdb_del(sysdb);
 
 	char initrd_build_cmd[512] = { 0 };
 	sprintf(initrd_build_cmd, "safm %s/BOOT/MODULES/ %s/BOOT/initrd.saf -q", partition_path, partition_path);
