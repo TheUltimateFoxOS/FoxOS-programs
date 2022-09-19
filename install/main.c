@@ -75,7 +75,7 @@ int main() {
 	void* sysdb = foxdb_new();
 
 	foxdb_str_t* kl = foxdb_str("keyboard_layout", keyboard_layout);
-	foxdb_bool_t* kd = foxdb_bool("nkeyboard_debug", false);
+	foxdb_bool_t* kd = foxdb_bool("keyboard_debug", false);
 
 	sysdb = foxdb_insert(sysdb, (foxdb_entry_t*) kl);
 	sysdb = foxdb_insert(sysdb, (foxdb_entry_t*) kd);

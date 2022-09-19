@@ -75,7 +75,11 @@ int main(int argc, char* argv[], char* envp[]) {
 	strcat(new_cwd, ":/");
 	env_set(ENV_SET_CWD, new_cwd);
 
-	SYSDB(sysdb, "root:");
+	char sysdb_root[64] = { 0 };
+	strcpy(sysdb_root, root_fs_path);
+	strcat(sysdb_root, ":/");
+
+	SYSDB(sysdb, sysdb_root);
 	if (sysdb) {
 		foxdb_str_t* keyboard_layout = foxdb_get_str(sysdb, "keyboard_layout");
 		foxos_set_keymap(keyboard_layout->val);
