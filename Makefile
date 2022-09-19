@@ -48,6 +48,7 @@ build:
 	@make -C nslookup
 	@make -C gunzip
 	@make -C db_test
+	@make -C foxdb
 
 setup:
 	@mkdir $(BUILDDIR)
