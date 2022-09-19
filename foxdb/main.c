@@ -24,6 +24,11 @@ command_t commands[] = {
 		.name = "remove",
 		.help = "Remove a key from the db",
 		.exec = remove_
+	},
+	{
+		.name = "new_str",
+		.help = "Insert a new string into the db",
+		.exec = new_str
 	}
 };
 
