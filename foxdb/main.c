@@ -29,6 +29,11 @@ command_t commands[] = {
 		.name = "new_str",
 		.help = "Insert a new string into the db",
 		.exec = new_str
+	},
+	{
+		.name = "new_int",
+		.help = "Insert a new int into the db",
+		.exec = new_int
 	}
 };
 
