@@ -84,6 +84,8 @@ int main(int argc, char* argv[], char* envp[]) {
 		foxdb_bool_t* keyboard_debug = foxdb_get_bool(sysdb, "keyboard_debug");
 		foxos_set_keyboard_debug(keyboard_debug->val);
 		foxdb_del_entry((foxdb_entry_t*) keyboard_debug);
+
+		foxdb_del(sysdb);
 	} else {
 		printf("WARNING: Could not open sysdb (sys.fdb) file.\n");
 	}
