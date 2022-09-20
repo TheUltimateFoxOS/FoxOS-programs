@@ -176,6 +176,8 @@ int main(int argc, char* argv[], char* envp[]) {
 	start_terminal(&on_terminal_task_exit, envp);
 #endif
 
+	init_window_renderer();
+
 	//Main draw loop
 	while (!on_terminal_task_exit) {
 		launcher_tick();

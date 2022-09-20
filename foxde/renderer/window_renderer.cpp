@@ -10,7 +10,11 @@
 
 #include <renderer/task_bar_renderer.h>
 
-list_t<window_list_node_t>* window_list = new list_t<window_list_node_t>();
+list_t<window_list_node_t>* window_list = 0;
+
+void init_window_renderer() {
+    window_list = new list_t<window_list_node_t>();
+}
 
 void register_window(standard_foxos_window_t* window_address) {
     list_t<window_list_node_t>::node* found_window = window_list->find<standard_foxos_window_t*>([](standard_foxos_window_t* window_address, list_t<window_list_node_t>::node* node) {

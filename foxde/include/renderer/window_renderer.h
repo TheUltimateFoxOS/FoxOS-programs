@@ -12,6 +12,8 @@ typedef struct {
     int64_t exit_button_y;
 } __attribute__((packed)) window_list_node_t;
 
+void init_window_renderer();
+
 void register_window(standard_foxos_window_t* window_address);
 void unregister_window(standard_foxos_window_t* window_address);
 void bring_window_to_front(standard_foxos_window_t* window_address);
