@@ -4,10 +4,7 @@
 #include <stdbool.h>
 #include <sys/spawn.h>
 #include <sys/env.h>
-#include <foxos/keyboard_helper.h>
 #include <stdlib.h>
-#include <cfg.h>
-#include <foxdb.h>
 
 int main(int argc, char* argv[], char* envp[]) {
 	char argv_0[256];
@@ -74,25 +71,6 @@ int main(int argc, char* argv[], char* envp[]) {
 	strcpy(new_cwd, root_fs_path);
 	strcat(new_cwd, ":/");
 	env_set(ENV_SET_CWD, new_cwd);
-
-	char sysdb_root[64] = { 0 };
-	strcpy(sysdb_root, root_fs_path);
-	strcat(sysdb_root, ":/");
-
-	SYSDB(sysdb, sysdb_root);
-	if (sysdb) {
-		foxdb_str_t* keyboard_layout = foxdb_get_str(sysdb, "keyboard_layout");
-		foxos_set_keymap(keyboard_layout->val);
-		foxdb_del_entry((foxdb_entry_t*) keyboard_layout);
-
-		foxdb_bool_t* keyboard_debug = foxdb_get_bool(sysdb, "keyboard_debug");
-		foxos_set_keyboard_debug(keyboard_debug->val);
-		foxdb_del_entry((foxdb_entry_t*) keyboard_debug);
-
-		foxdb_del(sysdb);
-	} else {
-		printf("WARNING: Could not open sysdb (sys.fdb) file.\n");
-	}
 
 	const char* envp_for_terminal[] = {
 		path_for_envp,

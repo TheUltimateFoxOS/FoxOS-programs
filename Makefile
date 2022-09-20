@@ -49,6 +49,7 @@ build:
 	@make -C gunzip
 	@make -C db_test
 	@make -C foxdb
+	@make -C syscfg
 
 setup:
 	@mkdir $(BUILDDIR)
