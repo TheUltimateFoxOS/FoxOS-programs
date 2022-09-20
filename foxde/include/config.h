@@ -5,7 +5,9 @@
 #include <foxos/g_syscalls.h>
 #include <foxos/fox_graphics.h>
 
+#ifndef DISABLE_FOXDE_BACKGROUND
 #define enable_background
+#endif
 #define enable_terminal
 
 #define font_width 8
