@@ -1,5 +1,6 @@
 #include <db_commands.h>
 #include <foxdb.h>
+#include <string.h>
 
 void* new_str(int argc, char** argv, void* db) {
 	x_or_more_args(2);

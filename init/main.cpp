@@ -59,7 +59,7 @@ int main(int argc, char* argv[], char* envp[]) {
 
 	strcpy(argv_0, argv[0]);
 
-	char* root_fs_path = strtok(argv_0, ":");
+	char* root_fs_path = strtok(argv_0, (char*) ":");
 
 	strcpy(root_fs, (char*) "ROOT_FS=");
 	strcat(root_fs, root_fs_path);

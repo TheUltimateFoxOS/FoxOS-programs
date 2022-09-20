@@ -6,6 +6,7 @@
 #include <sys/env.h>
 #include <sys/open.h>
 #include <sys/close.h>
+#include <sys/fs_at.h>
 #include <sys/sm32_get_cpu_info.h>
 #include <buildin/arg.h>
 
