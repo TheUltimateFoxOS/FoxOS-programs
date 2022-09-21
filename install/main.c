@@ -4,24 +4,46 @@
 #include <string.h>
 #include <foxdb.h>
 
-int main() {
+int main(int argc, char* argv[]) {
+	if (argc != 1 && argc != 4) {
+		printf("Usage: %s ([partition] [partition_name] [keyboard_layout])?\n", argv[0]);
+		return -1;
+	}
+
 	printf("Welcome to the FoxOS installer!\n");
 	char partition_path[256] = { 0 };
-	printf("On witch partition do you want to install FoxOS? (you can get a list of all partitions using the \"ls --lsfs\" command) > ");
-	int len = gets(partition_path);
+	
+	if (argc == 1) {
+		printf("On witch partition do you want to install FoxOS? (you can get a list of all partitions using the \"ls --lsfs\" command) > ");
+		int len = gets(partition_path);
 
-	if (partition_path[len - 1] != ':') {
-		printf("Error: Only mountpoints are supported.\n");
-		abort();
+		if (partition_path[len - 1] != ':') {
+			printf("Error: Only mountpoints are supported.\n");
+			abort();
+		}
+	} else {
+		strcpy(partition_path, argv[1]);
+		if (partition_path[strlen(partition_path) - 1] != ':') {
+			printf("Error: Only mountpoints are supported.\n");
+			abort();
+		}
 	}
 
 	char partition_name[256] = { 0 };
-	printf("How do you want to name the partition? > ");
-	len = gets(partition_name);
+	if (argc == 1) {
+		printf("How do you want to name the partition? > ");
+		int len = gets(partition_name);
+	} else {
+		strcpy(partition_name, argv[2]);
+	}
 
 	char keyboard_layout[256] = { 0 };
-	printf("Which keyboard layout do you want to use? > ");
-	len = gets(keyboard_layout);
+	if (argc == 1) {
+		printf("Which keyboard layout do you want to use? > ");
+		int len = gets(keyboard_layout);
+	} else {
+		strcpy(keyboard_layout, argv[3]);
+	}
 
 	create_directory(partition_path, "/BIN");
 	create_directory(partition_path, "/EFI");
