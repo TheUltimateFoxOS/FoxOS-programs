@@ -45,6 +45,15 @@ int main(int argc, char* argv[]) {
 		strcpy(keyboard_layout, argv[3]);
 	}
 
+	bool smp = false;
+	if (argc == 1) {
+		printf("Do you want to enable experimental smp? (y/n)> ");
+		char smp_in[256] = { 0 };
+		int len = gets(smp_in);
+
+		smp = smp_in[0] == 'y';
+	}
+
 	create_directory(partition_path, "/BIN");
 	create_directory(partition_path, "/EFI");
 	create_directory(partition_path, "/EFI/BOOT");
@@ -80,7 +89,13 @@ int main(int argc, char* argv[]) {
 
 	strcat(limine_config, "--keymap_load_path=");
 	strcat(limine_config, partition_name);
-	strcat(limine_config, ":/RES/\n");
+	strcat(limine_config, ":/RES/");
+
+	if (smp) {
+		strcat(limine_config, " --smp\n");
+	} else {
+		strcat(limine_config, "\n");
+	}
 
 	write_text_file(partition_path, "limine.cfg", limine_config);
 
