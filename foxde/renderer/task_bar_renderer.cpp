@@ -76,9 +76,11 @@ void draw_icon(task_bar_icon_t* icon) {
 void draw_task_bar() {
     fox_draw_rect(&graphics_buffer_info, 0, 0 + task_bar_offset_y, task_bar_width, graphics_buffer_info.width - task_bar_offset_y, task_bar_colour);
 
-	task_bar_icons->foreach([](list_t<task_bar_icon_t>::node* node) {
-		draw_icon(&node->data);
-	});
+	if (task_bar_icons) {
+		task_bar_icons->foreach([](list_t<task_bar_icon_t>::node* node) {
+			draw_icon(&node->data);
+		});
+	}
 }
 
 bool mouse_handle_icons(int64_t mouse_x, int64_t mouse_y, mouse_buttons_e mouse_button) {
@@ -96,22 +98,24 @@ bool mouse_handle_icons(int64_t mouse_x, int64_t mouse_y, mouse_buttons_e mouse_
     data.mouse_button = mouse_button;
     data.handled = false;
 
-	task_bar_icons->foreach([](list_t<task_bar_icon_t>::node* node, void* lambda_data) {
-        lambda_callback_data_t* data = (lambda_callback_data_t*) lambda_data;
-		task_bar_icon_t* icon = &node->data;
+	if (task_bar_icons) {
+		task_bar_icons->foreach([](list_t<task_bar_icon_t>::node* node, void* lambda_data) {
+			lambda_callback_data_t* data = (lambda_callback_data_t*) lambda_data;
+			task_bar_icon_t* icon = &node->data;
 
-        if (data->handled) {
-            return;
-        }
-
-		if (data->mouse_x >= icon->x && data->mouse_x <= icon->x + icon->width && data->mouse_y >= icon->y && data->mouse_y <= icon->y + icon->height) {
-			if (data->mouse_button == MOUSE_BUTTON_LEFT) {
-				launcher_run(icon->name);
+			if (data->handled) {
+				return;
 			}
 
-			data->handled = true;
-		}
-	}, &data);
+			if (data->mouse_x >= icon->x && data->mouse_x <= icon->x + icon->width && data->mouse_y >= icon->y && data->mouse_y <= icon->y + icon->height) {
+				if (data->mouse_button == MOUSE_BUTTON_LEFT) {
+					launcher_run(icon->name);
+				}
+
+				data->handled = true;
+			}
+		}, &data);
+	}
 
 	return data.handled;
 }
