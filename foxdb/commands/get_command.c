@@ -44,5 +44,5 @@ void* get(int argc, char** argv, void* db) {
 		printf("Key %s not found!\n", argv[1]);
 	}
 	
-	return db;
+	return NULL;
 }

@@ -10,5 +10,5 @@ void* keys(int argc, char** argv, void* db) {
 
 	foxdb_iterate(db, keys_it);
 
-	return db;
+	return NULL;
 }

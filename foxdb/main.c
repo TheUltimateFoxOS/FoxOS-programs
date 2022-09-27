@@ -74,12 +74,17 @@ int main(int argc, char* argv[]) {
 	}
 
 	void* db = load_or_create(argv[1]);
+	bool save_db = false;
 
 	for (int i = 0; i < sizeof(commands) / sizeof(command_t); i++) {
 		if (strcmp(argv[2], commands[i].name) == 0) {
 			printf("running %s\n", commands[i].name);
 
-			db = commands[i].exec(argc - 2, &argv[2], db);
+			void* new_db = commands[i].exec(argc - 2, &argv[2], db);
+			if (new_db != NULL) {
+				save_db = true;
+				db = new_db;
+			}
 
 			goto exit_ok;
 		}
@@ -89,9 +94,11 @@ int main(int argc, char* argv[]) {
 
 	FILE* db_file; // doesent work if i declare it below exit_ok. I HATE YOU GCC
 exit_ok:
-	db_file = fopen(argv[1], "wb");
-	foxdb_to_file(db, db_file);
-	fclose(db_file);
+	if (save_db) {
+		db_file = fopen(argv[1], "wb");
+		foxdb_to_file(db, db_file);
+		fclose(db_file);
+	}
 
 	foxdb_del(db);
 
