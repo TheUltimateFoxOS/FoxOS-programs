@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
 
 	for (int i = 0; i < sizeof(commands) / sizeof(command_t); i++) {
 		if (strcmp(argv[2], commands[i].name) == 0) {
-			printf("running %s\n", commands[i].name);
+			// printf("running %s\n", commands[i].name);
 
 			void* new_db = commands[i].exec(argc - 2, &argv[2], db);
 			if (new_db != NULL) {
