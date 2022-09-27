@@ -17,3 +17,4 @@ void* remove_(int argc, char** argv, void* db);
 void* new_str(int argc, char** argv, void* db);
 void* new_int(int argc, char** argv, void* db);
 void* new_bool(int argc, char** argv, void* db);
+void* append(int argc, char** argv, void* db);

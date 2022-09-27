@@ -39,6 +39,11 @@ command_t commands[] = {
 		.name = "new_bool",
 		.help = "Insert a new bool into the db",
 		.exec = new_bool
+	},
+	{
+		.name = "append",
+		.help = "Append a str to a str",
+		.exec = append
 	}
 };
 
