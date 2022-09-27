@@ -116,29 +116,34 @@ int main(int argc, char* argv[], char* envp[]) {
 	if (sysdb == NULL) {
 		printf("WARNING: Could not open sysdb (sys.fdb) file!\n");
 	} else {
-		foxdb_str_t* icons = foxdb_get_str(sysdb, "foxde_icons");
+		if (foxdb_is_key(sysdb, "foxde_icons")) {
+			foxdb_str_t* icons = foxdb_get_str(sysdb, "foxde_icons");
 
-		// icons are , separated
-		char* old_icons = icons->val;
-		int icons_len = strlen(icons->val);
-		for (int i = 0; i < icons_len; i++) {
-			if (icons->val[i] == ',') {
-				icons->val[i] = '\0';
-				char* icon_cpy = (char*) malloc(strlen(old_icons) + 1);
-				memset(icon_cpy, 0, strlen(old_icons) + 1);
-				strcpy(icon_cpy, old_icons);
-				add_icon(icon_cpy);
-				old_icons = &icons->val[i + 1];
+			// icons are , separated
+			char* old_icons = icons->val;
+			int icons_len = strlen(icons->val);
+			for (int i = 0; i < icons_len; i++) {
+				if (icons->val[i] == ',') {
+					icons->val[i] = '\0';
+					char* icon_cpy = (char*) malloc(strlen(old_icons) + 1);
+					memset(icon_cpy, 0, strlen(old_icons) + 1);
+					strcpy(icon_cpy, old_icons);
+					add_icon(icon_cpy);
+					old_icons = &icons->val[i + 1];
+				}
 			}
+
+			char* icon_cpy = (char*) malloc(strlen(old_icons) + 1);
+			memset(icon_cpy, 0, strlen(old_icons) + 1);
+			strcpy(icon_cpy, old_icons);
+
+			add_icon(icon_cpy);
+
+			foxdb_del_entry((foxdb_entry_t*) icons);
+		} else {
+			printf("WARNING: key foxde_icons not found un sysdb (sys.fdb)!\n");
 		}
 
-		char* icon_cpy = (char*) malloc(strlen(old_icons) + 1);
-		memset(icon_cpy, 0, strlen(old_icons) + 1);
-		strcpy(icon_cpy, old_icons);
-
-		add_icon(icon_cpy);
-
-		foxdb_del_entry((foxdb_entry_t*) icons);
 		foxdb_del(sysdb);
 	}
 
