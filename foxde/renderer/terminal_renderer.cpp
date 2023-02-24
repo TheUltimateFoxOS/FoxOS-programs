@@ -75,7 +75,7 @@ void start_terminal(bool* on_exit, char* envp[]) {
 
 	char startup_task_path[256];
 	sprintf(startup_task_path, (char*) "%s/BIN/%s.elf", root_fs, startup_task);
-	task_t* terminal_task = spawn(startup_task_path, (const char**) terminal_argv, (const char**) envp, true);
+	task_t* terminal_task = spawn(startup_task_path, (const char**) terminal_argv, (const char**) envp, ELF_EXECUTABLE, true);
 
 	assert(terminal_task != NULL);
 	terminal_task->stdout_pipe = foxde_stdout;

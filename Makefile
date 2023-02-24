@@ -50,6 +50,7 @@ build:
 	@make -C db_test
 	@make -C foxdb
 	@make -C syscfg
+	@make -C foxasm
 
 setup:
 	@mkdir $(BUILDDIR)

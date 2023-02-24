@@ -88,7 +88,7 @@ int main(int argc, char* argv[], char* envp[]) {
 			(char*) NULL
 		};
 
-		task_t* autoexec_task = spawn(terminal_path, (const char**) argv_for_auto_exec, envp_for_terminal, true);
+		task_t* autoexec_task = spawn(terminal_path, (const char**) argv_for_auto_exec, envp_for_terminal, ELF_EXECUTABLE, true);
 
 		bool autoexec_task_exit = false;
 		autoexec_task->on_exit = &autoexec_task_exit;
@@ -107,7 +107,7 @@ int main(int argc, char* argv[], char* envp[]) {
 	task_t* terminal_task;
 
 respawn:
-	terminal_task = spawn(terminal_path, (const char**) argv_for_terminal, envp_for_terminal, true);
+	terminal_task = spawn(terminal_path, (const char**) argv_for_terminal, envp_for_terminal, ELF_EXECUTABLE, true);
 
 	if (terminal_task == NULL) {
 		printf("Could not spawn terminal with path: %s\n", terminal_path);

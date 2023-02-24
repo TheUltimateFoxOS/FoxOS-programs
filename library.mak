@@ -47,7 +47,7 @@ $(OUTPUT): $(OBJS)
 	@$(LD) $(LDFLAGS) -o $(BUILDDIR)/$@.o $^
 	@echo AR $(BUILDDIR)/$@.o
 	@$(AR) rcs $(BUILDDIR)/$@ $(BUILDDIR)/$@.o
-	@echo Succesfully build library $(OUTPUT)
+	@echo Successfully built library $(OUTPUT)
 
 $(OBJDIR)/%_$(OUTPUT).o: %.c
 	@echo "CC $^ -> $@"

@@ -7,6 +7,7 @@
 bool run_command(char* command, char** terminal_envp, bool* should_break, char** stdin, char** stdout);
 
 char* search_executable(char* command);
+executable_type_t get_executable_type(char* path);
 
 void load_keymap(char* command);
 void keydbg(bool onoff);

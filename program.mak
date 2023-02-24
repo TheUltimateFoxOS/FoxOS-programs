@@ -5,9 +5,11 @@ rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(su
 
 CSRC = $(call rwildcard,./,*.c)
 CPPSRC = $(call rwildcard,./,*.cpp)
+ASMSRC = $(call rwildcard,./,*.asm)
 
 OBJS = $(patsubst %.c, $(OBJDIR)/%_$(OUTPUT).o, $(CSRC)) $(C_OBJS)
 OBJS += $(patsubst %.cpp, $(OBJDIR)/%_$(OUTPUT).o, $(CPPSRC)) $(CPP_OBJS)
+OBJS += $(patsubst %.asm, $(OBJDIR)/%_$(OUTPUT).o, $(ASMSRC)) $(ASM_OBJS)
 
 TOOLCHAIN_BASE = /usr/local/foxos-x86_64_elf_gcc
 
@@ -39,7 +41,7 @@ endif
 $(OUTPUT): $(OBJS)
 	@echo LD $^
 	@$(LD) $(LDFLAGS) -o $(BUILDDIR)/$@ $^
-	@echo Succesfully build program $(OUTPUT)
+	@echo Successfully built program $(OUTPUT)
 
 $(OBJDIR)/%_$(OUTPUT).o: %.c
 	@echo "CC $^ -> $@"
@@ -50,5 +52,10 @@ $(OBJDIR)/%_$(OUTPUT).o: %.cpp
 	@echo "CC $^ -> $@"
 	@mkdir -p $(@D)
 	@$(CC) $(CPPFLAGS) -c -o $@ $^
+
+$(OBJDIR)/%_$(OUTPUT).o: %.asm
+	@echo "ASM $^ -> $@"
+	@mkdir -p $(@D)
+	@$(ASM) -f elf64 -o $@ $^
 
 .PHONY: build

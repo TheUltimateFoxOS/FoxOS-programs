@@ -18,6 +18,8 @@ void launcher_run(char* program) {
 
 	running_program_t* running_program = new running_program_t();
 	memset(running_program, 0, sizeof(running_program_t));
+
+	//TODO: allow support for fexec programs
 	
 	char program_path[512] = { 0 };
 	sprintf(program_path, "%s/BIN/%s.elf", root_fs, program);
@@ -30,7 +32,7 @@ void launcher_run(char* program) {
 
 	argv[1] = nullptr;
 
-	running_program->task = spawn(program_path, (const char**) argv, (const char**) env(ENV_ENVP), true);
+	running_program->task = spawn(program_path, (const char**) argv, (const char**) env(ENV_ENVP), ELF_EXECUTABLE, true);
 	running_program->on_exit = false;
 	running_program->argv = argv;
 

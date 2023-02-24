@@ -200,6 +200,19 @@ char* search_executable(char* command) {
 		}
 
 		free(executable2);
+
+		char* executable3 = malloc(strlen(path_token) + strlen(command) + strlen(".fexec") + 2);
+		memset(executable3, 0, strlen(path_token) + strlen(command) + strlen(".fexec") + 2);
+		strcpy(executable3, path_token);
+		strcat(executable3, "/");
+		strcat(executable3, command);
+		strcat(executable3, ".fexec");
+
+		if ((fd = open(executable3)) != -1) {
+			close(fd);
+			free(path_copy);
+			return executable3;
+		}
 		path_token = strtok(NULL, ";");
 	}
 
@@ -375,8 +388,30 @@ task_t* spawn_process(char** argv, char** terminal_envp, pipe stdout, pipe stdin
 	char* executable = search_executable((char*) argv[0]);
 	const char** envp = (const char**) terminal_envp; //Maybe use actual enviromental vars?
 
+	int fd = open(executable);
+	if (fd == -1) {
+		return NULL;
+	}
+
+	void* magic_buff = malloc(4);
+	read(fd, magic_buff, 4, 0);
+	free(magic_buff);
+	close(fd);
+
+	uint32_t magic = *(uint32_t*) magic_buff;
+
+	executable_type_t executable_type;
+	if (magic == 0xf0c505ab) {
+		executable_type = FEXEC_EXECUTABLE;
+	} else if (__builtin_bswap32(magic) == 0x7f454c46) {
+		executable_type = ELF_EXECUTABLE;
+	} else {
+		printf("Unknown executable type!\n");
+		return NULL;
+	}
+
 	errno = 0;
-	task_t* task = spawn(executable, (const char**) argv, envp, true);
+	task_t* task = spawn(executable, (const char**) argv, envp, executable_type, true);
 
 	if (task == NULL) {
 		return NULL;

@@ -7,6 +7,11 @@ int main(int argc, char* argv[]) {
     }
 
     FILE* f = fopen(argv[1], "w");
+    if (f == NULL) {
+        printf("Error: Could not create file %s\n", argv[1]);
+        return 1;
+    }
+
     fclose(f);
     return 0;
 }
