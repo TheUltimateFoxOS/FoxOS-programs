@@ -1,5 +1,6 @@
 #include <assembler.h>
 #include <asmutils.h>
+#include <regutils.h>
 #include <fexec.h>
 
 #include <string.h>
@@ -142,6 +143,16 @@ uint64_t* process_number(char* str, int line_num, bool can_be_register) {
     return return_value;
 }
 
+register_t process_register(char* name, int line_num) {
+    register_t return_reg = get_register(name);
+    if (return_reg.size == 0) {
+        printf("Error: Invalid register on line %d\n", line_num);
+        exit(1);
+    }
+
+    return return_reg;
+}
+
 operand_t process_operand(char* operand, int line_num) {
     operand_t return_op;
 
@@ -202,16 +213,17 @@ operand_t process_operand(char* operand, int line_num) {
 
         str_to_upper(operand);
 
-        if (!is_letters(operand)) {
-            printf("Error: Invalid register on line %d\n", line_num);
-            exit(1);
-        }
-
         int size = strlen(operand);
-        return_op.size = size;
-        return_op.value = malloc(size + 1);
-        memcpy(return_op.value, operand, size);
-        ((char*) return_op.value)[size] = 0;
+        char* register_name = malloc(size + 1);
+        memcpy(register_name, operand, size);
+        register_name[size] = 0;
+        
+        register_t reg = process_register(register_name, line_num);
+        free(register_name);
+
+        return_op.size = sizeof(register_t);
+        return_op.value = malloc(sizeof(register_t));
+        memcpy(return_op.value, &reg, sizeof(register_t));
     }
 
     return return_op;
@@ -285,10 +297,11 @@ void assemble(FILE* source, FILE* output) {
             printf("O%d: ", j);
             switch (operand->type) {
                 case REGISTER_OPERAND:
-                    printf("REG \"%s\"; ", operand->value);
+                    register_t reg = *((register_t*) operand->value);
+                    printf("REG (%d bytes) %d; ", reg.size, reg.code);
                     break;
                 case IMMEDIATE_OPERAND:
-                    printf("NMB \"%d\"; ", *((uint64_t*) operand->value));
+                    printf("IMM \"%d\"; ", *((uint64_t*) operand->value));
                     break;
                 case ADDRESS_OPERAND:
                     printf("ADR \"0x%x\"; ", *((uint64_t*) operand->value));
