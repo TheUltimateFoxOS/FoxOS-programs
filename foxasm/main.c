@@ -1,27 +1,61 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <assembler.h>
 
 int main(int argc, char* argv[]) {
-    if (argc != 3) {
-        printf("Usage: %s <source> <output>\n", argv[0]);
+    int option_args = 0; //Args to skip later
+
+    executable_format_t output_format = BIN_FORMAT;
+
+    if (argc > 3) {
+        while (option_args < argc - 3) {
+            option_args++;
+            char* arg = argv[option_args];
+
+            if (strcmp(arg, "-f") == 0) {
+                option_args++;
+
+                output_format = get_exec_type(argv[option_args]);
+                if (output_format == -1) {
+                    printf("Error: Unknown executable format '%s'\n", argv[option_args]);
+                    return 1;
+                }
+            } else {
+                printf("Error: Unknown option '%s'\n", arg);
+                return 1;
+            }
+        }
+    }
+
+    if (argc - option_args < 3) {
+        printf("Usage: %s [OPTIONS] <source> <output>\n", argv[0]);
         return 1;
     }
 
-    FILE* source = fopen(argv[1], "r");
+    char* source_file = argv[option_args + 1];
+    char* output_file = argv[option_args + 2];
+
+    FILE* source = fopen(source_file, "r");
     if (!source) {
-        printf("Error: Could not open source file '%s'\n", argv[1]);
+        printf("Error: Could not open source file '%s'\n", source_file);
         return 1;
     }
     
-    FILE* output = fopen(argv[2], "w");
+    FILE* output = fopen(output_file, "w");
     if (!output) {
-        printf("Error: Could not create output file '%s'\n", argv[2]);
+        printf("Error: Could not create output file '%s'\n", output_file);
         return 1;
     }
 
-    assemble(source, output);
+    printf("Starting assembly...\n");
+    if (assemble(source, output, output_format)) {
+        printf("Done! Binary written to %s.\n", output_file);
+    } else {
+        printf("Assembly failed.\n");
+        exit(1);
+    }
 
     fclose(source);
     fclose(output);

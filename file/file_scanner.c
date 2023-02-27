@@ -11,7 +11,8 @@ file_scanner_t* scanner[] = {
 	&fm_scanner,
 	&figl_scanner,
 	&gz_scanner,
-	&fdb_scanner
+	&fdb_scanner,
+	&fexec_scanner
 };
 
 file_scanner_t* find_file_scanner(void* buffer, size_t size) {

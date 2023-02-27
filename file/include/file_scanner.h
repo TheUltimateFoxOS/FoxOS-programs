@@ -20,5 +20,6 @@ extern file_scanner_t sm32_scanner;
 extern file_scanner_t figl_scanner;
 extern file_scanner_t gz_scanner;
 extern file_scanner_t fdb_scanner;
+extern file_scanner_t fexec_scanner;
 
 file_scanner_t* find_file_scanner(void* buffer, size_t size);

@@ -401,7 +401,7 @@ task_t* spawn_process(char** argv, char** terminal_envp, pipe stdout, pipe stdin
 	uint32_t magic = *(uint32_t*) magic_buff;
 
 	executable_type_t executable_type;
-	if (magic == 0xf0c505ab) {
+	if (magic == 0x45584546) {
 		executable_type = FEXEC_EXECUTABLE;
 	} else if (__builtin_bswap32(magic) == 0x7f454c46) {
 		executable_type = ELF_EXECUTABLE;

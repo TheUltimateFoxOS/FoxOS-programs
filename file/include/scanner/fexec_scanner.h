@@ -1,8 +1,9 @@
 #pragma once
 
 #include <stdint.h>
+#include <stddef.h>
 
-#define FEXEC_MAGIC 0xf0c505ab
+#define FEXEC_MAGIC  0x45584546
 
 typedef struct {
     uint32_t magic;
