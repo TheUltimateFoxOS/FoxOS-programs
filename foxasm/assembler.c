@@ -22,15 +22,27 @@ bool parse_source_lvl1(char* source, lvl1_line_t** lines, int* line_num) {
 
     bool was_code = false;
     bool comment = false;
+    bool escape = false;
+    bool is_string = false;
+    char string_char = 0;
 
     while (*source) {
         char current = *source++;
+        bool will_escape = false;
 
         switch (current) {
             case ' ': //These are characters that separate operands
             case '\t':
             case ';':
             case ',': {
+                if (comment) {
+                    break;
+                }
+                if (is_string) {
+                    buffer[buffer_index++] = current;
+                    break;
+                }
+
                 if (was_code) {
                     buffer[buffer_index++] = 0;
                     was_code = false;
@@ -38,9 +50,7 @@ bool parse_source_lvl1(char* source, lvl1_line_t** lines, int* line_num) {
                     printf("Error line %d: Unexpected comma\n", line_number + 1);
                     errors_found = true;
                     break;
-                }
-                
-                if (current == ';') {
+                } else if (current == ';') {
                     comment = true;
                 }
                 break;
@@ -99,9 +109,32 @@ bool parse_source_lvl1(char* source, lvl1_line_t** lines, int* line_num) {
                     sub_index++;
                 }
 
+                if (!escape) {
+                    if (current == '\\') {
+                        will_escape = true;
+                        break;
+                    } else if (current == '"' || current == '\'') {
+                        if (is_string) {
+                            if (current == string_char) {
+                                is_string = false;
+                                string_char = 0;
+                            }
+                        } else {
+                            is_string = true;
+                            string_char = current;
+                        }
+                    }
+                }
+
                 buffer[buffer_index++] = current;
                 break;
             }
+        }
+
+        if (will_escape) {
+            escape = true;
+        } else {
+            escape = false;
         }
     }
 
@@ -158,30 +191,24 @@ operand_t process_operand(char* operand, int line_num, bool* errors_found) {
     operand_t return_op;
 
     if (operand[0] == '$') { //Operand is a label
-        printf("Error line %d: Labels are not supported yet\n", line_num);
-        *errors_found = true;
-        return_op.type = UNDEFINED_OPERAND;
-        return return_op;
-
         operand++;
-        //return_op.type = ;
+        return_op.type = LABEL_OPERAND;
 
-        str_to_upper(operand);
+        int size = strlen(operand);
+        char* label = (char*) malloc(size + 1);
+        memcpy(label, operand, size);
+        label[size] = 0;
 
-        //TODO: Support labels (position independent addresses must be made somehow)
+        return_op.size = size + 1;
+        return_op.value = label;
     } else if (operand[0] == '\"' || operand[0] == '\'') { //Operand is a string
-        printf("Error line %d: Strings are not yet supported\n", line_num);
-        *errors_found = true;
-        return_op.type = UNDEFINED_OPERAND;
-        return return_op;
-
         char delim = operand[0];
         operand++;
-        //return_op.type = STRING_OPERAND;
+        return_op.type = STRING_OPERAND;
 
         char* end = find_string_end(operand, delim);
         if (!end) {
-            printf("Error line %d: Unterminated string\n", line_num);
+            printf("Error line %d: String not terminated\n", line_num);
             *errors_found = true;
             return return_op;
         }
@@ -191,7 +218,8 @@ operand_t process_operand(char* operand, int line_num, bool* errors_found) {
         memcpy(string, operand, size);
         string[size] = 0;
 
-        //TODO: Support strings (depends on labels else we can't get the address of the string)
+        return_op.size = size + 1;
+        return_op.value = string;
     } else { //Operand is a register or an address
         uint64_t* address = process_number(operand, line_num, true, errors_found);
         if (address) {
@@ -242,30 +270,44 @@ bool parse_source_lvl2(lvl1_line_t** lines, int line_num, lvl2_line_t** lines_ou
             errors_found = true;
         }
 
-        str_to_upper(line->mnemonic);
-        if (!is_letters(line->mnemonic)) {
-            printf("Error line %d: Invalid mnemonic \"%s\"\n", line->line_num, line->mnemonic);
-            errors_found = true;
-        }
+        int mnsize = strlen(line->mnemonic);
 
-        //Process the operands one by one
         operand_t operands[MAX_OPERANDS];
-        for (int j = 0; j < line->part_num - 1; j++) {
-            operands[j] = process_operand(line->operands[j], line->line_num, &errors_found);
+
+        lvl2_line_t* new_line = &(*lines_out)[i];
+        new_line->line_num = line->line_num;
+        new_line->operand_num = line->part_num - 1;
+
+        if (line->mnemonic[mnsize - 1] == ':') { //Label definition
+            if (new_line->operand_num != 0) {
+                printf("Error line %d: Label definition can't have operands\n", line->line_num);
+                errors_found = true;
+            }
+        } else { //Instruction
+            str_to_upper(line->mnemonic);
+
+            if (!is_letters(line->mnemonic)) {
+                printf("Error line %d: Invalid mnemonic \"%s\"\n", line->line_num, line->mnemonic);
+                errors_found = true;
+            }
+
+            //Process the operands one by one
+            for (int j = 0; j < new_line->operand_num; j++) {
+                operands[j] = process_operand(line->operands[j], line->line_num, &errors_found);
+            }
         }
 
         //Copy the processed line to the output
-        lvl2_line_t* new_line = &(*lines_out)[i];
-        new_line->line_num = line->line_num;
-
-        int msize = strlen(line->mnemonic);
-        new_line->mnemonic = (char*) malloc(msize + 1);
-        memcpy(new_line->mnemonic, line->mnemonic, msize);
-        new_line->mnemonic[msize] = 0;
+        new_line->mnemonic = (char*) malloc(mnsize + 1);
+        memcpy(new_line->mnemonic, line->mnemonic, mnsize);
+        new_line->mnemonic[mnsize] = 0;
         
-        new_line->operand_num = line->part_num - 1;
-        new_line->operands = (operand_t*) malloc(sizeof(operand_t) * line->part_num);
-        memcpy(new_line->operands, &operands, sizeof(operand_t) * line->part_num);
+        if (new_line->operand_num > 0) {
+            new_line->operands = (operand_t*) malloc(sizeof(operand_t) * line->part_num);
+            memcpy(new_line->operands, &operands, sizeof(operand_t) * line->part_num);
+        } else {
+            new_line->operands = 0;
+        }
     }
 
     return errors_found;
@@ -274,32 +316,65 @@ bool parse_source_lvl2(lvl1_line_t** lines, int line_num, lvl2_line_t** lines_ou
 bool lex_source(lvl2_line_t** lines, int line_num, uint8_t** opcodes, int* opcode_num) {
     bool errors_found = false;
 
+    int label_definition_num = 0;
+    label_t* label_definitions = 0;
+
+    int label_reference_num = 0;
+    label_t* label_references = 0;
+
     for (int i = 0; i < line_num; i++) {
         lvl2_line_t* line = &(*lines)[i];
 
-        uint8_t line_opcodes[16]; //An instruction can't be more than 4 bytes long, and then there are max 3 operands of 4 bytes each (4 + 12 = 16)
-        int line_opcode_num = 0;
+        int mnsize = strlen(line->mnemonic);
+        if (line->mnemonic[mnsize - 1] == ':') { //Label definition
+            line->mnemonic[mnsize - 1] = 0;
+            
+            //Check if the label is already defined
+            for (int j = 0; j < i; j++) {
+                if (strcmp((*lines)[j].mnemonic, line->mnemonic) == 0) {
+                    printf("Error line %d: Label \"%s\" already defined\n", line->line_num, line->mnemonic);
+                    errors_found = true;
+                    continue;
+                }
+            }
+
+            //Add the label to the list of definitions
+            int current_label_definition_num = label_definition_num++;
+            label_definitions = (label_t*) realloc(label_definitions, sizeof(label_t) * label_definition_num);
+
+            label_t* new_label = &label_definitions[current_label_definition_num];
+            new_label->name = (char*) malloc(mnsize);
+            memcpy(new_label->name, line->mnemonic, mnsize);
+            new_label->local_address = *opcode_num;
+            continue;
+        }
 
         if (strcmp(line->mnemonic, "NOP") == 0) {
-            line_opcodes[line_opcode_num++] = 0x90;
+            append_opcode(0x90);
         }
         check_mnemonic(INT)
         check_mnemonic(MOV)
+        check_mnemonic(SYSCALL)
+        check_mnemonic(DB)
         else {
             printf("Error line %d: Unknown mnemonic \"%s\"\n", line->line_num, line->mnemonic);
-            #warning Uncomment this when the assembler is finished
-            //errors_found = true;
+            errors_found = true;
         }
-    
-        //Append the opcodes to the output        
-        if (line_opcode_num == 0) {
-            printf("Error line %d: No opcode(s) generated\n", line->line_num);
-            #warning Remove this debug line when the assembler is finished
-            continue;
-        }
-        *opcodes = (uint8_t*) realloc(*opcodes, *opcode_num + line_opcode_num);
-        memcpy((void*) ((uint64_t) *opcodes + *opcode_num), line_opcodes, line_opcode_num);
-        *opcode_num += line_opcode_num;
+    }
+
+    if (errors_found) {
+        return true;
+    }
+
+    //debug list the labels
+    for (int i = 0; i < label_definition_num; i++) {
+        printf("Label %s at %x\n", label_definitions[i].name, label_definitions[i].local_address);
+        free(label_definitions[i].name);
+    }
+    free(label_definitions);
+    for (int i = 0; i < label_reference_num; i++) {
+        printf("Label %s at %x\n", label_references[i].name, label_references[i].local_address);
+        free(label_references[i].name);
     }
 
     return errors_found;
@@ -352,10 +427,14 @@ bool assemble(FILE* source, FILE* output, executable_format_t format) {
 
     for (int i = 0; i < line_num; i++) {
         free(lines_lvl2[i].mnemonic);
-        for (int j = 0; j < lines_lvl2[i].operand_num - 1; j++) {
-            free(lines_lvl2[i].operands[j].value);
+
+        operand_t* operands = lines_lvl2[i].operands;
+        if (operands != 0) {
+            for (int j = 0; j < lines_lvl2[i].operand_num - 1; j++) {
+                free(lines_lvl2[i].operands[j].value);
+            }
+            free(lines_lvl2[i].operands);
         }
-        free(lines_lvl2[i].operands);
     }
     free(lines_lvl2);
 
