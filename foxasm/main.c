@@ -9,13 +9,24 @@ int main(int argc, char* argv[]) {
 
     executable_format_t output_format = BIN_FORMAT;
 
-    if (argc > 3) {
-        while (option_args < argc - 3) {
-            option_args++;
-            char* arg = argv[option_args];
+    if (argc > 1) {
+        while (option_args < argc - 1) {
+            char* arg = argv[option_args + 1];
 
-            if (strcmp(arg, "-f") == 0) {
+            if (arg[0] != '-') {
+                break;
+            }
+            option_args++;
+
+            if (strcmp(arg, "-h") == 0) {
+                printf("Usage: %s [OPTIONS] <source> <output>\n\nOptions:\n -h: Displays this help message.\n -f: Set output executable format.\n", argv[0]);
+                return 0;
+            } else if (strcmp(arg, "-f") == 0) {
                 option_args++;
+                if (option_args >= argc) {
+                    printf("Error: No output format specified.\n");
+                    return 1;
+                }
 
                 output_format = get_exec_type(argv[option_args]);
                 if (output_format == -1) {

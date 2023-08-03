@@ -1,6 +1,5 @@
 #pragma once
 
-#include <stdio.h>
 #include <stdint.h>
 
 #define FEXEC_MAGIC 0x45584546

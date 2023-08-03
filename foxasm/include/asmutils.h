@@ -6,7 +6,9 @@
 typedef enum {
     UNDEFINED_OPERAND,
     REGISTER_OPERAND,
-    IMMEDIATE_OPERAND
+    STRING_OPERAND,
+    IMMEDIATE_OPERAND,
+    LABEL_OPERAND
 } operand_type_t;
 
 typedef struct {
@@ -34,18 +36,18 @@ typedef struct {
     operand_t* operands;
 } lvl2_line_t;
 
-typedef enum {
-    R0 = 0,
-    R1,
-    R2,
-    R3,
-    R4,
-    R5,
-    R6,
-    R7,
-    R8,
-    R9,
-    R10,
+typedef enum { //Annotated with the 64bit register names
+    R0 = 0, //RAX
+    R1, //RCX
+    R2, //RDX
+    R3, //RBX
+    R4, //RSP
+    R5, //RBP
+    R6, //RSI
+    R7, //RDI
+    R8, //R8
+    R9, //R9
+    R10, //...
     R11,
     R12,
     R13,
